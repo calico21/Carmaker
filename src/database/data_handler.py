@@ -50,45 +50,52 @@ class ResultHandler:
     def _calculate_kpis(self, df: pd.DataFrame) -> Dict[str, float]:
         kpis = {}
         
-        # --- 1. PERFORMANCE: Lap Time ---
-        if 'User.lapTime' in df.columns:
-            lap_time = float(df['User.lapTime'].max())
-            kpis['cost'] = 999.0 if lap_time < 1.0 else lap_time
-        else:
-            kpis['cost'] = 999.0
+        # 1. Performance
+        lap_time = float(df['User.lapTime'].max()) if 'User.lapTime' in df.columns else 999.0
+        kpis['cost'] = 999.0 if lap_time < 1.0 else lap_time
+        kpis['max_roll'] = float(df['Car.Roll'].abs().max()) if 'Car.Roll' in df.columns else 99.0
 
-        # --- 2. STABILITY: Max Roll ---
-        if 'Car.Roll' in df.columns:
-            kpis['max_roll'] = float(df['Car.Roll'].abs().max())
-        else:
-            kpis['max_roll'] = 99.0
-
-        # --- 3. DRIVER FEEL: Understeer Gradient ---
-        # Goal: Calculate slope of Steering Angle vs Lateral G
-        if 'Car.ay' in df.columns and 'Car.Steer.WhlAng' in df.columns:
+        if 'Car.ay' in df.columns and 'Car.Steer.WhlAng' in df.columns and 'Car.YawRate' in df.columns:
             try:
-                # Get absolute values (treat left/right turns the same)
-                # Convert ay to G-force (m/s^2 -> g)
-                ay_g = df['Car.ay'].abs() / 9.81
-                steer_deg = df['Car.Steer.WhlAng'].abs() * (180/np.pi) # Ensure degrees
+                # Constants
+                STEER_RATIO = 1.0 # Adjust if needed
                 
-                # FILTER: Only look at the "Linear Range" of the tires
-                # We ignore low speed (<0.2G) and extreme sliding (>1.2G)
-                mask = (ay_g > 0.2) & (ay_g < 1.2)
+                ay = df['Car.ay'].abs() / 9.81
+                steer = df['Car.Steer.WhlAng'].abs() / STEER_RATIO
+                yaw_rate = df['Car.YawRate'].abs()
                 
-                if mask.sum() > 10: # Ensure we have enough data points
-                    # Linear Regression (Polyfit Order 1)
-                    # y = mx + c  ->  Steer = (Gradient * G) + Offset
-                    slope, intercept = np.polyfit(ay_g[mask], steer_deg[mask], 1)
-                    
-                    kpis['understeer_grad'] = float(slope) # Units: deg/g
+                # --- A. STEADY STATE: Understeer Gradient ---
+                mask_turn = (ay > 0.4) & (ay < 1.2)
+                if mask_turn.sum() > 10:
+                    slope, _ = np.polyfit(ay[mask_turn], steer[mask_turn], 1)
+                    kpis['understeer_grad'] = float(slope * 180/np.pi) # deg/g
                 else:
                     kpis['understeer_grad'] = 0.0
-                    
+
+                # --- B. TRANSIENT: Yaw Rate Gain (Responsiveness) ---
+                # How much Yaw Rate do we get per degree of steer at 1G?
+                if mask_turn.sum() > 10:
+                    avg_steer = steer[mask_turn].mean()
+                    avg_yaw = yaw_rate[mask_turn].mean()
+                    if avg_steer > 0.01:
+                        kpis['yaw_gain'] = float(avg_yaw / avg_steer) # rad/s per rad
+                    else: kpis['yaw_gain'] = 0.0
+                else: kpis['yaw_gain'] = 0.0
+
+                # --- C. WORKLOAD: Steering RMS (Physical Effort) ---
+                # High RMS means the driver is constantly correcting.
+                # We calculate the RMS of the Steering Rate (dSteer/dt)
+                if 'Car.Steer.Vel' in df.columns:
+                    steer_vel = df['Car.Steer.Vel']
+                    rms_workload = np.sqrt(np.mean(steer_vel**2))
+                    kpis['steering_rms'] = float(rms_workload)
+                else:
+                    kpis['steering_rms'] = 0.0
+
             except Exception as e:
-                logger.warning(f"Failed to calc Understeer Gradient: {e}")
-                kpis['understeer_grad'] = 0.0
+                logger.warning(f"KPI Calc Failed: {e}")
+                kpis.update({'understeer_grad':0.0, 'yaw_gain':0.0, 'steering_rms':0.0})
         else:
-            kpis['understeer_grad'] = 0.0
+            kpis.update({'understeer_grad':0.0, 'yaw_gain':0.0, 'steering_rms':0.0})
 
         return kpis

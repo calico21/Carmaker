@@ -2,3 +2,5 @@ git add .
 git commit -m ""
 git push
 git pull
+
+streamlit run src/dashboard/app.py

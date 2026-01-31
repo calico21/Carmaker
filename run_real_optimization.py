@@ -1,96 +1,78 @@
-import threading
 import os
 import sys
 import logging
 import time
+import numpy as np
 
-# Ensure imports work from Root
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+# Patch for library compatibility
+np.bool = np.bool_
+
+# Add project root to path
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(PROJECT_ROOT)
 
 from src.core.orchestrator import OptimizationOrchestrator
-from src.dashboard.terminal_ui import TerminalDashboard
 
-# --- PATH CONFIGURATION ---
-script_dir = os.path.dirname(os.path.abspath(__file__))
+# --- CONFIGURATION ---
+STUDY_NAME = "FSAE_Championship_Run_v1"
+N_TRIALS = 100
+N_WORKERS = 4  # Set this to the number of CarMaker licenses you have available
+CM_EXE_PATH = r"C:\IPG\carmaker\win64-13.0\bin\CM.exe" # <--- VERIFY YOUR VERSION (13.0 vs 14.1)
 
-# 1. Database Path (Moved to /data)
-DB_PATH = os.path.join(script_dir, "data", "optimization.db")
+# Paths
+DB_PATH = os.path.join(PROJECT_ROOT, "data", "optimization.db")
 DB_URL = f"sqlite:///{DB_PATH}"
-
-# 2. Log Path (Moved to /logs)
-LOG_DIR = os.path.join(script_dir, "logs")
+LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
 LOG_FILE = os.path.join(LOG_DIR, "production.log")
 
-# Ensure directories exist
+# Setup Directories
 os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
 # --- LOGGING SETUP ---
+# We log to BOTH file and console so you can see what's happening
 logging.basicConfig(
-    filename=LOG_FILE, 
-    level=logging.INFO, 
-    filemode='w', # 'w' overwrites log each run. Change to 'a' to append history.
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    force=True
+    level=logging.INFO,
+    format='%(asctime)s - [%(levelname)s] - %(message)s',
+    handlers=[
+        logging.FileHandler(LOG_FILE, mode='w'),
+        logging.StreamHandler(sys.stdout)
+    ]
 )
 
-# --- RUN CONFIGURATION ---
-STUDY_NAME = "Production_Run_v1"
-N_TRIALS = 50 
-N_WORKERS = 1  # Start conservative!
-
-def run_optimization_thread(stop_event):
-    """The Real Worker Thread"""
-    
-    # UPDATE THIS PATH to match your installation
-    cm_exe_path = r"C:\IPG\carmaker\win64-14.1\bin\CM.exe"
-    
-    if not os.path.exists(cm_exe_path):
-        logging.critical(f"CarMaker Executable not found at: {cm_exe_path}")
-        stop_event.set()
-        return
-
-    orchestrator = OptimizationOrchestrator(
-        project_root=script_dir,
-        cm_exe_path=cm_exe_path, 
-        study_name=STUDY_NAME,
-        storage_url=DB_URL, # <--- Passing the new data path
-        n_workers=N_WORKERS 
-    )
-    
-    # Validation
-    template_path = os.path.join(script_dir, "templates", "TestRuns", "Master_Skidpad")
-    if not os.path.exists(template_path):
-        logging.critical(f"Template not found: {template_path}")
-        stop_event.set()
-        return
-
-    try:
-        logging.info("Starting Production Optimization Loop...")
-        orchestrator.run(n_trials=N_TRIALS, n_jobs=N_WORKERS)
-    except Exception as e:
-        logging.error(f"Optimization Thread Crashed: {e}", exc_info=True)
-    finally:
-        stop_event.set()
-
 if __name__ == "__main__":
-    print(f"🚀 Starting PRODUCTION Run...")
-    print(f"📂 Database: data/optimization.db")
-    print(f"📄 Logging to: logs/production.log")
-    print(f"⚠️  Workers: {N_WORKERS}")
-    time.sleep(3) 
-    
-    stop_event = threading.Event()
-    
-    opt_thread = threading.Thread(target=run_optimization_thread, args=(stop_event,))
-    opt_thread.start()
-    
-    dashboard = TerminalDashboard(STUDY_NAME, N_TRIALS, DB_URL)
-    
+    print(f"\n🚀 FSAE DESIGN OPTIMIZATION SYSTEM STARTING")
+    print(f"-------------------------------------------")
+    print(f"📂 Project Root: {PROJECT_ROOT}")
+    print(f"📂 Database:     {DB_PATH}")
+    print(f"🏎️  CarMaker:     {CM_EXE_PATH}")
+    print(f"🧵 Workers:      {N_WORKERS}")
+    print(f"-------------------------------------------\n")
+
+    # Check if CarMaker exists before starting
+    if not os.path.exists(CM_EXE_PATH):
+        logging.critical(f"❌ CRITICAL: CarMaker executable not found at {CM_EXE_PATH}")
+        sys.exit(1)
+
     try:
-        dashboard.run_monitor(stop_event)
-    except KeyboardInterrupt:
-        stop_event.set()
+        # Initialize the Brain
+        orchestrator = OptimizationOrchestrator(
+            project_root=PROJECT_ROOT,
+            cm_exe_path=CM_EXE_PATH,
+            study_name=STUDY_NAME,
+            storage_url=DB_URL,
+            n_workers=N_WORKERS
+        )
+
+        logging.info("✅ Orchestrator Initialized. Starting Optimization Loop...")
         
-    opt_thread.join()
-    print("\n✅ Run Finished.")
+        # Run the Optimization
+        # Note: We use n_jobs=1 here because the Orchestrator handles threading internally via ResourceManager
+        orchestrator.run(n_trials=N_TRIALS, n_jobs=1) 
+        
+        logging.info("🏁 Optimization Finished Successfully.")
+        
+    except KeyboardInterrupt:
+        logging.warning("⚠️ Process Interrupted by User.")
+    except Exception as e:
+        logging.critical(f"❌ FATAL ERROR: {e}", exc_info=True)

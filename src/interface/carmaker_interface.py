@@ -36,42 +36,61 @@ class SimulationWatchdog:
         ]
 
     def monitor(self):
-        """Runs in a background thread to intercept stream data."""
+        """
+        Real-time Log Parsing.
+        Kills the sim if:
+        1. It crashes (License/Fatal Error).
+        2. It is too slow (Sector Pruning).
+        """
+        self.process.stdout.reconfigure(line_buffering=True)
+        
+        # --- PRUNING THRESHOLDS (Customize these for your track) ---
+        # If Sector 1 takes > 28 seconds, the run is trash. Kill it.
+        SECTOR_1_LIMIT = 28.0 
+        
         while not self._stop_event.is_set():
-            # 1. Timeout Check
-            elapsed = time.time() - self.start_time
-            if elapsed > self.timeout:
-                self.timed_out = True
-                self.kill_process("Hard Timeout Exceeded")
-                break
-
-            # 2. Process Check
             if self.process.poll() is not None:
                 break
 
-            # 3. Read Stream (Non-blocking-ish)
-            try:
-                line = self.process.stdout.readline()
-                if line:
-                    decoded_line = line.strip()
-                    if decoded_line:
-                        # --- A. PRUNING CHECK (From our Optimization discussion) ---
-                        if self.trial and "[PRUNE]" in decoded_line:
-                            self._handle_pruning(decoded_line)
-                            if self.pruned: 
-                                break
+            # Read line-by-line
+            line = self.process.stdout.readline()
+            if not line:
+                break
+            
+            # A. CRASH DETECTION
+            for kw in self.FAILURE_KEYWORDS:
+                if kw in line:
+                    self.error_detected = True
+                    self.error_message = kw
+                    self.process.terminate()
+                    return
 
-                        # --- B. ERROR CHECK (From your original code) ---
-                        for keyword in self.FAILURE_KEYWORDS:
-                            if keyword in decoded_line:
-                                self.error_detected = True
-                                self.error_message = decoded_line
-                                self.kill_process(f"Keyword Detected: {keyword}")
-                                return
-            except Exception as e:
-                pass # Stream might be closed
+            # B. EFFICIENCY: SECTOR PRUNING
+            # CarMaker logs usually look like: "Sector 1: 24.5s" or similar
+            # You might need to add a printf in your CarMaker TestRun to output this!
+            if "Sector 1" in line and self.trial:
+                try:
+                    # Parse time from log line (e.g., "End of Sector 1: 29.5 s")
+                    # This is a robust fallback: look for floating point numbers
+                    words = line.split()
+                    for w in words:
+                        try:
+                            time_val = float(w)
+                            if 0 < time_val < 1000: # Sanity check
+                                if time_val > SECTOR_1_LIMIT:
+                                    logger.warning(f"✂️ PRUNED: Sector 1 Slow ({time_val}s > {SECTOR_1_LIMIT}s)")
+                                    self.pruned = True
+                                    self.trial.report(time_val, step=1) # Report to Optuna
+                                    self.process.terminate()
+                                    return
+                        except: pass
+                except: pass
 
-            time.sleep(0.01)
+            # C. TIMEOUT CHECK
+            if time.time() - self.start_time > self.timeout:
+                self.timed_out = True
+                self.process.terminate()
+                return
 
     def _handle_pruning(self, line):
         """Parses log line and asks Optuna if we should stop."""
