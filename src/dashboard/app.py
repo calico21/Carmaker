@@ -28,7 +28,6 @@ def load_study(study_name):
 @st.cache_data
 def load_run_data(run_id):
     """Loads the time-series data (parquet) for a specific run."""
-    # Convert "Run_0005" -> "data/parquet_store/Run_0005.parquet"
     file_path = os.path.join(PARQUET_DIR, f"{run_id}.parquet")
     
     if not os.path.exists(file_path):
@@ -41,7 +40,7 @@ def load_run_data(run_id):
         return None
 
 # --- MAIN LAYOUT ---
-st.title(f"🏎️ {PAGE_TITLE}")
+st.title(f"🧠 {PAGE_TITLE}")
 
 # 1. SIDEBAR: Study Selection
 if not os.path.exists(DB_PATH):
@@ -63,44 +62,104 @@ selected_study_name = st.sidebar.selectbox("Select Study", study_names, index=le
 study = load_study(selected_study_name)
 
 if study:
+    # --- DATA PREP (Extract AI Source Data) ---
+    data = []
+    completed_trials = []
+    
+    for t in study.trials:
+        if t.state == optuna.trial.TrialState.COMPLETE:
+            completed_trials.append(t)
+            # Check if it was AI or Real
+            source = t.user_attrs.get("source", "CarMaker") 
+            
+            # Handle Multi-Objective Values
+            val1 = t.values[0] if t.values else 0 # Lap Time
+            val2 = t.values[1] if t.values and len(t.values) > 1 else 0 # Max Roll
+            
+            row = {
+                "Number": t.number,
+                "Lap Time (s)": val1,
+                "Max Roll (rad)": val2,
+                "Source": source,
+                # Parameters for hover info
+                "k_spring_f": t.params.get("k_spring_f"),
+                "mass_scale": t.params.get("mass_scale")
+            }
+            data.append(row)
+    
+    df = pd.DataFrame(data)
+
     # --- 2. METRICS OVERVIEW ---
-    completed_trials = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE]
     best_trial = study.best_trial if len(completed_trials) > 0 else None
     
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Trials", len(study.trials))
-    col2.metric("Completed", len(completed_trials))
+    # Updated Metrics Columns to show AI stats
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Total Trials", len(study.trials))
+    
+    if not df.empty:
+        n_real = len(df[df["Source"] == "CarMaker"])
+        n_ai = len(df[df["Source"] == "AI_Surrogate"])
+        c2.metric("Real Sims", n_real)
+        c3.metric("AI Predictions", n_ai)
+    
     if best_trial:
-        col3.metric("🏆 Best Lap Time", f"{best_trial.value:.4f} s")
+        c4.metric("🏆 Best Lap Time", f"{best_trial.values[0]:.4f} s")
     else:
-        col3.metric("Best Lap Time", "--")
-    st.header("⚖️ Pareto Front (Speed vs Stability)")
-    try:
-        fig_pareto = optuna.visualization.plot_pareto_front(
-            study, 
-            target_names=["Lap Time (s)", "Max Roll (rad)"]
-        )
-        st.plotly_chart(fig_pareto, use_container_width=True)
-    except Exception as e:
-        st.info("Pareto plot requires a multi-objective study.")
-        
+        c4.metric("Best Lap Time", "--")
+
     st.markdown("---")
 
-    # --- 3. GHOST REPLAY (COMPARISON) ---
+    # --- 3. OPTIMIZATION HISTORY (AI vs REAL) ---
+    col_hist, col_pareto = st.columns([2, 1])
+    
+    with col_hist:
+        st.subheader("Evolution of Lap Time")
+        if not df.empty:
+            fig = px.scatter(
+                df, 
+                x="Number", 
+                y="Lap Time (s)", 
+                color="Source", 
+                color_discrete_map={"CarMaker": "blue", "AI_Surrogate": "red"},
+                hover_data=["k_spring_f", "mass_scale"],
+                title="Blue = Real Sim, Red = AI Prediction"
+            )
+            fig.update_traces(marker=dict(size=8))
+            st.plotly_chart(fig, use_container_width=True)
+
+    with col_pareto:
+        st.subheader("Pareto Front")
+        if not df.empty and "Max Roll (rad)" in df.columns:
+            # We use custom scatter here to show AI points in Red
+            fig_p = px.scatter(
+                df,
+                x="Max Roll (rad)",
+                y="Lap Time (s)",
+                color="Source",
+                color_discrete_map={"CarMaker": "blue", "AI_Surrogate": "red"},
+                title="Speed vs. Stability"
+            )
+            st.plotly_chart(fig_p, use_container_width=True)
+        else:
+            st.info("No data available for Pareto plot.")
+
+    st.markdown("---")
+
+    # --- 4. GHOST REPLAY (COMPARISON) ---
     st.header("👻 Ghost Replay Analysis")
     
     if len(completed_trials) >= 2:
         c1, c2 = st.columns(2)
         
         # Sort trials by performance
-        sorted_trials = sorted(completed_trials, key=lambda t: t.value)
+        sorted_trials = sorted(completed_trials, key=lambda t: t.values[0])
         
         with c1:
             # Default to Best Run
             run_a_idx = 0 
             run_a_name = st.selectbox(
                 "Select Run A (Green)", 
-                [f"Run_{t.number:04d} ({t.value:.4f}s)" for t in sorted_trials],
+                [f"Run_{t.number:04d} ({t.values[0]:.4f}s)" for t in sorted_trials],
                 index=run_a_idx
             )
             id_a = run_a_name.split(" ")[0] # Extract "Run_XXXX"
@@ -110,7 +169,7 @@ if study:
             run_b_idx = len(sorted_trials) - 1
             run_b_name = st.selectbox(
                 "Select Run B (Red - Ghost)", 
-                [f"Run_{t.number:04d} ({t.value:.4f}s)" for t in sorted_trials],
+                [f"Run_{t.number:04d} ({t.values[0]:.4f}s)" for t in sorted_trials],
                 index=run_b_idx
             )
             id_b = run_b_name.split(" ")[0]
@@ -187,14 +246,12 @@ if study:
                 st.warning("Acceleration data (Car.ax, Car.ay) missing.")
 
         else:
-            st.error("Could not find Parquet data files. Ensure 'data/parquet_store/' is populated.")
-
-    else:
-        st.info("Waiting for at least 2 completed trials to show comparison.")
+            # If data is missing (e.g., AI run has no parquet), warn gently
+            st.info(f"Parquet data not available for comparison. (AI runs do not generate trace files).")
 
     st.markdown("---")
     
-    # --- 4. PARAMETER IMPORTANCE ---
+    # --- 5. PARAMETER IMPORTANCE ---
     st.header("🧠 Parameter Analysis")
     if len(completed_trials) > 5:
         try:

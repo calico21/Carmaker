@@ -4,6 +4,7 @@ import numpy as np
 import logging
 from typing import Dict
 
+# Try import cmerg
 try:
     import cmerg
 except ImportError:
@@ -19,10 +20,9 @@ class ResultHandler:
             os.makedirs(self.storage_path)
         
     def process_results(self, run_id: str, erg_file_path: str) -> Dict[str, float]:
-        """Reads ERG, saves Parquet, extracts Multi-Objective KPIs."""
+        """Reads ERG, saves Parquet, extracts 'Driver Feel' KPIs."""
         if not os.path.exists(erg_file_path):
-            logger.error(f"[{run_id}] ERG file not found.")
-            return {"cost": float('inf'), "max_roll": float('inf')}
+            return {"cost": float('inf'), "max_roll": float('inf'), "understeer_grad": 0.0}
 
         try:
             # 1. Parse ERG
@@ -30,10 +30,9 @@ class ResultHandler:
                 erg_data = cmerg.ERG(erg_file_path)
                 df = erg_data.to_pd()
             else:
-                # Fallback or error if no library
-                return {"cost": float('inf'), "max_roll": float('inf')}
+                return {"cost": float('inf'), "max_roll": float('inf'), "understeer_grad": 0.0}
 
-            # 2. Save Time-Series (Optimized Float32)
+            # 2. Save Time-Series (Optimized)
             cols = df.select_dtypes(include=[np.float64]).columns
             df[cols] = df[cols].astype(np.float32)
             
@@ -46,29 +45,50 @@ class ResultHandler:
 
         except Exception as e:
             logger.error(f"[{run_id}] Processing Failed: {e}")
-            return {"cost": float('inf'), "max_roll": float('inf')}
+            return {"cost": float('inf'), "max_roll": float('inf'), "understeer_grad": 0.0}
 
     def _calculate_kpis(self, df: pd.DataFrame) -> Dict[str, float]:
         kpis = {}
         
-        # --- OBJECTIVE 1: LAP TIME ---
+        # --- 1. PERFORMANCE: Lap Time ---
         if 'User.lapTime' in df.columns:
             lap_time = float(df['User.lapTime'].max())
-            if lap_time < 1.0: # Crash/DNF detection
-                kpis['cost'] = 999.0
-            else:
-                kpis['cost'] = lap_time
+            kpis['cost'] = 999.0 if lap_time < 1.0 else lap_time
         else:
             kpis['cost'] = 999.0
 
-        # --- OBJECTIVE 2: MAX BODY ROLL (Stability) ---
-        # We use absolute maximum roll angle (radians or degrees)
+        # --- 2. STABILITY: Max Roll ---
         if 'Car.Roll' in df.columns:
-            # Convert to degrees if your analysis prefers it, usually keeps in radians
-            max_roll = float(df['Car.Roll'].abs().max())
-            kpis['max_roll'] = max_roll
+            kpis['max_roll'] = float(df['Car.Roll'].abs().max())
         else:
-            # If signal missing, apply "High Roll" penalty so optimizer avoids it
-            kpis['max_roll'] = 99.0 
+            kpis['max_roll'] = 99.0
+
+        # --- 3. DRIVER FEEL: Understeer Gradient ---
+        # Goal: Calculate slope of Steering Angle vs Lateral G
+        if 'Car.ay' in df.columns and 'Car.Steer.WhlAng' in df.columns:
+            try:
+                # Get absolute values (treat left/right turns the same)
+                # Convert ay to G-force (m/s^2 -> g)
+                ay_g = df['Car.ay'].abs() / 9.81
+                steer_deg = df['Car.Steer.WhlAng'].abs() * (180/np.pi) # Ensure degrees
+                
+                # FILTER: Only look at the "Linear Range" of the tires
+                # We ignore low speed (<0.2G) and extreme sliding (>1.2G)
+                mask = (ay_g > 0.2) & (ay_g < 1.2)
+                
+                if mask.sum() > 10: # Ensure we have enough data points
+                    # Linear Regression (Polyfit Order 1)
+                    # y = mx + c  ->  Steer = (Gradient * G) + Offset
+                    slope, intercept = np.polyfit(ay_g[mask], steer_deg[mask], 1)
+                    
+                    kpis['understeer_grad'] = float(slope) # Units: deg/g
+                else:
+                    kpis['understeer_grad'] = 0.0
+                    
+            except Exception as e:
+                logger.warning(f"Failed to calc Understeer Gradient: {e}")
+                kpis['understeer_grad'] = 0.0
+        else:
+            kpis['understeer_grad'] = 0.0
 
         return kpis
