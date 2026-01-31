@@ -151,6 +151,10 @@ DrivMan.Man.0.LongStep.0.Cmds:
 	Eval first(DM.TriggerPoint.Id==3) ? lap2 = DM.TriggerPoint.Time
 	Eval first(DM.TriggerPoint.Id==1) ? Log ("First Lap time = %.3f seconds", DM.TriggerPoint.Time)
 	Eval first(DM.TriggerPoint.Id==3) ? Log ("Second Lap time = %.3f seconds", DM.TriggerPoint.Time)
+	# --- ADDED FOR OPTIMIZATION PRUNING ---
+	Eval first(DM.TriggerPoint.Id==1) ? Log ("[PRUNE] Step=1 Value=%.3f", DM.TriggerPoint.Time)
+	Eval first(DM.TriggerPoint.Id==3) ? Log ("[PRUNE] Step=2 Value=%.3f", DM.TriggerPoint.Time)
+	# --------------------------------------
 	# Average Lap Time
 	Eval lapTime = (lap1 + lap2)/2
 DrivMan.Man.0.LongStep.0.TimeLimit = 100.0
@@ -166,6 +170,10 @@ DrivMan.Man.0.LatStep.0.Cmds:
 	Eval first(DM.TriggerPoint.Id==3) ? lap2 = DM.TriggerPoint.Time
 	Eval first(DM.TriggerPoint.Id==1) ? Log ("First Lap time = %.3f seconds", DM.TriggerPoint.Time)
 	Eval first(DM.TriggerPoint.Id==3) ? Log ("Second Lap time = %.3f seconds", DM.TriggerPoint.Time)
+    # --- ADDED FOR OPTIMIZATION PRUNING ---
+	Eval first(DM.TriggerPoint.Id==1) ? Log ("[PRUNE] Step=1 Value=%.3f", DM.TriggerPoint.Time)
+	Eval first(DM.TriggerPoint.Id==3) ? Log ("[PRUNE] Step=2 Value=%.3f", DM.TriggerPoint.Time)
+    # --------------------------------------
 	# Average Lap Time
 	Eval lapTime = (lap1 + lap2)/2
 DrivMan.Man.0.LatStep.0.TimeLimit = 100.0

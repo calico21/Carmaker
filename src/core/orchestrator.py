@@ -2,167 +2,92 @@ import optuna
 import joblib
 import logging
 import os
-import time
-from typing import Dict, Any
-
-# Internal Imports
 from src.interface.carmaker_interface import CarMakerInterface
 from src.database.data_handler import ResultHandler
 from src.core.parameter_manager import ParameterManager
 from src.core.resource_manager import ResourceManager
 
-# Configure Logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - [ORCHESTRATOR] - %(message)s')
 logger = logging.getLogger(__name__)
 
 class OptimizationOrchestrator:
-    """
-    The Master Controller.
-    Manages the 'Ask-and-Tell' loop between Optuna and CarMaker.
-    """
-
-    def __init__(self, 
-                 project_root: str, 
-                 cm_exe_path: str, 
-                 study_name: str = "Vehicle_Dynamics_Opt_v1",
-                 storage_url: str = "sqlite:///optimization.db",
-                 n_workers: int = 4):
-        
+    def __init__(self, project_root, cm_exe_path, study_name, storage_url, n_workers=4):
         self.project_root = project_root
         
-        # 1. Managers
-        self.param_manager = ParameterManager(
-            template_dir=os.path.join(project_root, "templates", "TestRuns"),
-            work_dir=project_root
-        )
-        
-        self.data_handler = ResultHandler(
-            parquet_storage_path=os.path.join(project_root, "data", "parquet_store")
-        )
-        
-        # 2. Interface (The Service Layer)
-        self.interface = CarMakerInterface(
-            executable_path=cm_exe_path,
-            project_folder=project_root
-        )
-
-        # 3. Resource Manager (Parallelism Safety)
+        # Init Sub-Systems
+        self.param_manager = ParameterManager(os.path.join(project_root, "templates", "TestRuns"), project_root)
+        self.data_handler = ResultHandler(os.path.join(project_root, "data", "parquet_store"))
+        self.interface = CarMakerInterface(cm_exe_path, project_root)
         self.resources = ResourceManager(start_port=16660, max_licenses=n_workers)
-
-        # 4. Optuna Study
+        
+        # --- MULTI-OBJECTIVE SETUP ---
         self.study = optuna.create_study(
             study_name=study_name,
             storage=storage_url,
-            direction="minimize", # We want to minimize Lap Time
-            load_if_exists=True,
-            sampler=optuna.samplers.TPESampler(seed=42)
+            # CRITICAL: Two directions for two return values
+            # 1. Minimize Lap Time
+            # 2. Minimize Body Roll
+            directions=["minimize", "minimize"], 
+            load_if_exists=True
         )
-        
-        logger.info(f"Orchestrator initialized. Study '{study_name}' ready.")
+        logger.info(f"Multi-Objective Study '{study_name}' initialized.")
 
-    def objective(self, trial: optuna.Trial) -> float:
-        """
-        The Core Logic Loop. Executed by each worker thread.
-        """
+    def objective(self, trial: optuna.Trial):
         run_id = f"Run_{trial.number:04d}"
         
-        # --- Step 1: ASK (Define Search Space for FSC_RaceCar) ---
+        # 1. Ask (Params) - No change
         params = {
-            # Front/Rear Spring Stiffness (N/m)
-            # FS cars are stiff. Range: 20k to 100k.
-            "k_spring_f": trial.suggest_float("k_spring_f", 20000.0, 100000.0),
-            "k_spring_r": trial.suggest_float("k_spring_r", 20000.0, 100000.0),
-            
-            # Damping Coefficients (Ns/m) - Not Ratio!
-            # Range: 1k to 8k
-            "c_damp_f": trial.suggest_float("c_damp_f", 1000.0, 8000.0),
-            "c_damp_r": trial.suggest_float("c_damp_r", 1000.0, 8000.0),
-            
-            # Mass Scale (Multiplier)
-            # 0.95 = 5% lighter, 1.05 = 5% heavier
+            "k_spring_f": trial.suggest_float("k_spring_f", 20000, 100000),
+            "k_spring_r": trial.suggest_float("k_spring_r", 20000, 100000),
+            "c_damp_f": trial.suggest_float("c_damp_f", 1000, 8000),
+            "c_damp_r": trial.suggest_float("c_damp_r", 1000, 8000),
             "mass_scale": trial.suggest_float("mass_scale", 0.95, 1.05)
         }
 
-        # --- Step 2: MODIFY (Prepare the Simulation) ---
         try:
-            test_run_name = self.param_manager.create_run_configuration(
-                run_id=run_id,
-                params=params,
-                template_name="Master_Skidpad" # MUST match your saved template filename
-            )
-        except Exception as e:
-            logger.error(f"[{run_id}] Setup Failed: {e}")
-            return float('inf')
-
-        # --- Step 3: EXECUTE (Run with Resource Locking) ---
-        sim_result = {"status": "PENDING"}
-        
-        try:
-            # Lease a safe Port and License
-            with self.resources.lease(worker_id=run_id) as assigned_port:
-                
-                sim_result = self.interface.run_simulation(
-                    test_run_name=test_run_name,
-                    tcp_port=assigned_port,
-                    timeout_sec=180 
-                )
-                
-        except Exception as e:
-            logger.error(f"[{run_id}] Execution Error: {e}")
-            return float('inf')
-
-        # Check explicit failure
-        if sim_result["status"] != "SUCCESS":
-            logger.warning(f"[{run_id}] Sim Failed: {sim_result.get('reason')}")
-            return 999.0 # High cost for failure
-
-        # --- Step 4: MEASURE (Extract Data & Cost) ---
-        try:
-            # Path to the ERG file generated by CarMaker
-            erg_path = os.path.join(self.project_root, "SimOutput", f"{test_run_name}.erg")
+            # 2. Setup
+            test_run = self.param_manager.create_run_configuration(run_id, params, "Master_Skidpad")
             
+            # 3. Execute with PRUNING ENABLED
+            sim_res = {"status": "PENDING"}
+            with self.resources.lease(run_id) as port:
+                sim_res = self.interface.run_simulation(
+                    test_run_name=test_run, 
+                    tcp_port=port, 
+                    timeout_sec=180,
+                    trial=trial # <--- CRITICAL: Pass the trial object here!
+                )
+            
+            # --- HANDLE PRUNED STATE ---
+            if sim_res["status"] == "PRUNED":
+                # Raise the specific Optuna exception to mark it properly in the DB
+                raise optuna.TrialPruned()
+
+            if sim_res["status"] != "SUCCESS":
+                return 999.0, 99.0
+            
+            # 4. Measure
+            erg_path = os.path.join(self.project_root, "SimOutput", f"{test_run}.erg")
             kpis = self.data_handler.process_results(run_id, erg_path)
             
-            # Save secondary metrics to Optuna
-            for k, v in kpis.items():
-                if k != "cost":
-                    trial.set_user_attr(k, v)
+            trial.set_user_attr("lap_time", kpis.get("cost"))
+            trial.set_user_attr("max_roll", kpis.get("max_roll"))
 
-            cost = kpis.get("cost", float('inf'))
-            logger.info(f"[{run_id}] Finished. Cost (LapTime): {cost:.4f}s")
-            return cost
+            return kpis.get("cost", 999.0), kpis.get("max_roll", 99.0)
 
+        except optuna.TrialPruned:
+            # Let Optuna handle this exception naturally
+            raise
         except Exception as e:
-            logger.error(f"[{run_id}] Data Extraction Failed: {e}")
-            return float('inf')
+            logger.error(f"Trial {run_id} failed: {e}")
+            return 999.0, 99.0
 
-    def run(self, n_trials: int = 50, n_jobs: int = 1):
-        """
-        Starts the optimization process.
-        """
-        logger.info(f"🚀 Starting Optimization: {n_trials} trials | {n_jobs} parallel workers")
-        
+    def run(self, n_trials=50, n_jobs=1):
+        logger.info(f"Starting Multi-Objective Optimization ({n_trials} trials)...")
         if n_jobs > 1:
             with joblib.parallel_backend("threading", n_jobs=n_jobs):
                 self.study.optimize(self.objective, n_trials=n_trials, n_jobs=n_jobs)
         else:
             self.study.optimize(self.objective, n_trials=n_trials)
-            
-        logger.info("✅ Optimization Complete.")
-        logger.info(f"🏆 Best Params: {self.study.best_params}")
-        logger.info(f"📉 Best Lap Time: {self.study.best_value}")
-
-# --- Entry Point (For direct testing) ---
-if __name__ == "__main__":
-    # Example usage for testing this file specifically
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-    cm_exe = r"C:\IPG\carmaker\win64-14.1\bin\CM.exe" # Verify this path!
-
-    orchestrator = OptimizationOrchestrator(
-        project_root=project_root,
-        cm_exe_path=cm_exe,
-        n_workers=2
-    )
-    
-    # Run 2 quick test trials
-    orchestrator.run(n_trials=2, n_jobs=2)
+        
+        # Log the Pareto Front (Best Trade-offs)
+        logger.info(f"Pareto Front Size: {len(self.study.best_trials)}")
