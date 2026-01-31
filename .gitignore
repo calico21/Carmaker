@@ -1,0 +1,24 @@
+# Python compilation junk
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# Optimization Data & Logs (Do NOT upload these)
+data/*.parquet
+data/*.db
+logs/*.log
+SimOutput/
+SimOutput/*.erg
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
