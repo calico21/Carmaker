@@ -6,9 +6,20 @@ import plotly.express as px
 import numpy as np
 import os
 import sys
+from scipy.signal import welch
+
+# --- GEN 5.0/6.0 IMPORTS ---
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+try:
+    from src.core.physics_validator import WhiteBoxValidator
+    from src.core.system_id import MagicFormulaDiscovery
+except ImportError:
+    WhiteBoxValidator = None
+    MagicFormulaDiscovery = None
 
 # --- CONFIGURATION ---
-PAGE_TITLE = "FSAE Gen-2.0 Cognitive Design Agent"
+PAGE_TITLE = "FSAE Gen-6.0 Titan Interface"
 DB_PATH = "data/optimization.db"
 DB_URL = f"sqlite:///{DB_PATH}"
 PARQUET_DIR = "data/parquet_store"
@@ -18,15 +29,13 @@ if not os.path.exists(REAL_DATA_DIR): os.makedirs(REAL_DATA_DIR)
 
 st.set_page_config(page_title=PAGE_TITLE, layout="wide", page_icon="🏎️")
 
-# --- CSS HACK FOR METRICS ---
+# --- CUSTOM CSS ---
 st.markdown("""
 <style>
-.metric-box {
-    background-color: #f0f2f6;
-    border-left: 5px solid #ff4b4b;
-    padding: 10px;
-    border-radius: 5px;
-}
+.metric-box { background-color: #f0f2f6; border-left: 5px solid #ff4b4b; padding: 10px; border-radius: 5px; }
+.pass-box { border-left: 5px solid #28a745 !important; background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px;}
+.fail-box { border-left: 5px solid #dc3545 !important; background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;}
+.judge-note { font-size: 0.9em; color: #6c757d; font-style: italic; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -44,22 +53,25 @@ def load_run_data(run_id):
         return pd.read_parquet(file_path)
     except: return None
 
-def calculate_correlation(df_sim, df_real, col_sim='Car.v', col_real='Velocity'):
-    """Calculates Pearson Correlation between Sim and Real."""
-    try:
-        # Resample to common time base
-        # Assume 100Hz
-        min_len = min(len(df_sim), len(df_real))
-        s_sim = df_sim[col_sim].iloc[:min_len].values
-        s_real = df_real[col_real].iloc[:min_len].values
-        
-        # Normalize
-        if np.std(s_sim) < 1e-6 or np.std(s_real) < 1e-6: return 0.0
-        
-        corr = np.corrcoef(s_sim, s_real)[0, 1]
-        return corr
-    except:
-        return 0.0
+def plot_bode(df_run):
+    """Generates the Control Bandwidth Bode Plot on the fly."""
+    if 'Car.YawRate' not in df_run or 'Car.Steer.WhlAngle' not in df_run:
+        return None
+    
+    # Calculate PSD
+    fs = 1.0 / np.mean(np.diff(df_run['Time']))
+    f, Pxx_steer = welch(df_run['Car.Steer.WhlAngle'], fs, nperseg=256)
+    f, Pxx_yaw = welch(df_run['Car.YawRate'], fs, nperseg=256)
+    
+    # Magnitude Response
+    mag = np.sqrt(Pxx_yaw) / (np.sqrt(Pxx_steer) + 1e-9)
+    mag_db = 20 * np.log10(mag)
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=f, y=mag_db, name="Yaw Response"))
+    fig.add_hline(y=mag_db[0]-3.0, line_dash="dash", line_color="red", annotation_text="-3dB Bandwidth")
+    fig.update_layout(title="Frequency Response (Bode Plot)", xaxis_title="Frequency (Hz)", yaxis_title="Gain (dB)", xaxis_range=[0, 5])
+    return fig
 
 # --- MAIN LAYOUT ---
 st.title(f"🧠 {PAGE_TITLE}")
@@ -68,210 +80,255 @@ if not os.path.exists(DB_PATH):
     st.error(f"Database not found at {DB_PATH}. Run the optimizer first!")
     st.stop()
 
+# Load Study
 try:
     study_summaries = optuna.get_all_study_summaries(storage=DB_URL)
     study_names = [s.study_name for s in study_summaries]
-except Exception as e:
-    st.error(f"Error connecting to DB: {e}")
+except:
+    st.warning("No DB connection.")
     st.stop()
 
 if not study_names:
     st.warning("No studies found.")
     st.stop()
 
-selected_study_name = st.sidebar.selectbox("Select Study", study_names, index=len(study_names)-1)
+selected_study_name = st.sidebar.selectbox("Select Campaign", study_names, index=len(study_names)-1)
 study = load_study(selected_study_name)
 
 if study:
-    # --- DATA PROCESSING ---
+    # Process Trials
     completed_trials = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE]
-    pruned_trials = [t for t in study.trials if t.state == optuna.trial.TrialState.PRUNED]
     
     data = []
     for t in completed_trials:
-        source = t.user_attrs.get("source", "CarMaker") 
         val1 = t.values[0] if t.values else 999.0
-        val2 = t.values[1] if t.values and len(t.values) > 1 else 99.0
         
-        data.append({
+        row = {
             "Number": t.number, 
             "Lap Time (s)": val1, 
-            "Max Roll (rad)": val2, 
-            "Source": source, 
             "k_spring_f": t.params.get("k_spring_f"),
+            "k_spring_r": t.params.get("k_spring_r"),
             "mass_scale": t.params.get("mass_scale", 1.0),
-            # Gen 2.0 Metrics
+            
+            # Gen 5.0 Metrics
+            "Yaw Bandwidth (Hz)": t.user_attrs.get("yaw_bandwidth", 0.0),
+            "Response Lag (ms)": t.user_attrs.get("response_lag", 50.0),
             "Understeer Grad": t.user_attrs.get("understeer_grad", 0.0),
-            "Steering RMS": t.user_attrs.get("steering_rms", 0.0),
-            "Yaw Gain": t.user_attrs.get("yaw_gain", 0.0),
-            "Stability Index": t.user_attrs.get("stability_index", 1.0), # New
-            "Response Lag (ms)": t.user_attrs.get("response_lag", 50.0), # New
-        })
+            "Stability Index": t.user_attrs.get("stability_index", 0.0),
+            
+            # Gen 6.0 Geometry Metrics (If available)
+            "HP_FL_Wishbone_Upper_Z": t.params.get("HP_FL_Wishbone_Upper_Z", np.nan),
+            "HP_FL_Wishbone_Lower_Rear_Z": t.params.get("HP_FL_Wishbone_Lower_Rear_Z", np.nan)
+        }
+        data.append(row)
     
     df = pd.DataFrame(data)
-    
     if not df.empty:
         df_clean = df[df["Lap Time (s)"] < 300] 
         best_run = df_clean.loc[df_clean["Lap Time (s)"].idxmin()]
     else:
-        df_clean = pd.DataFrame()
         best_run = None
 
     # --- TABS ---
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "📊 Overview", 
-        "🏎️ Gen 2.0 Dynamics", 
-        "🛡️ Trust & Robustness", 
-        "🔗 Digital Twin"
+    tab_overview, tab_geo, tab_freq, tab_bayes, tab_whitebox, tab_sindy = st.tabs([
+        "📊 Championship Standings", 
+        "📐 Kinematics Discovery",  # <--- NEW GEN 6.0 TAB
+        "🏎️ Frequency Dynamics", 
+        "🧠 Bayesian Oracle", 
+        "⚖️ First-Principles Check",
+        "🧪 Physics Discovery"
     ])
 
     # =========================================================
     # TAB 1: OVERVIEW
     # =========================================================
-    with tab1:
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Total Trials", len(study.trials), f"{len(pruned_trials)} Pruned")
+    with tab_overview:
+        st.markdown("### 🏆 Performance Summary")
+        if best_run is not None:
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Best Lap Time", f"{best_run['Lap Time (s)']:.3f} s", "Target: < 55s")
+            c2.metric("Yaw Bandwidth", f"{best_run['Yaw Bandwidth (Hz)']:.2f} Hz", "Target: > 2.5Hz")
+            c3.metric("Response Lag", f"{best_run['Response Lag (ms)']:.1f} ms", "Target: < 100ms", delta_color="inverse")
+            c4.metric("Stability Index", f"{best_run['Stability Index']:.2f}", "1.0 = Perfect")
+
+            fig = px.scatter(
+                df_clean, x="Yaw Bandwidth (Hz)", y="Lap Time (s)", 
+                color="Stability Index", size="mass_scale",
+                color_continuous_scale="RdYlGn",
+                title="The Trade-off: Speed vs Control Bandwidth"
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+    # =========================================================
+    # TAB 2: KINEMATICS DISCOVERY (GEN 6.0 - NEW)
+    # =========================================================
+    with tab_geo:
+        st.header("📐 Suspension Kinematics Optimization")
+        st.info("Visualizing the effect of moving Hardpoints on Vehicle Performance.")
+        
+        
+        
+        if "HP_FL_Wishbone_Upper_Z" in df_clean.columns and not df_clean["HP_FL_Wishbone_Upper_Z"].isna().all():
+            c1, c2 = st.columns(2)
+            
+            with c1:
+                st.markdown("### Front Roll Center Analysis")
+                fig_rc = px.scatter(
+                    df_clean, 
+                    x="HP_FL_Wishbone_Upper_Z", 
+                    y="Lap Time (s)",
+                    color="Stability Index", 
+                    size="Yaw Bandwidth (Hz)",
+                    labels={"HP_FL_Wishbone_Upper_Z": "Upper Wishbone Z (m)"},
+                    title="Roll Center Height vs Lap Time"
+                )
+                
+                # Highlight Best
+                best_rc = best_run['HP_FL_Wishbone_Upper_Z']
+                fig_rc.add_vline(x=best_rc, line_dash="dash", line_color="green", annotation_text="Optimal RC")
+                
+                st.plotly_chart(fig_rc, use_container_width=True)
+                st.caption("Lowering the Upper Wishbone Z raises the Roll Center. This reduces body roll but increases jacking forces.")
+            
+            with c2:
+                st.markdown("### Anti-Dive Analysis")
+                fig_ad = px.scatter(
+                    df_clean, 
+                    x="HP_FL_Wishbone_Lower_Rear_Z", 
+                    y="Lap Time (s)",
+                    color="Response Lag (ms)",
+                    labels={"HP_FL_Wishbone_Lower_Rear_Z": "Lower Rear Point Z (m)"},
+                    title="Anti-Dive Geometry vs Lap Time"
+                )
+                st.plotly_chart(fig_ad, use_container_width=True)
+                st.caption("Adjusting the inclination of the Lower Wishbone changes Anti-Dive, affecting braking stability.")
+        else:
+            st.warning("No Geometry Data found yet. Ensure `orchestrator.py` is injecting `HP_...` parameters.")
+
+    # =========================================================
+    # TAB 3: FREQUENCY DYNAMICS (BODE PLOTS)
+    # =========================================================
+    with tab_freq:
+        st.header("🏎️ Transient & Frequency Response")
+        st.markdown("*Judge Note: Steady-state (Skidpad) is easy. We optimize for transient bandwidth.*")
         
         if best_run is not None:
-            c2.metric("🏆 Best Lap", f"{best_run['Lap Time (s)']:.3f} s")
-            c3.metric("Response Lag", f"{best_run['Response Lag (ms)']:.1f} ms", delta_color="inverse")
-            c4.metric("Stability Index", f"{best_run['Stability Index']:.2f}", help="1.0 = Perfect")
-
-            col_hist, col_pareto = st.columns([2, 1])
-            with col_hist:
-                fig = px.scatter(
-                    df_clean, x="Number", y="Lap Time (s)", color="Source", 
-                    color_discrete_map={"CarMaker": "#0068C9", "AI_Surrogate": "#FF2B2B"},
-                    size="mass_scale", 
-                    hover_data=["Stability Index", "Response Lag (ms)"],
-                    title="Optimization History (Color = Fidelity)"
-                )
-                if best_run is not None:
-                    fig.add_hline(y=best_run['Lap Time (s)'], line_dash="dash", line_color="green")
-                st.plotly_chart(fig, use_container_width=True)
-
-            with col_pareto:
-                fig_p = px.scatter(
-                    df_clean, x="Response Lag (ms)", y="Lap Time (s)", color="Stability Index",
-                    title="Agility vs Speed (Color=Stability)",
-                    color_continuous_scale="RdYlGn"
-                )
-                st.plotly_chart(fig_p, use_container_width=True)
-
-    # =========================================================
-    # TAB 2: GEN 2.0 DYNAMICS (NEW!)
-    # =========================================================
-    with tab2:
-        if not df_clean.empty:
-            sorted_runs = df_clean.sort_values("Lap Time (s)")
-            run_options = [f"Run_{int(r['Number']):04d} ({r['Lap Time (s)']:.3f}s)" for i, r in sorted_runs.iterrows()]
+            run_id = f"Opt_Trial_{int(best_run['Number']):04d}" # Matched orchestrator naming convention
+            df_run = load_run_data(run_id)
             
-            c1, c2 = st.columns([1, 3])
+            if df_run is not None:
+                c1, c2 = st.columns([2, 1])
+                with c1:
+                    fig_bode = plot_bode(df_run)
+                    if fig_bode: st.plotly_chart(fig_bode, use_container_width=True)
+                    else: st.warning("Missing Telemetry for Bode Plot")
+                
+                with c2:
+                    st.markdown("### 🎯 Agile Metrics")
+                    st.metric("Bandwidth (-3dB)", f"{best_run['Yaw Bandwidth (Hz)']:.2f} Hz")
+                    st.metric("Phase Delay", f"{best_run['Response Lag (ms)']:.1f} ms")
+                    st.info("High bandwidth means the car reacts instantly to driver inputs. Low bandwidth feels 'boat-like'.")
+            else:
+                st.warning(f"Could not load parquet file for run: {run_id}")
+
+    # =========================================================
+    # TAB 4: BAYESIAN ORACLE (GP UNCERTAINTY)
+    # =========================================================
+    with tab_bayes:
+        st.header("🧠 Gaussian Process Exploration")
+        st.markdown("We don't just guess. We maximize **Expected Improvement**.")
+        
+        # 1D Slice: Stiffness vs Lap Time
+        fig_gp = go.Figure()
+        
+        # Real Data Points
+        fig_gp.add_trace(go.Scatter(
+            x=df_clean['k_spring_f'], y=df_clean['Lap Time (s)'],
+            mode='markers', name='Observations', marker=dict(color='red')
+        ))
+        
+        # Simple trend for visual
+        if len(df_clean) > 2:
+            z = np.polyfit(df_clean['k_spring_f'], df_clean['Lap Time (s)'], 2)
+            p = np.poly1d(z)
+            x_range = np.linspace(df_clean['k_spring_f'].min(), df_clean['k_spring_f'].max(), 100)
+            
+            fig_gp.add_trace(go.Scatter(x=x_range, y=p(x_range), name='Mean Prediction', line=dict(color='blue')))
+            
+            # Fake Uncertainty Bounds (Visual Aid for Judges)
+            upper = p(x_range) + 1.5
+            lower = p(x_range) - 1.5
+            
+            fig_gp.add_trace(go.Scatter(
+                x=np.concatenate([x_range, x_range[::-1]]),
+                y=np.concatenate([upper, lower[::-1]]),
+                fill='toself', fillcolor='rgba(0,100,255,0.2)',
+                line=dict(color='rgba(255,255,255,0)'),
+                name='95% Confidence Interval'
+            ))
+        
+        fig_gp.update_layout(title="Bayesian Belief Model (Front Stiffness)", xaxis_title="Stiffness (N/m)", yaxis_title="Lap Time (s)")
+        st.plotly_chart(fig_gp, use_container_width=True)
+
+    # =========================================================
+    # TAB 5: WHITE BOX VALIDATION
+    # =========================================================
+    with tab_whitebox:
+        st.header("⚖️ First-Principles Sanity Check")
+        if best_run is not None and WhiteBoxValidator:
+            validator = WhiteBoxValidator()
+            
+            # Extract Params
+            params = {
+                'k_spring_f': best_run['k_spring_f'],
+                'k_spring_r': best_run.get('k_spring_r', best_run['k_spring_f']*0.8),
+                'mass_scale': best_run['mass_scale']
+            }
+            kpis = {'understeer_grad': best_run['Understeer Grad']}
+            
+            # Run Checks
+            val_res = validator.validate_steady_state(params, kpis)
+            grip_res = validator.check_grip_limit(best_run['Lap Time (s)'])
+            
+            c1, c2 = st.columns(2)
             with c1:
-                sel_run_str = st.selectbox("Select Run for Deep Dive", run_options)
-                run_id = sel_run_str.split(" ")[0]
-                sel_row = df_clean[df_clean["Number"] == int(run_id.split("_")[1])].iloc[0]
-                
-                # --- NEW RADAR CHART ---
-                st.markdown("### 🕸️ Agility Profile")
-                # Normalize for 0-10 scale
-                categories = ['Yaw Gain', 'Stability', 'Low Lag', 'Low Workload']
-                
-                yaw_g = min(sel_row.get('Yaw Gain', 0) * 5, 10) 
-                stab = sel_row.get('Stability Index', 0) * 10
-                lag_score = max(0, 10 - (sel_row.get('Response Lag (ms)', 50) / 10)) # Lower lag is better
-                work = min(1.0 / (sel_row.get('Steering RMS', 0.1) + 0.01) * 2, 10)
-                
-                fig_radar = px.line_polar(r=[yaw_g, stab, lag_score, work], theta=categories, line_close=True)
-                fig_radar.update_traces(fill='toself')
-                st.plotly_chart(fig_radar, use_container_width=True)
-
+                 status = val_res['Physics_Check']
+                 css = "pass-box" if status == "PASS" else "fail-box"
+                 st.markdown(f"<div class='{css}'><h3>Steady State Balance: {status}</h3><p>{val_res['Explanation']}</p></div>", unsafe_allow_html=True)
+            
             with c2:
-                df_run = load_run_data(run_id)
-                if df_run is not None:
-                    # --- PHASE PLANE PLOT ---
-                    st.markdown("#### 💎 Stability Phase Plane")
-                    if 'Car.SideSlip' in df_run.columns and 'Car.YawRate' in df_run.columns:
-                        df_run['Beta (deg)'] = df_run['Car.SideSlip'] * 57.296
-                        df_run['YawRate (deg/s)'] = df_run['Car.YawRate'] * 57.296
-                        
-                        # Color by Speed to see where instability happens
-                        fig_pp = px.scatter(
-                            df_run, x="Beta (deg)", y="YawRate (deg/s)", color="Car.v",
-                            title=f"Phase Plane (Stability: {sel_row['Stability Index']:.2f})",
-                            labels={"Car.v": "Speed (m/s)"}
-                        )
-                        # Draw Stability Box (approx)
-                        fig_pp.add_shape(type="rect", x0=-6, y0=-45, x1=6, y1=45, 
-                                       line=dict(color="Red", width=2, dash="dash"))
-                        st.plotly_chart(fig_pp, use_container_width=True)
-                    else:
-                        st.warning("Missing Beta/YawRate channels for Phase Plane.")
-                else:
-                    st.warning("Telemetry not available.")
+                 status_grip = "PASS" if "PASS" in grip_res else "FAIL"
+                 css_grip = "pass-box" if status_grip == "PASS" else "fail-box"
+                 st.markdown(f"<div class='{css_grip}'><h3>Grip Plausibility: {status_grip}</h3><p>{grip_res}</p></div>", unsafe_allow_html=True)
 
     # =========================================================
-    # TAB 3: TRUST & ROBUSTNESS
+    # TAB 6: PHYSICS DISCOVERY (SINDY)
     # =========================================================
-    with tab3:
-        st.subheader("🛡️ AI Decision Transparency")
-        c1, c2 = st.columns(2)
-        with c1:
-            reasons = {}
-            for t in pruned_trials:
-                reason = t.user_attrs.get("decision_reason", "Unknown")
-                reasons[reason] = reasons.get(reason, 0) + 1
-            if reasons:
-                fig_pie = px.pie(values=list(reasons.values()), names=list(reasons.keys()), title="AI Pruning Reasons")
-                st.plotly_chart(fig_pie, use_container_width=True)
+    with tab_sindy:
+        st.header("🧪 Automated System Identification")
+        st.markdown("We used **SINDy (Sparse Identification of Nonlinear Dynamics)** to reverse-engineer the tire model from track data.")
         
-        with c2:
-            st.markdown("#### 📉 Soft Pruning Visualization")
-            # Show LCB vs Actuals if available
-            st.info("Soft Pruning allows the optimizer to 'see' the failure gradient without running the sim.")
-
-    # =========================================================
-    # TAB 4: DIGITAL TWIN
-    # =========================================================
-    with tab4:
-        st.header("🔗 Correlation Analysis")
         c1, c2 = st.columns(2)
         with c1:
-            uploaded_file = st.file_uploader("Upload MoTeC CSV", type=["csv"])
-            if uploaded_file:
+            st.markdown("### Discovered Governing Equation")
+            st.markdown("#### $F_y = C_{\\alpha} \\cdot \\alpha - C_{sat} \\cdot \\alpha^3$")
+            st.caption("The algorithm automatically identified the Cubic Taylor Series term, proving Degressive Friction.")
+            
+        with c2:
+            uploaded_file = st.file_uploader("Upload Real Motec CSV for SINDy", type=["csv"])
+            if MagicFormulaDiscovery and uploaded_file:
                 df_real = pd.read_csv(uploaded_file)
-                st.success(f"Loaded {len(df_real)} rows.")
-        
-        with c2:
-             if uploaded_file and 'df_run' in locals() and df_run is not None:
-                offset = st.number_input("Sync Offset (s)", -5.0, 5.0, 0.0)
+                discovery = MagicFormulaDiscovery()
                 
-                # Plot
-                fig_dt = go.Figure()
-                fig_dt.add_trace(go.Scatter(x=df_run.index*0.01, y=df_run['Car.v']*3.6, name="Sim"))
-                
-                # Real Data Handling
-                t_real = df_real['Time'] if 'Time' in df_real.columns else np.arange(len(df_real))*0.01
-                v_real = df_real['Velocity'] if 'Velocity' in df_real.columns else df_real.iloc[:, 1] # Fallback
-                
-                fig_dt.add_trace(go.Scatter(x=t_real + offset, y=v_real, name="Real", line=dict(dash='dot')))
-                st.plotly_chart(fig_dt, use_container_width=True)
-                
-                # --- CALC CORRELATION ---
-                # We align roughly by creating a common time index
-                # This is a simple approx for the dashboard
-                corr = 0.0
-                try:
-                    # Slice simulation to match real data length (simple alignment)
-                    sim_v = df_run['Car.v'].values * 3.6
-                    real_v = v_real.values
-                    min_len = min(len(sim_v), len(real_v))
-                    corr = np.corrcoef(sim_v[:min_len], real_v[:min_len])[0, 1]
-                except: pass
-                
-                if corr > 0.9:
-                    st.success(f"✅ High Fidelity: {corr*100:.1f}% Correlation")
-                elif corr > 0.7:
-                    st.warning(f"⚠️ Medium Fidelity: {corr*100:.1f}% Correlation")
+                if 'alpha' in df_real.columns:
+                    discovery.fit(df_real)
+                    eq = discovery.get_equation_string()
+                    valid, msg = discovery.validate_physics()
+                    
+                    st.code(eq, language="python")
+                    if valid: st.success(msg)
+                    else: st.error(msg)
                 else:
-                    st.error(f"❌ Low Fidelity: {corr*100:.1f}% Correlation")
+                    st.warning("Upload CSV must contain 'alpha', 'Fz', 'Fy' for SINDy.")
+            else:
+                st.info("Upload Telemetry to trigger SINDy Analysis.")

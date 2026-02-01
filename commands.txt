@@ -4,3 +4,4 @@ git push
 git pull
 
 streamlit run src/dashboard/app.py
+streamlit run titan_app.py
