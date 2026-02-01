@@ -1,0 +1,15 @@
+# Core Optimization
+optuna==3.4.0
+joblib==1.3.2
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Visualization & UI
+rich==13.7.0
+streamlit==1.29.0
+plotly>=5.18.0
+pyarrow>=14.0.0  # Required for Parquet
+
+# Optional: Real CarMaker Binary Parser
+# Note: If cmerg fails to install via pip, you must install it manually.
+# cmerg
