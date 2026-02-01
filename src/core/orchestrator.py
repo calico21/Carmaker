@@ -14,7 +14,8 @@ from src.interface.carmaker_interface import CarMakerInterface
 from src.database.data_handler import ResultHandler
 from src.core.parameter_manager import ParameterManager
 from src.core.resource_manager import ResourceManager
-from src.core.surrogate import SurrogateOracle 
+from src.core.surrogate import SurrogateOracle
+from src.core.delta_learner import DeltaLearner # <--- GEN 3.0 ADDITION
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +34,9 @@ class OptimizationOrchestrator:
         self.interface = CarMakerInterface(cm_exe_path, project_root)
         self.resources = ResourceManager(start_port=16660, max_licenses=n_workers)
         
-        # --- AI SURROGATE ---
+        # --- INTELLIGENCE MODULES ---
         self.surrogate = SurrogateOracle()
+        self.delta_learner = DeltaLearner() # <--- GEN 3.0 ADDITION
         
         # Multi-Objective Study
         self.study = optuna.create_study(
@@ -45,7 +47,7 @@ class OptimizationOrchestrator:
             # We remove the median pruner because we now handle logic internally via Surrogate
             pruner=optuna.pruners.NopPruner() 
         )
-        logger.info(f"Production Orchestrator initialized for Study: '{study_name}'")
+        logger.info(f"Gen 3.0 Orchestrator initialized for Study: '{study_name}'")
 
     def objective(self, trial: optuna.Trial):
         run_id = f"Run_{trial.number:04d}"
@@ -59,23 +61,31 @@ class OptimizationOrchestrator:
             "mass_scale": trial.suggest_float("mass_scale", 0.95, 1.05)
         }
 
-        # --- 2. ACQUISITION GATE (Gen-2.0) ---
+        # --- 2. ACQUISITION GATE (Sim-to-Real Aware) ---
         run_real_sim = True
         predicted_vals = (999.0, 99.0)
         
         if self.surrogate.is_trained:
-            # Check Trust & Novelty
-            pred_res, uncertainty, is_novel = self.surrogate.evaluate_trust(params)
+            # A. Physics Prediction (CarMaker Surrogate)
+            pred_res, phys_uncertainty, is_novel = self.surrogate.evaluate_trust(params)
             pred_time = pred_res[0]
+
+            # B. Reality Correction (Delta Learner)
+            # If CarMaker is 1.0s too optimistic, we add +1.0s here.
+            bias_mean, bias_std = self.delta_learner.predict_bias(params)
+            
+            # C. Fused Prediction
+            corrected_time = pred_time + bias_mean
+            # Combine uncertainties (RMS)
+            total_uncertainty = np.sqrt(phys_uncertainty**2 + bias_std**2)
             
             # Record Context (Target to beat)
             best_trials = [t for t in self.study.best_trials if t.values]
             current_record = min([t.values[0] for t in best_trials]) if best_trials else 999.0
 
             # Calculate Lower Confidence Bound (Optimistic Look)
-            # "Even if we are wrong by 2 sigmas, could this beat the record?"
-            # LCB = Mean - 1.96 * Sigma
-            lcb_time = pred_time - (1.96 * uncertainty)
+            # uses the CORRECTED time and TOTAL uncertainty
+            lcb_time = corrected_time - (1.96 * total_uncertainty)
 
             # --- DECISION MATRIX ---
             if is_novel:
@@ -84,20 +94,19 @@ class OptimizationOrchestrator:
                 trial.set_user_attr("decision_reason", "Exploration_Novelty")
             
             elif lcb_time < current_record:
-                # If the optimistic prediction beats the record, we MUST simulate.
+                # If the optimistic prediction (Sim + Bias - Uncertainty) beats record
                 logger.info(f"[{run_id}] ⚡ Potential Winner (LCB {lcb_time:.2f} < {current_record:.2f}). Verifying.")
                 run_real_sim = True
                 trial.set_user_attr("decision_reason", "Exploitation_Potential")
 
             else:
-                # --- SOFT PRUNING (CRITICAL CRITIQUE IMPLEMENTATION) ---
-                # The design is Known, Trusted, and Predicted Slow.
-                # We do NOT Prune. We return the prediction to teach Optuna the gradient.
-                logger.info(f"[{run_id}] 📉 Soft Pruned. Confident Slow (Pred {pred_time:.2f}s). Skipping Physics.")
+                # --- SOFT PRUNING ---
+                logger.info(f"[{run_id}] 📉 Soft Pruned. Fused Pred {corrected_time:.2f}s (Sim {pred_time:.2f} + Bias {bias_mean:.2f}).")
                 run_real_sim = False
-                predicted_vals = pred_res
+                # Return Corrected Time so Optuna learns the "Real World" surface
+                predicted_vals = (corrected_time, pred_res[1]) 
                 trial.set_user_attr("decision_reason", "Soft_Prune_Skipped")
-                trial.set_user_attr("fidelity", "surrogate") # Mark as synthetic data
+                trial.set_user_attr("fidelity", "surrogate_corrected") # Mark as synthetic + corrected
         
         # --- 3. EXECUTION ---
         if run_real_sim:
@@ -112,8 +121,7 @@ class OptimizationOrchestrator:
                 
             return res
         else:
-            # Return the Surrogate's Prediction to Optuna
-            # This maintains the mathematical continuity of the optimization surface
+            # Return the Fused Prediction to Optuna
             return predicted_vals
 
     def _run_carmaker_simulation(self, run_id, params, trial=None):
@@ -134,12 +142,8 @@ class OptimizationOrchestrator:
                     sector_limits={"Sector 1": 28.0} # Dynamic Pruning Config
                 )
             
-            # Handle Watchdog Pruning (Real-time limits)
-            if sim_res.get("status") == "PRUNED": 
-                raise optuna.TrialPruned()
-                
-            if sim_res.get("status") != "SUCCESS": 
-                return 999.0, 99.0
+            if sim_res.get("status") == "PRUNED": raise optuna.TrialPruned()
+            if sim_res.get("status") != "SUCCESS": return 999.0, 99.0
             
             # Measure
             erg_path = os.path.join(self.project_root, "SimOutput", f"{test_run_name}.erg")
@@ -157,6 +161,9 @@ class OptimizationOrchestrator:
                 trial.set_user_attr("understeer_grad", kpis.get("understeer_grad", 0.0))
                 trial.set_user_attr("yaw_gain", kpis.get("yaw_gain", 0.0))
                 trial.set_user_attr("steering_rms", kpis.get("steering_rms", 0.0))
+                # Gen 2.0 Metrics
+                trial.set_user_attr("stability_index", kpis.get("stability_index", 0.0))
+                trial.set_user_attr("response_lag", kpis.get("response_lag", 0.0))
             
             return cost, max_roll
 
