@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import logging
 from typing import Dict
+from scipy.signal import savgol_filter, correlate, correlation_lags
+from sklearn.linear_model import RANSACRegressor
 
 # Try import cmerg
 try:
@@ -58,33 +60,43 @@ class ResultHandler:
         if 'Car.ay' in df.columns and 'Car.Steer.WhlAng' in df.columns and 'Car.YawRate' in df.columns:
             try:
                 # Constants
-                STEER_RATIO = 1.0 # Adjust if needed
+                STEER_RATIO = 1.0 
                 
+                # --- Signal Smoothing ---
+                raw_steer = df['Car.Steer.WhlAng'].values
+                if len(raw_steer) > 15:
+                    smooth_steer = savgol_filter(raw_steer, window_length=11, polyorder=2)
+                else:
+                    smooth_steer = raw_steer
+
                 ay = df['Car.ay'].abs() / 9.81
-                steer = df['Car.Steer.WhlAng'].abs() / STEER_RATIO
-                yaw_rate = df['Car.YawRate'].abs()
+                steer = np.abs(smooth_steer) / STEER_RATIO
+                yaw_rate = df['Car.YawRate'].abs() # rad/s
                 
                 # --- A. STEADY STATE: Understeer Gradient ---
-                mask_turn = (ay > 0.4) & (ay < 1.2)
-                if mask_turn.sum() > 10:
-                    slope, _ = np.polyfit(ay[mask_turn], steer[mask_turn], 1)
-                    kpis['understeer_grad'] = float(slope * 180/np.pi) # deg/g
+                jerk = np.gradient(ay) 
+                mask_steady = (ay > 0.4) & (ay < 1.4) & (np.abs(jerk) < 0.05)
+                
+                if mask_steady.sum() > 20: 
+                    X = ay[mask_steady].values.reshape(-1, 1)
+                    y = steer[mask_steady]
+                    ransac = RANSACRegressor(random_state=42)
+                    ransac.fit(X, y)
+                    slope = ransac.estimator_.coef_[0]
+                    kpis['understeer_grad'] = float(slope * 180/np.pi) 
                 else:
                     kpis['understeer_grad'] = 0.0
 
-                # --- B. TRANSIENT: Yaw Rate Gain (Responsiveness) ---
-                # How much Yaw Rate do we get per degree of steer at 1G?
-                if mask_turn.sum() > 10:
-                    avg_steer = steer[mask_turn].mean()
-                    avg_yaw = yaw_rate[mask_turn].mean()
-                    if avg_steer > 0.01:
-                        kpis['yaw_gain'] = float(avg_yaw / avg_steer) # rad/s per rad
+                # --- B. TRANSIENT: Yaw Rate Gain ---
+                if mask_steady.sum() > 10:
+                    avg_steer = steer[mask_steady].mean()
+                    avg_yaw = yaw_rate[mask_steady].mean()
+                    if avg_steer > 0.001:
+                        kpis['yaw_gain'] = float(avg_yaw / avg_steer) 
                     else: kpis['yaw_gain'] = 0.0
                 else: kpis['yaw_gain'] = 0.0
 
-                # --- C. WORKLOAD: Steering RMS (Physical Effort) ---
-                # High RMS means the driver is constantly correcting.
-                # We calculate the RMS of the Steering Rate (dSteer/dt)
+                # --- C. WORKLOAD: Steering RMS ---
                 if 'Car.Steer.Vel' in df.columns:
                     steer_vel = df['Car.Steer.Vel']
                     rms_workload = np.sqrt(np.mean(steer_vel**2))
@@ -92,10 +104,52 @@ class ResultHandler:
                 else:
                     kpis['steering_rms'] = 0.0
 
+                # --- D. STABILITY: Phase-Plane Index ---
+                if 'Car.SideSlip' in df.columns and 'Car.v' in df.columns:
+                    beta = df['Car.SideSlip'] # rad
+                    limit_yaw = (1.5 * 9.81) / (df['Car.v'] + 0.1) 
+                    limit_beta = 6.0 * (np.pi / 180.0) 
+                    unstable_mask = (beta.abs() > limit_beta) | (yaw_rate > limit_yaw)
+                    stability_score = 1.0 - (unstable_mask.sum() / len(df))
+                    kpis['stability_index'] = float(stability_score)
+                else:
+                    kpis['stability_index'] = 1.0 
+
+                # --- E. AGILITY (GEN 2.0): Response Lag & Sharpness ---
+                # 1. Response Lag: Cross-Correlation between Steer and Yaw Rate
+                # Positive lag = Car reacts AFTER steering (Latency)
+                try:
+                    # Normalize signals for correlation
+                    s_norm = (smooth_steer - np.mean(smooth_steer)) / (np.std(smooth_steer) + 1e-6)
+                    y_norm = (df['Car.YawRate'].values - np.mean(df['Car.YawRate'].values)) / (np.std(df['Car.YawRate'].values) + 1e-6)
+                    
+                    correlation = correlate(s_norm, y_norm, mode='full')
+                    lags = correlation_lags(len(s_norm), len(y_norm), mode='full')
+                    lag_idx = np.argmax(correlation)
+                    lag_samples = -lags[lag_idx] # Negative because we want Delay relative to Steer
+                    
+                    # Convert to ms (assuming 100Hz -> 0.01s)
+                    dt = 0.01 
+                    response_lag_ms = lag_samples * dt * 1000.0
+                    
+                    # Filter out non-causal noise (lag shouldn't be negative or > 500ms)
+                    if 0 < response_lag_ms < 500:
+                        kpis['response_lag'] = float(response_lag_ms)
+                    else:
+                         kpis['response_lag'] = 50.0 # Default/Fail-safe
+                         
+                except Exception:
+                    kpis['response_lag'] = 0.0
+
+                # 2. Yaw Agility (Peak Yaw Acceleration)
+                # Measures "Sharpness" of turn-in
+                yaw_accel = np.gradient(df['Car.YawRate'].values) / 0.01 # rad/s^2
+                kpis['yaw_agility'] = float(np.max(np.abs(yaw_accel)))
+
             except Exception as e:
                 logger.warning(f"KPI Calc Failed: {e}")
-                kpis.update({'understeer_grad':0.0, 'yaw_gain':0.0, 'steering_rms':0.0})
+                kpis.update({'understeer_grad':0.0, 'yaw_gain':0.0, 'steering_rms':0.0, 'stability_index':0.0, 'response_lag':0.0})
         else:
-            kpis.update({'understeer_grad':0.0, 'yaw_gain':0.0, 'steering_rms':0.0})
+            kpis.update({'understeer_grad':0.0, 'yaw_gain':0.0, 'steering_rms':0.0, 'stability_index':0.0, 'response_lag':0.0})
 
         return kpis

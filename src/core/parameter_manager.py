@@ -1,6 +1,7 @@
 import os
 import shutil
 import logging
+import re
 from typing import Dict
 
 logger = logging.getLogger(__name__)
@@ -11,6 +12,7 @@ class ParameterManager:
     1. Read the 'Master' TestRun/InfoFile template.
     2. Inject optimization parameters (Vector x) into the text.
     3. Generate a unique, temporary TestRun file for the simulation.
+    4. [Gen 2.0] Inject Driver Limitations (Delay/Filtering).
     """
     def __init__(self, template_dir: str, work_dir: str):
         self.template_dir = template_dir
@@ -29,23 +31,35 @@ class ParameterManager:
             with open(template_path, 'r') as f:
                 content = f.read()
 
-            # --- The "Injection" Logic ---
-            # This replaces placeholders or specific keys in the text file.
-            # Strategy: Look for specific lines or use a placeholder syntax like {{stiffness_front}}
+            # --- GEN 2.0: DRIVER DEGRADATION INJECTION ---
+            # If we want to simulate a "Human" driver, we can inject specific 
+            # Manuever parameters here if they aren't in the optim params.
+            # For now, we assume the 'params' dict might contain 'Driver.Delay' etc.
+            
+            # --- HYBRID INJECTION LOGIC ---
+            # 1. Bracket Method (<k_spring_f>): Good for custom templates.
+            # 2. Key-Value Method (Spring.Front = X): Good for raw CM exports.
             
             for key, value in params.items():
-                # Example: Replace "Spring.Front = 50000" with "Spring.Front = <new_value>"
-                # A simple replacement approach (assuming you put placeholders in your template):
-                # content = content.replace(f"{{{{{key}}}}}", str(value))
-                
-                # A robust key-value replacement approach (if no placeholders):
-                # Search for "Key = Val" and replace it.
-                # Here we stick to a simple placeholder logic for clarity:
+                # Method 1: Explicit Placeholder (<key>)
                 placeholder = f"<{key}>" 
                 if placeholder in content:
                     content = content.replace(placeholder, str(value))
+                
+                # Method 2: Direct Infofile Replacement
+                # Regex looks for "Key = Number" or "Key = [Number]"
+                # This allows you to use a RAW export from CarMaker as a template!
                 else:
-                    logger.warning(f"Parameter placeholder {placeholder} not found in template.")
+                    # Pattern: Start of line or whitespace + Key + whitespace + = + whitespace + number
+                    # We utilize regex to safely find and replace the value
+                    # Example: "Spring.Front = 50000" -> "Spring.Front = 65000"
+                    pattern = rf"({re.escape(key)}\s*=\s*)([\d\.\-eE]+)"
+                    if re.search(pattern, content):
+                        content = re.sub(pattern, f"\\g<1>{value}", content)
+                    else:
+                        # Only warn if we really expected it (usually we just use what matches)
+                        # logger.debug(f"Parameter {key} not found via Regex or Placeholder.")
+                        pass
 
             # Write the new physical file
             # Ensure the directory exists
@@ -54,7 +68,7 @@ class ParameterManager:
             with open(new_run_path, 'w') as f:
                 f.write(content)
             
-            logger.debug(f"Generated configuration for {run_id}")
+            # logger.debug(f"Generated configuration for {run_id}")
             return new_run_name
 
         except Exception as e:

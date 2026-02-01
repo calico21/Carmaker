@@ -4,7 +4,7 @@ import logging
 import time
 import numpy as np
 
-# Patch for library compatibility
+# Patch for library compatibility (Fixes 'np.bool' error in newer numpy versions)
 np.bool = np.bool_
 
 # Add project root to path
@@ -16,8 +16,10 @@ from src.core.orchestrator import OptimizationOrchestrator
 # --- CONFIGURATION ---
 STUDY_NAME = "FSAE_Championship_Run_v1"
 N_TRIALS = 100
-N_WORKERS = 4  # Set this to the number of CarMaker licenses you have available
-CM_EXE_PATH = r"C:\IPG\carmaker\win64-13.0\bin\CM.exe" # <--- VERIFY YOUR VERSION (13.0 vs 14.1)
+N_WORKERS = 1  # Set this to the number of CarMaker licenses you have available
+
+# UPDATED PATH: Pointing to your specific 14.1 executable
+CM_EXE_PATH = r"C:\IPG\carmaker\win64-14.1\bin\CarMaker.win64.exe"
 
 # Paths
 DB_PATH = os.path.join(PROJECT_ROOT, "data", "optimization.db")
