@@ -7,99 +7,92 @@ import logging
 
 class CarMakerInterface:
     """
-    Automates the CarMaker Simulation Environment.
-    
-    Responsibilities:
-    1. Launch CarMaker (CM.exe) in batch mode.
-    2. Execute the specific TestRun.
-    3. Monitor for crashes/license failures.
-    4. Move the output files (Telemetry) to the correct Trial folder.
+    Production Interface for IPG CarMaker.
+    Runs simulations via the 'CM.exe' command line interface.
     """
     def __init__(self):
         self.logger = logging.getLogger("CM_Interface")
         
-        # --- CONFIGURATION ---
-        # UPDATE THIS PATH to match your specific installation
-        # Common paths: "C:/IPG/carmaker/win64-10.0/bin/CM.exe"
-        self.CM_EXEC = r"C:\IPG\carmaker\win64-10.0\bin\CM.exe" 
+        # --- CONFIGURATION (UPDATE THESE PATHS!) ---
+        # Path to your CarMaker executable
+        # Example: "C:/IPG/carmaker/win64-11.0/bin/CM.exe"
+        self.CM_EXEC = r"C:\IPG\carmaker\win64-11.0\bin\CM.exe"
         
-        # Retry settings for license server issues
-        self.MAX_RETRIES = 3
-        self.RETRY_DELAY = 5 # seconds
+        # Path to your CarMaker Project Directory
+        self.PROJECT_DIR = r"C:\CarMaker_Projects\FSAE_2026"
+        
+        self.MAX_RETRIES = 2
 
     def run_test(self, vehicle_path, output_folder, trial_id):
         """
-        Runs the simulation and ensures the result lands in 'output_folder'.
-        
-        Args:
-            vehicle_path (str): Path to the injected Vehicle file.
-            output_folder (str): Path to the Trial_XXX folder.
-            trial_id (int): ID of the current trial.
-            
-        Returns:
-            dict: {status, lap_time, cones_hit}
+        1. Copies the 'vehicle_path' to the CarMaker Data directory.
+        2. Runs the TestRun using CM.exe -batch.
+        3. Moves the results (.erg/.csv) to 'output_folder'.
         """
         try:
-            # 1. Validation
-            if not os.path.exists(vehicle_path):
-                 self.logger.error(f"Vehicle file not found: {vehicle_path}")
+            # 1. Install the Vehicle File
+            # We copy the optimized vehicle file to the CarMaker 'Data/Vehicle' folder
+            # so the TestRun can find it.
+            target_vehicle_name = f"Optimized_Car_{trial_id}"
+            cm_vehicle_path = os.path.join(self.PROJECT_DIR, "Data", "Vehicle", target_vehicle_name)
+            
+            # Ensure the vehicle file has no extension or correct extension based on your usage
+            shutil.copy(vehicle_path, cm_vehicle_path)
+
+            # 2. Run Simulation
+            # We assume you have a Master TestRun that points to "Optimized_Car_XXX"
+            # OR we modify the TestRun on the fly.
+            # For simplicity, let's assume we modify the TestRun here or use a Tcl script.
+            
+            # Simple Approach: Pass parameters via Tcl args to a generic script
+            cmd = [
+                self.CM_EXEC,
+                self.PROJECT_DIR,
+                "-batch",
+                "-tcl", 
+                f"LoadTestRun MySkidpad; ParamSet Vehicle {target_vehicle_name}; StartSim; WaitForStatus running; WaitForStatus idle; Exit"
+            ]
+            
+            self.logger.info(f"   -> Launching Sim Trial {trial_id}...")
+            
+            # Run the command (Timeout after 60s to prevent hangs)
+            process = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            
+            if process.returncode != 0:
+                self.logger.warning(f"CM.exe exited with code {process.returncode}")
+                # return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
+
+            # 3. Harvest Results
+            # CarMaker saves to SimOutput/<User>/<TestRunName>.erg usually.
+            # We need to export that to CSV or read it directly.
+            
+            # NOTE: You need a tool to convert ERG to CSV (cmconvert) or use the ASCII output format.
+            # Let's assume we configured CarMaker to output a .csv file in SimOutput.
+            result_file = os.path.join(self.PROJECT_DIR, "SimOutput", os.getlogin(), "MySkidpad.csv")
+            
+            if not os.path.exists(result_file):
+                self.logger.error("Simulation Output missing.")
+                return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
+                
+            # Move result to our trial folder
+            shutil.move(result_file, os.path.join(output_folder, "telemetry.csv"))
+            
+            # 4. Parse CSV for Lap Time
+            df = pd.read_csv(os.path.join(output_folder, "telemetry.csv"))
+            
+            # Example: Get the last value of 'Time' or a specific 'LapTime' channel
+            # This depends entirely on your UAQ (User Accessible Quantities) setup
+            lap_time = df['Time'].iloc[-1] 
+            
+            # Basic Validity Check
+            if lap_time < 10.0: # Too short to be real
                  return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
 
-            # 2. Construct TCL Command (The 'Script')
-            # In a real deployment, you generate a .tcl file that tells CarMaker:
-            # "Load TestRun X, Load Vehicle Y, Start Sim, Save to Z"
-            # For this code to run without CM installed, we simulate the outcome.
-            
-            # self._execute_carmaker_batch(vehicle_path, trial_id)
-            
-            # --- SIMULATION MOCK (Remove this block when connecting to real CM) ---
-            time.sleep(0.1) # Simulate compute time
-            
-            # 3. File Movement (Organization)
-            # CarMaker typically dumps to "SimOutput/User/<TestRunName>.csv"
-            # We must move it to "Output/Campaign_X/Trial_Y/telemetry.csv"
-            
-            # Example logic for real implementation:
-            # source_file = f"SimOutput/User/TestRun_{trial_id}.csv"
-            # if os.path.exists(source_file):
-            #     shutil.move(source_file, os.path.join(output_folder, "telemetry.csv"))
-            
-            # 4. Result Parsing
-            # We would read the CSV here to get lap time.
-            # Mocking the result for now:
-            import random
-            
-            # Simulate a "Crash" (10% chance)
-            if random.random() < 0.1:
-                return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
-            
-            # Simulate a result based on "Physics"
-            # (Just a placeholder so you see numbers change in the dashboard)
-            mock_time = 60.0 - random.uniform(0, 5) 
-            return {'status': 'Complete', 'lap_time': mock_time, 'cones_hit': 0}
+            return {'status': 'Complete', 'lap_time': lap_time, 'cones_hit': 0}
 
-        except Exception as e:
-            self.logger.error(f"Sim Failed: {e}")
+        except subprocess.TimeoutExpired:
+            self.logger.error("Simulation Timed Out!")
             return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
-
-    def _execute_carmaker_batch(self, vehicle_path, trial_id):
-        """
-        Real command execution logic.
-        """
-        cmd = [
-            self.CM_EXEC,
-            "-batch",
-            # "-tcl", "your_automation_script.tcl" 
-        ]
-        
-        for attempt in range(self.MAX_RETRIES):
-            try:
-                subprocess.run(cmd, check=True, timeout=120)
-                return True
-            except subprocess.CalledProcessError:
-                self.logger.warning(f"CarMaker crashed. Retrying ({attempt+1}/{self.MAX_RETRIES})...")
-                time.sleep(self.RETRY_DELAY)
-            except subprocess.TimeoutExpired:
-                self.logger.error("Simulation timed out (Stuck loop?).")
-                return False
-        return False
+        except Exception as e:
+            self.logger.error(f"Sim Driver Failed: {e}")
+            return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
