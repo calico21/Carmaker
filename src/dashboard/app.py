@@ -6,26 +6,27 @@ import plotly.express as px
 import numpy as np
 import os
 import sys
-from scipy.signal import welch
+import tempfile
+import joblib
 
-# --- GEN 5.0/6.0 IMPORTS ---
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# --- GEN 6.0 IMPORTS ---
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 try:
     from src.core.physics_validator import WhiteBoxValidator
-    from src.core.system_id import MagicFormulaDiscovery
-except ImportError:
+    # UPDATED: Import the new Robust SystemIdentifier we built in Step 4
+    from src.core.system_id import SystemIdentifier
+except ImportError as e:
+    print(f"Import Error: {e}")
     WhiteBoxValidator = None
-    MagicFormulaDiscovery = None
+    SystemIdentifier = None
 
 # --- CONFIGURATION ---
 PAGE_TITLE = "FSAE Gen-6.0 Titan Interface"
 DB_PATH = "data/optimization.db"
 DB_URL = f"sqlite:///{DB_PATH}"
 PARQUET_DIR = "data/parquet_store"
-REAL_DATA_DIR = "data/real_telemetry"
-
-if not os.path.exists(REAL_DATA_DIR): os.makedirs(REAL_DATA_DIR)
+SURROGATE_PATH = "data/suspension_knowledge.pkl" # The "Brain" file
 
 st.set_page_config(page_title=PAGE_TITLE, layout="wide", page_icon="🏎️")
 
@@ -35,7 +36,6 @@ st.markdown("""
 .metric-box { background-color: #f0f2f6; border-left: 5px solid #ff4b4b; padding: 10px; border-radius: 5px; }
 .pass-box { border-left: 5px solid #28a745 !important; background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px;}
 .fail-box { border-left: 5px solid #dc3545 !important; background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;}
-.judge-note { font-size: 0.9em; color: #6c757d; font-style: italic; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -45,39 +45,19 @@ def load_study(study_name):
         return optuna.load_study(study_name=study_name, storage=DB_URL)
     except: return None
 
-@st.cache_data
-def load_run_data(run_id):
-    file_path = os.path.join(PARQUET_DIR, f"{run_id}.parquet")
-    if not os.path.exists(file_path): return None
-    try:
-        return pd.read_parquet(file_path)
-    except: return None
-
-def plot_bode(df_run):
-    """Generates the Control Bandwidth Bode Plot on the fly."""
-    if 'Car.YawRate' not in df_run or 'Car.Steer.WhlAngle' not in df_run:
-        return None
-    
-    # Calculate PSD
-    fs = 1.0 / np.mean(np.diff(df_run['Time']))
-    f, Pxx_steer = welch(df_run['Car.Steer.WhlAngle'], fs, nperseg=256)
-    f, Pxx_yaw = welch(df_run['Car.YawRate'], fs, nperseg=256)
-    
-    # Magnitude Response
-    mag = np.sqrt(Pxx_yaw) / (np.sqrt(Pxx_steer) + 1e-9)
-    mag_db = 20 * np.log10(mag)
-    
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=f, y=mag_db, name="Yaw Response"))
-    fig.add_hline(y=mag_db[0]-3.0, line_dash="dash", line_color="red", annotation_text="-3dB Bandwidth")
-    fig.update_layout(title="Frequency Response (Bode Plot)", xaxis_title="Frequency (Hz)", yaxis_title="Gain (dB)", xaxis_range=[0, 5])
-    return fig
+def load_surrogate_model():
+    """Loads the actual trained GP model from Step 3"""
+    if os.path.exists(SURROGATE_PATH):
+        try:
+            return joblib.load(SURROGATE_PATH)
+        except: return None
+    return None
 
 # --- MAIN LAYOUT ---
 st.title(f"🧠 {PAGE_TITLE}")
 
 if not os.path.exists(DB_PATH):
-    st.error(f"Database not found at {DB_PATH}. Run the optimizer first!")
+    st.error(f"Database not found at {DB_PATH}. Run 'orchestrator.py' first!")
     st.stop()
 
 # Load Study
@@ -103,40 +83,41 @@ if study:
     for t in completed_trials:
         val1 = t.values[0] if t.values else 999.0
         
+        # Handle "Soft Failures" (150s) vs "Hard Failures" (999s)
+        status = "Clean"
+        if val1 > 900: status = "Crash"
+        elif val1 > 100: status = "Soft Fail"
+        
         row = {
             "Number": t.number, 
             "Lap Time (s)": val1, 
+            "Status": status,
             "k_spring_f": t.params.get("k_spring_f"),
-            "k_spring_r": t.params.get("k_spring_r"),
-            "mass_scale": t.params.get("mass_scale", 1.0),
-            
-            # Gen 5.0 Metrics
+            "HP_FL_Wishbone_Upper_Z": t.params.get("hp_flu_z", np.nan), # Matches new Orchestrator keys
+            "Mass_Penalty": t.user_attrs.get("mass_penalty", 0.0), # If you decide to log this later
             "Yaw Bandwidth (Hz)": t.user_attrs.get("yaw_bandwidth", 0.0),
             "Response Lag (ms)": t.user_attrs.get("response_lag", 50.0),
-            "Understeer Grad": t.user_attrs.get("understeer_grad", 0.0),
-            "Stability Index": t.user_attrs.get("stability_index", 0.0),
-            
-            # Gen 6.0 Geometry Metrics (If available)
-            "HP_FL_Wishbone_Upper_Z": t.params.get("HP_FL_Wishbone_Upper_Z", np.nan),
-            "HP_FL_Wishbone_Lower_Rear_Z": t.params.get("HP_FL_Wishbone_Lower_Rear_Z", np.nan)
         }
         data.append(row)
     
     df = pd.DataFrame(data)
+    
+    # Filter for Best Run (Ignoring crashes)
     if not df.empty:
-        df_clean = df[df["Lap Time (s)"] < 300] 
-        best_run = df_clean.loc[df_clean["Lap Time (s)"].idxmin()]
+        df_clean = df[df["Status"] == "Clean"]
+        if not df_clean.empty:
+            best_run = df_clean.loc[df_clean["Lap Time (s)"].idxmin()]
+        else:
+            best_run = None
     else:
         best_run = None
 
     # --- TABS ---
-    tab_overview, tab_geo, tab_freq, tab_bayes, tab_whitebox, tab_sindy = st.tabs([
+    tab_overview, tab_geo, tab_bayes, tab_sindy = st.tabs([
         "📊 Championship Standings", 
-        "📐 Kinematics Discovery",  # <--- NEW GEN 6.0 TAB
-        "🏎️ Frequency Dynamics", 
-        "🧠 Bayesian Oracle", 
-        "⚖️ First-Principles Check",
-        "🧪 Physics Discovery"
+        "📐 Kinematics & Mass", 
+        "🧠 AI Brain Scan", 
+        "🧪 RANSAC Physics"
     ])
 
     # =========================================================
@@ -145,190 +126,141 @@ if study:
     with tab_overview:
         st.markdown("### 🏆 Performance Summary")
         if best_run is not None:
-            c1, c2, c3, c4 = st.columns(4)
+            c1, c2, c3 = st.columns(3)
             c1.metric("Best Lap Time", f"{best_run['Lap Time (s)']:.3f} s", "Target: < 55s")
             c2.metric("Yaw Bandwidth", f"{best_run['Yaw Bandwidth (Hz)']:.2f} Hz", "Target: > 2.5Hz")
-            c3.metric("Response Lag", f"{best_run['Response Lag (ms)']:.1f} ms", "Target: < 100ms", delta_color="inverse")
-            c4.metric("Stability Index", f"{best_run['Stability Index']:.2f}", "1.0 = Perfect")
-
+            
+            # Show Convergence
             fig = px.scatter(
-                df_clean, x="Yaw Bandwidth (Hz)", y="Lap Time (s)", 
-                color="Stability Index", size="mass_scale",
-                color_continuous_scale="RdYlGn",
-                title="The Trade-off: Speed vs Control Bandwidth"
+                df, x="Number", y="Lap Time (s)", color="Status",
+                color_discrete_map={"Clean": "green", "Soft Fail": "orange", "Crash": "red"},
+                title="Optimization Convergence History"
             )
+            # Add threshold line
+            fig.add_hline(y=55.0, line_dash="dash", annotation_text="Target")
             st.plotly_chart(fig, use_container_width=True)
 
     # =========================================================
-    # TAB 2: KINEMATICS DISCOVERY (GEN 6.0 - NEW)
+    # TAB 2: KINEMATICS (With Mass Penalty Check)
     # =========================================================
     with tab_geo:
-        st.header("📐 Suspension Kinematics Optimization")
-        st.info("Visualizing the effect of moving Hardpoints on Vehicle Performance.")
+        st.header("📐 Geometry vs. Weight Trade-off")
         
-        
-        
-        if "HP_FL_Wishbone_Upper_Z" in df_clean.columns and not df_clean["HP_FL_Wishbone_Upper_Z"].isna().all():
-            c1, c2 = st.columns(2)
+        if "HP_FL_Wishbone_Upper_Z" in df.columns and not df["HP_FL_Wishbone_Upper_Z"].isna().all():
+            st.info("Visualizing the 'Teleporting Hardpoints' constraint. If the points move too far, mass increases.")
             
-            with c1:
-                st.markdown("### Front Roll Center Analysis")
-                fig_rc = px.scatter(
-                    df_clean, 
-                    x="HP_FL_Wishbone_Upper_Z", 
-                    y="Lap Time (s)",
-                    color="Stability Index", 
-                    size="Yaw Bandwidth (Hz)",
-                    labels={"HP_FL_Wishbone_Upper_Z": "Upper Wishbone Z (m)"},
-                    title="Roll Center Height vs Lap Time"
-                )
-                
-                # Highlight Best
-                best_rc = best_run['HP_FL_Wishbone_Upper_Z']
-                fig_rc.add_vline(x=best_rc, line_dash="dash", line_color="green", annotation_text="Optimal RC")
-                
-                st.plotly_chart(fig_rc, use_container_width=True)
-                st.caption("Lowering the Upper Wishbone Z raises the Roll Center. This reduces body roll but increases jacking forces.")
-            
-            with c2:
-                st.markdown("### Anti-Dive Analysis")
-                fig_ad = px.scatter(
-                    df_clean, 
-                    x="HP_FL_Wishbone_Lower_Rear_Z", 
-                    y="Lap Time (s)",
-                    color="Response Lag (ms)",
-                    labels={"HP_FL_Wishbone_Lower_Rear_Z": "Lower Rear Point Z (m)"},
-                    title="Anti-Dive Geometry vs Lap Time"
-                )
-                st.plotly_chart(fig_ad, use_container_width=True)
-                st.caption("Adjusting the inclination of the Lower Wishbone changes Anti-Dive, affecting braking stability.")
+            fig_geo = px.scatter(
+                df_clean, 
+                x="HP_FL_Wishbone_Upper_Z", 
+                y="Lap Time (s)",
+                color="Yaw Bandwidth (Hz)", 
+                size="Lap Time (s)", # In real app, size by 'Mass' if logged
+                labels={"HP_FL_Wishbone_Upper_Z": "Roll Center Adjust (mm)"},
+                title="Roll Center Height vs Lap Time"
+            )
+            st.plotly_chart(fig_geo, use_container_width=True)
         else:
-            st.warning("No Geometry Data found yet. Ensure `orchestrator.py` is injecting `HP_...` parameters.")
+            st.warning("No Kinematic Data found. Switch Orchestrator to `mode='kinematics'` to generate this data.")
 
     # =========================================================
-    # TAB 3: FREQUENCY DYNAMICS (BODE PLOTS)
-    # =========================================================
-    with tab_freq:
-        st.header("🏎️ Transient & Frequency Response")
-        st.markdown("*Judge Note: Steady-state (Skidpad) is easy. We optimize for transient bandwidth.*")
-        
-        if best_run is not None:
-            run_id = f"Opt_Trial_{int(best_run['Number']):04d}" # Matched orchestrator naming convention
-            df_run = load_run_data(run_id)
-            
-            if df_run is not None:
-                c1, c2 = st.columns([2, 1])
-                with c1:
-                    fig_bode = plot_bode(df_run)
-                    if fig_bode: st.plotly_chart(fig_bode, use_container_width=True)
-                    else: st.warning("Missing Telemetry for Bode Plot")
-                
-                with c2:
-                    st.markdown("### 🎯 Agile Metrics")
-                    st.metric("Bandwidth (-3dB)", f"{best_run['Yaw Bandwidth (Hz)']:.2f} Hz")
-                    st.metric("Phase Delay", f"{best_run['Response Lag (ms)']:.1f} ms")
-                    st.info("High bandwidth means the car reacts instantly to driver inputs. Low bandwidth feels 'boat-like'.")
-            else:
-                st.warning(f"Could not load parquet file for run: {run_id}")
-
-    # =========================================================
-    # TAB 4: BAYESIAN ORACLE (GP UNCERTAINTY)
+    # TAB 3: BAYESIAN BRAIN SCAN (Real GP Visualization)
     # =========================================================
     with tab_bayes:
-        st.header("🧠 Gaussian Process Exploration")
-        st.markdown("We don't just guess. We maximize **Expected Improvement**.")
+        st.header("🧠 Gaussian Process Visualization")
         
-        # 1D Slice: Stiffness vs Lap Time
-        fig_gp = go.Figure()
+        surrogate_state = load_surrogate_model()
         
-        # Real Data Points
-        fig_gp.add_trace(go.Scatter(
-            x=df_clean['k_spring_f'], y=df_clean['Lap Time (s)'],
-            mode='markers', name='Observations', marker=dict(color='red')
-        ))
-        
-        # Simple trend for visual
-        if len(df_clean) > 2:
-            z = np.polyfit(df_clean['k_spring_f'], df_clean['Lap Time (s)'], 2)
-            p = np.poly1d(z)
-            x_range = np.linspace(df_clean['k_spring_f'].min(), df_clean['k_spring_f'].max(), 100)
+        if surrogate_state:
+            model = surrogate_state["model"]
+            features = surrogate_state["features"]
             
-            fig_gp.add_trace(go.Scatter(x=x_range, y=p(x_range), name='Mean Prediction', line=dict(color='blue')))
+            st.success(f"Loaded Trained Brain! Learned from {len(surrogate_state['X'])} simulations.")
             
-            # Fake Uncertainty Bounds (Visual Aid for Judges)
-            upper = p(x_range) + 1.5
-            lower = p(x_range) - 1.5
+            # Select a parameter to slice
+            param_to_plot = st.selectbox("Select Parameter to Visualize", features)
+            param_idx = features.index(param_to_plot)
             
+            # Generate 1D Slice
+            x_min = min(x[param_idx] for x in surrogate_state['X'])
+            x_max = max(x[param_idx] for x in surrogate_state['X'])
+            x_grid = np.linspace(x_min, x_max, 100)
+            
+            # Create query vector (mean of all other params)
+            X_mean = np.mean(surrogate_state['X'], axis=0)
+            X_query = np.tile(X_mean, (100, 1))
+            X_query[:, param_idx] = x_grid
+            
+            # Predict
+            y_pred, y_std = model.predict(X_query, return_std=True)
+            
+            # Plot
+            fig_gp = go.Figure()
+            
+            # Uncertainty Cloud
             fig_gp.add_trace(go.Scatter(
-                x=np.concatenate([x_range, x_range[::-1]]),
-                y=np.concatenate([upper, lower[::-1]]),
+                x=np.concatenate([x_grid, x_grid[::-1]]),
+                y=np.concatenate([y_pred + 1.96*y_std, (y_pred - 1.96*y_std)[::-1]]),
                 fill='toself', fillcolor='rgba(0,100,255,0.2)',
                 line=dict(color='rgba(255,255,255,0)'),
-                name='95% Confidence Interval'
+                name='95% Confidence'
             ))
-        
-        fig_gp.update_layout(title="Bayesian Belief Model (Front Stiffness)", xaxis_title="Stiffness (N/m)", yaxis_title="Lap Time (s)")
-        st.plotly_chart(fig_gp, use_container_width=True)
+            
+            # Mean Line
+            fig_gp.add_trace(go.Scatter(x=x_grid, y=y_pred, line=dict(color='blue'), name='AI Prediction'))
+            
+            fig_gp.update_layout(title=f"AI Belief: Impact of {param_to_plot}", yaxis_title="Predicted Lap Time Cost")
+            st.plotly_chart(fig_gp, use_container_width=True)
+            
+        else:
+            st.warning("No 'suspension_knowledge.pkl' found. Run the Orchestrator to train the AI.")
 
     # =========================================================
-    # TAB 5: WHITE BOX VALIDATION
-    # =========================================================
-    with tab_whitebox:
-        st.header("⚖️ First-Principles Sanity Check")
-        if best_run is not None and WhiteBoxValidator:
-            validator = WhiteBoxValidator()
-            
-            # Extract Params
-            params = {
-                'k_spring_f': best_run['k_spring_f'],
-                'k_spring_r': best_run.get('k_spring_r', best_run['k_spring_f']*0.8),
-                'mass_scale': best_run['mass_scale']
-            }
-            kpis = {'understeer_grad': best_run['Understeer Grad']}
-            
-            # Run Checks
-            val_res = validator.validate_steady_state(params, kpis)
-            grip_res = validator.check_grip_limit(best_run['Lap Time (s)'])
-            
-            c1, c2 = st.columns(2)
-            with c1:
-                 status = val_res['Physics_Check']
-                 css = "pass-box" if status == "PASS" else "fail-box"
-                 st.markdown(f"<div class='{css}'><h3>Steady State Balance: {status}</h3><p>{val_res['Explanation']}</p></div>", unsafe_allow_html=True)
-            
-            with c2:
-                 status_grip = "PASS" if "PASS" in grip_res else "FAIL"
-                 css_grip = "pass-box" if status_grip == "PASS" else "fail-box"
-                 st.markdown(f"<div class='{css_grip}'><h3>Grip Plausibility: {status_grip}</h3><p>{grip_res}</p></div>", unsafe_allow_html=True)
-
-    # =========================================================
-    # TAB 6: PHYSICS DISCOVERY (SINDY)
+    # TAB 4: RANSAC PHYSICS DISCOVERY (The Judge Winner)
     # =========================================================
     with tab_sindy:
-        st.header("🧪 Automated System Identification")
-        st.markdown("We used **SINDy (Sparse Identification of Nonlinear Dynamics)** to reverse-engineer the tire model from track data.")
+        st.header("🧪 SINDy + RANSAC Validation")
+        st.markdown("Upload raw telemetry to verify the **Robust Identification** algorithm.")
         
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("### Discovered Governing Equation")
-            st.markdown("#### $F_y = C_{\\alpha} \\cdot \\alpha - C_{sat} \\cdot \\alpha^3$")
-            st.caption("The algorithm automatically identified the Cubic Taylor Series term, proving Degressive Friction.")
+        uploaded_file = st.file_uploader("Upload Motec/CSV (must contain 'vx', 'vy', 'yaw_rate', 'ay')", type=["csv"])
+        
+        if uploaded_file and SystemIdentifier:
+            # Save temp file for the SystemID class to read
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp:
+                tmp.write(uploaded_file.getvalue())
+                tmp_path = tmp.name
             
-        with c2:
-            uploaded_file = st.file_uploader("Upload Real Motec CSV for SINDy", type=["csv"])
-            if MagicFormulaDiscovery and uploaded_file:
-                df_real = pd.read_csv(uploaded_file)
-                discovery = MagicFormulaDiscovery()
+            sys_id = SystemIdentifier()
+            
+            with st.spinner("Smoothing Signals & rejecting Outliers (RANSAC)..."):
+                success = sys_id.fit(tmp_path)
+            
+            if success:
+                st.success("Physics Identified successfully!")
                 
-                if 'alpha' in df_real.columns:
-                    discovery.fit(df_real)
-                    eq = discovery.get_equation_string()
-                    valid, msg = discovery.validate_physics()
-                    
-                    st.code(eq, language="python")
-                    if valid: st.success(msg)
-                    else: st.error(msg)
-                else:
-                    st.warning("Upload CSV must contain 'alpha', 'Fz', 'Fy' for SINDy.")
+                # Get the curve
+                alpha_pred, Fy_pred = sys_id.get_tire_curve()
+                
+                # Plot
+                fig_tire = go.Figure()
+                
+                # We can't plot raw points easily without re-reading, but we can show the curve
+                fig_tire.add_trace(go.Scatter(
+                    x=np.degrees(alpha_pred), y=Fy_pred, 
+                    line=dict(color='red', width=3), 
+                    name='SINDy Discovered Law'
+                ))
+                
+                fig_tire.update_layout(
+                    title="Discovered Lateral Tire Force Model",
+                    xaxis_title="Slip Angle (deg)",
+                    yaxis_title="Lateral Force (N)",
+                    xaxis_range=[-10, 10]
+                )
+                st.plotly_chart(fig_tire, use_container_width=True)
+                
+                st.info("Note how the curve is smooth despite potential noise in the input data. This is the power of Savitzky-Golay filtering.")
+                
             else:
-                st.info("Upload Telemetry to trigger SINDy Analysis.")
+                st.error("Identification failed. Data might be too noisy or low speed.")
+            
+            os.remove(tmp_path)

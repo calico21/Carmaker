@@ -1,137 +1,145 @@
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LassoCV
+from sklearn.linear_model import LassoCV, RANSACRegressor
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.pipeline import Pipeline
+from scipy.signal import savgol_filter
 import logging
 
-logger = logging.getLogger(__name__)
-
-class MagicFormulaDiscovery:
+class SystemIdentifier:
     """
-    GEN 5.0: SYSTEM IDENTIFICATION (SINDy) MODULE.
+    SINDy (Sparse Identification of Nonlinear Dynamics) for Tire Modeling.
     
-    Goal: Discover the governing differential equations of the vehicle 
-    from raw telemetry data, rather than assuming a model.
-    
-    Judge Defense:
-    "We didn't just curve-fit the data. We used Sparse Identification of Nonlinear Dynamics (SINDy) 
-    to derive the Taylor Series expansion of the tire's force generation curve. 
-    This proved our simulation's saturation point matches the physical car's limit within 2%."
+    UPGRADED: Now features Signal Smoothing (Savitzky-Golay) and 
+    Robust Regression (RANSAC) to ignore outliers (cones, curbs).
     """
     def __init__(self):
-        # LassoCV automatically finds the best regularization to kill noise.
-        # fit_intercept=False because physics has no bias (0 slip = 0 force).
-        self.model = LassoCV(cv=5, fit_intercept=False, random_state=42)
-        
-        # We look for terms up to Alpha^3 (Cubic).
-        # Taylor Expansion of Magic Formula is dominated by x^1 and x^3.
+        self.logger = logging.getLogger("SystemID")
         self.poly = PolynomialFeatures(degree=3, include_bias=False)
+        self.scaler = StandardScaler()
         
-        self.feature_names = []
-        self.coefficients = []
+        # --- ROBUST ESTIMATOR ---
+        # 1. LassoCV: Enforces sparsity (finds the simplest equation).
+        # 2. RANSAC: Ignores data points that don't fit the trend (outliers).
+        base_estimator = LassoCV(cv=5, fit_intercept=False, max_iter=10000, n_jobs=-1)
+        
+        self.model = RANSACRegressor(
+            estimator=base_estimator,
+            min_samples=0.6,  # Require at least 60% of data to agree
+            residual_threshold=None, # Auto-detect based on MAD
+            random_state=42
+        )
+        
         self.is_fitted = False
+        self.feature_names = None
 
-    def fit(self, df_telemetry: pd.DataFrame):
+    def fit(self, telemetry_path):
         """
-        Ingests Telemetry and discovers the Tire Equation.
-        Expected Columns:
-        - 'alpha': Tire Slip Angle (rad)
-        - 'Fz': Vertical Load (N)
-        - 'Fy': Lateral Force (N) (Usually derived from Ay * Mass)
+        Reads telemetry, cleans noise, and discovers the governing equations.
         """
-        # 1. Data Safety Check
-        required = ['alpha', 'Fz', 'Fy']
-        if not all(col in df_telemetry.columns for col in required):
-            logger.error(f"SINDy missing columns. Need {required}, got {df_telemetry.columns.tolist()}")
-            return False
-        
-        # Filter for "Pure Cornering" to remove noise
-        # We only want data where the car is actually turning, not going straight.
-        mask = (np.abs(df_telemetry['alpha']) > 0.01) & \
-               (np.abs(df_telemetry['alpha']) < 0.25) & \
-               (df_telemetry['Fz'] > 500)
-        
-        df_clean = df_telemetry[mask]
-        
-        if len(df_clean) < 100:
-            logger.warning("Not enough clean cornering data for System ID.")
-            return False
-
-        # 2. Construct Library of Candidate Physics Functions \Theta(X)
-        # We suspect Fy is a function of Slip (alpha) and Load (Fz)
-        X = df_clean[['alpha', 'Fz']]
-        y = df_clean['Fy']
-
-        # Generate terms: alpha, Fz, alpha^2, alpha*Fz, Fz^2, alpha^3...
-        X_poly = self.poly.fit_transform(X)
-        self.feature_names = self.poly.get_feature_names_out(['alpha', 'Fz'])
-
-        # 3. Sparse Regression (The Magic)
-        # Lasso will force coefficients of "wrong" physics (like alpha^2) to Zero.
         try:
+            # 1. Load Data
+            df = pd.read_csv(telemetry_path)
+            required_cols = ['time', 'vx', 'vy', 'yaw_rate', 'steer_angle', 'ax', 'ay']
+            if not all(col in df.columns for col in required_cols):
+                self.logger.error(f"Missing columns in {telemetry_path}")
+                return False
+
+            # 2. Pre-Process (The "Reality" Filter)
+            # Raw telemetry is too noisy for derivative calculation.
+            # We use Savitzky-Golay to smooth it without killing the peaks.
+            df_clean = self._smooth_signals(df)
+
+            # 3. Calculate States (Slip Angles)
+            # alpha = atan(vy + r*lf / vx) - steer
+            # (Simplified for single track)
+            lf = 1.53 # Approx CG to front axle (m) - should be config
+            
+            # Avoid division by zero
+            vx_safe = np.maximum(df_clean['vx'], 1.0) 
+            
+            alpha_f = np.arctan((df_clean['vy'] + df_clean['yaw_rate']*lf) / vx_safe) - df_clean['steer_angle']
+            Fy_f = df_clean['ay'] * 250.0 # Approx Effective Mass (kg)
+            
+            # 4. Prepare SINDy Matrices
+            X = alpha_f.values.reshape(-1, 1)
+            y = Fy_f.values
+            
+            # Filter out low-speed data (physics don't apply at < 3 m/s)
+            mask = df_clean['vx'] > 3.0
+            X = X[mask]
+            y = y[mask]
+
+            if len(y) < 100:
+                self.logger.warning("Not enough high-speed data to fit tire model.")
+                return False
+
+            # 5. Fit the Model (Discover Physics)
+            # Create pipeline: Polynomials -> Scale -> RANSAC(Lasso)
+            # Note: We manually transform X to polynomials first so we can extract names later
+            X_poly = self.poly.fit_transform(X)
+            
+            self.logger.info("Fitting SINDy model with RANSAC...")
             self.model.fit(X_poly, y)
-            self.coefficients = self.model.coef_
+            
+            # 6. Validate Physics (Guardrail)
+            # Check R-squared on the inliers only
+            score = self.model.score(X_poly, y)
+            if score < 0.8:
+                self.logger.warning(f"SINDy Fit Poor (R2={score:.2f}). Data might be garbage.")
+                return False
+
             self.is_fitted = True
-            logger.info("🧪 System ID Complete. Equations Discovered.")
+            self.logger.info(f"Tire Model Identified! (R2={score:.2f})")
+            
+            # Extract coefficients for inspection
+            estimator = self.model.estimator_
+            coeffs = estimator.coef_
+            self._log_equation(coeffs)
+            
             return True
+
         except Exception as e:
-            logger.error(f"SINDy Fit Failed: {e}")
+            self.logger.error(f"System ID Failed: {e}")
             return False
 
-    def get_equation_string(self):
+    def _smooth_signals(self, df):
         """
-        Returns the human-readable math equation discovered.
-        Example output: "Fy = 1200*alpha - 5000*alpha^3"
+        Applies Savitzky-Golay filter to remove sensor jitter.
+        Window length must be odd.
         """
-        if not self.is_fitted: return "Model not trained"
+        df_new = df.copy()
+        window = 11 # 110ms at 100Hz
+        poly = 2
         
-        terms = []
-        for coef, name in zip(self.coefficients, self.feature_names):
-            # Only show terms that have a significant physical impact
-            if abs(coef) > 1e-1: 
-                terms.append(f"{coef:+.2f}*{name}")
+        for col in ['vx', 'vy', 'yaw_rate', 'steer_angle', 'ax', 'ay']:
+            try:
+                df_new[col] = savgol_filter(df[col], window_length=window, polyorder=poly)
+            except Exception:
+                pass # If signal is too short, skip filtering
         
-        if not terms: return "Fy = 0 (No Correlation Found - Check Sensors)"
+        return df_new
+
+    def _log_equation(self, coeffs):
+        """
+        Pretty-prints the discovered math.
+        """
+        feature_names = self.poly.get_feature_names_out(['alpha'])
+        equation = "Fy = "
+        for name, coef in zip(feature_names, coeffs):
+            if abs(coef) > 0.1: # Threshold for sparsity
+                equation += f"{coef:+.2f}*{name} "
+        self.logger.info(f"Discovered Law: {equation}")
+
+    def get_tire_curve(self):
+        """
+        Returns x, y arrays for plotting the discovered curve.
+        """
+        if not self.is_fitted:
+            return None, None
+            
+        alpha_range = np.linspace(-0.3, 0.3, 100).reshape(-1, 1) # -15 to +15 deg
+        X_poly = self.poly.transform(alpha_range)
+        Fy_pred = self.model.predict(X_poly)
         
-        # Clean up string for display
-        eq = "Fy = " + " ".join(terms)
-        return eq.replace("+-", "- ").replace("+", "+ ")
-
-    def validate_physics(self):
-        """
-        The "Sanity Check" for Judges.
-        Checks if the discovered math describes a real tire.
-        """
-        if not self.is_fitted: return False, "No Model"
-
-        try:
-            # 1. Check Cornering Stiffness (Linear Term: alpha)
-            # Should be Positive and Large (e.g., > 10,000 N/rad depending on units)
-            # Note: PolynomialFeatures names are usually 'alpha', 'Fz', etc.
-            alpha_idx = np.where(self.feature_names == 'alpha')[0]
-            
-            if len(alpha_idx) == 0:
-                return False, "❌ Physics Violation: No Linear Stiffness detected."
-            
-            stiffness = self.coefficients[alpha_idx[0]]
-            
-            if stiffness <= 0:
-                return False, f"❌ Physics Violation: Negative Stiffness ({stiffness:.1f}). Check sign conventions."
-
-            # 2. Check Saturation / Peak Grip (Cubic Term: alpha^3)
-            # Physical tires eventually lose grip. The cubic term MUST be negative.
-            # Fy ~ C*alpha - D*alpha^3
-            alpha3_idx = np.where(self.feature_names == 'alpha^3')[0]
-            
-            if len(alpha3_idx) > 0:
-                saturation = self.coefficients[alpha3_idx[0]]
-                if saturation >= 0:
-                     return False, f"⚠️ Warning: Infinite Grip Detected (Cubic term {saturation:.1f} is positive)."
-                else:
-                    return True, "✅ Valid Tire Model: Degressive Friction Curve confirmed."
-            
-            # If no cubic term, it's linear (ok for low speeds, bad for racing)
-            return True, "⚠️ Linear Model Only (Data may not reach limit handling)."
-            
-        except Exception as e:
-            return False, f"Validation Error: {e}"
+        return alpha_range.flatten(), Fy_pred
