@@ -94,3 +94,692 @@ KeyError: 'k_spring_f'
 |  49   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
 --------------------------------------------------------------------
 ✅ Optimization Complete.
+📂 Created Campaign Folder: Output\Campaign_2026-02-02_23-54-08
+🧠 Surrogate Warm Start: Loaded 150 prior simulations.
+📂 Output: Output\Campaign_2026-02-02_23-54-08
+--------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |             NOTES              |
+--------------------------------------------------------------------
+|   0   | [92m⭐ NEW BEST[0m |  59.875s   | K_F:55k K_R:34k                |
+|   1   | [92m⭐ NEW BEST[0m |  58.622s   | K_F:42k K_R:77k                |
+|   2   | [92m⭐ NEW BEST[0m |  57.794s   | K_F:68k K_R:32k                |
+|   3   | [0m COMPLETE [0m |  57.987s   | K_F:43k K_R:25k                |
+|   4   | [92m⭐ NEW BEST[0m |  57.555s   | K_F:72k K_R:20k                |
+|   5   | [92m⭐ NEW BEST[0m |  57.092s   | K_F:63k K_R:77k                |
+|   6   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|   7   | [0m COMPLETE [0m |  59.226s   | K_F:71k K_R:78k                |
+|   8   | [92m⭐ NEW BEST[0m |  56.873s   | K_F:21k K_R:62k                |
+|   9   | [0m COMPLETE [0m |  59.290s   | K_F:35k K_R:52k                |
+|  10   | [92m⭐ NEW BEST[0m |  56.313s   | K_F:20k K_R:62k                |
+|  11   | [0m COMPLETE [0m |  59.614s   | K_F:23k K_R:63k                |
+|  12   | [0m COMPLETE [0m |  58.275s   | K_F:20k K_R:62k                |
+|  13   | [0m COMPLETE [0m |  57.694s   | K_F:30k K_R:50k                |
+|  14   | [0m COMPLETE [0m |  56.713s   | K_F:28k K_R:68k                |
+|  15   | [0m COMPLETE [0m |  59.435s   | K_F:29k K_R:69k                |
+|  16   | [0m COMPLETE [0m |  59.962s   | K_F:79k K_R:70k                |
+|  17   | [0m COMPLETE [0m |  57.599s   | K_F:36k K_R:55k                |
+|  18   | [0m COMPLETE [0m |  56.561s   | K_F:27k K_R:47k                |
+|  19   | [0m COMPLETE [0m |  57.128s   | K_F:24k K_R:46k                |
+|  20   | [0m COMPLETE [0m |  59.555s   | K_F:48k K_R:45k                |
+|  21   | [92m⭐ NEW BEST[0m |  56.204s   | K_F:27k K_R:69k                |
+|  22   | [92m⭐ NEW BEST[0m |  55.136s   | K_F:26k K_R:55k                |
+|  23   | [0m COMPLETE [0m |  55.752s   | K_F:34k K_R:56k                |
+|  24   | [0m COMPLETE [0m |  58.289s   | K_F:34k K_R:54k                |
+|  25   | [0m COMPLETE [0m |  57.624s   | K_F:39k K_R:57k                |
+|  26   | [0m COMPLETE [0m |  55.669s   | K_F:31k K_R:71k                |
+|  27   | [0m COMPLETE [0m |  59.772s   | K_F:31k K_R:58k                |
+|  28   | [0m COMPLETE [0m |  56.990s   | K_F:40k K_R:73k                |
+|  29   | [0m COMPLETE [0m |  57.539s   | K_F:47k K_R:42k                |
+|  30   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  31   | [0m COMPLETE [0m |  58.144s   | K_F:27k K_R:72k                |
+|  32   | [0m COMPLETE [0m |  59.720s   | K_F:26k K_R:65k                |
+|  33   | [0m COMPLETE [0m |  56.521s   | K_F:32k K_R:74k                |
+|  34   | [0m COMPLETE [0m |  57.523s   | K_F:37k K_R:66k                |
+|  35   | [0m COMPLETE [0m |  56.134s   | K_F:25k K_R:58k                |
+|  36   | [0m COMPLETE [0m |  56.316s   | K_F:32k K_R:53k                |
+|  37   | [0m COMPLETE [0m |  56.002s   | K_F:24k K_R:58k                |
+|  38   | [0m COMPLETE [0m |  57.930s   | K_F:42k K_R:57k                |
+|  39   | [0m COMPLETE [0m |  56.700s   | K_F:37k K_R:60k                |
+|  40   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  41   | [0m COMPLETE [0m |  55.873s   | K_F:30k K_R:58k                |
+|  42   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  43   | [0m COMPLETE [0m |  59.063s   | K_F:30k K_R:55k                |
+|  44   | [0m COMPLETE [0m |  56.624s   | K_F:23k K_R:63k                |
+|  45   | [0m COMPLETE [0m |  55.693s   | K_F:35k K_R:60k                |
+|  46   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  47   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  48   | [0m COMPLETE [0m |  55.376s   | K_F:30k K_R:61k                |
+|  49   | [0m COMPLETE [0m |  56.379s   | K_F:37k K_R:61k                |
+|  50   | [0m COMPLETE [0m |  58.226s   | K_F:34k K_R:64k                |
+|  51   | [0m COMPLETE [0m |  57.107s   | K_F:30k K_R:60k                |
+|  52   | [0m COMPLETE [0m |  58.723s   | K_F:30k K_R:56k                |
+|  53   | [0m COMPLETE [0m |  55.978s   | K_F:32k K_R:51k                |
+|  54   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  55   | [0m COMPLETE [0m |  55.493s   | K_F:27k K_R:62k                |
+|  56   | [0m COMPLETE [0m |  59.040s   | K_F:27k K_R:67k                |
+|  57   | [0m COMPLETE [0m |  57.257s   | K_F:36k K_R:63k                |
+|  58   | [0m COMPLETE [0m |  58.802s   | K_F:22k K_R:69k                |
+|  59   | [0m COMPLETE [0m |  55.758s   | K_F:26k K_R:62k                |
+|  60   | [0m COMPLETE [0m |  58.568s   | K_F:28k K_R:56k                |
+|  61   | [0m COMPLETE [0m |  57.345s   | K_F:25k K_R:62k                |
+|  62   | [0m COMPLETE [0m |  57.358s   | K_F:26k K_R:64k                |
+|  63   | [0m COMPLETE [0m |  56.546s   | K_F:34k K_R:60k                |
+|  64   | [0m COMPLETE [0m |  59.434s   | K_F:28k K_R:67k                |
+|  65   | [92m⭐ NEW BEST[0m |  55.052s   | K_F:31k K_R:61k                |
+|  66   | [0m COMPLETE [0m |  56.245s   | K_F:31k K_R:76k                |
+|  67   | [0m COMPLETE [0m |  57.810s   | K_F:33k K_R:57k                |
+|  68   | [0m COMPLETE [0m |  56.588s   | K_F:36k K_R:70k                |
+|  69   | [0m COMPLETE [0m |  57.813s   | K_F:22k K_R:53k                |
+|  70   | [0m COMPLETE [0m |  57.406s   | K_F:39k K_R:65k                |
+|  71   | [0m COMPLETE [0m |  56.790s   | K_F:27k K_R:62k                |
+|  72   | [0m COMPLETE [0m |  59.078s   | K_F:26k K_R:59k                |
+|  73   | [0m COMPLETE [0m |  55.441s   | K_F:28k K_R:62k                |
+|  74   | [0m COMPLETE [0m |  55.075s   | K_F:29k K_R:58k                |
+|  75   | [0m COMPLETE [0m |  56.153s   | K_F:29k K_R:61k                |
+|  76   | [0m COMPLETE [0m |  56.931s   | K_F:32k K_R:66k                |
+|  77   | [0m COMPLETE [0m |  57.573s   | K_F:24k K_R:55k                |
+|  78   | [0m COMPLETE [0m |  58.513s   | K_F:31k K_R:59k                |
+|  79   | [0m COMPLETE [0m |  59.186s   | K_F:25k K_R:57k                |
+|  80   | [0m COMPLETE [0m |  59.801s   | K_F:29k K_R:71k                |
+|  81   | [0m COMPLETE [0m |  58.589s   | K_F:33k K_R:59k                |
+|  82   | [0m COMPLETE [0m |  58.488s   | K_F:30k K_R:57k                |
+|  83   | [0m COMPLETE [0m |  59.785s   | K_F:33k K_R:61k                |
+|  84   | [0m COMPLETE [0m |  57.952s   | K_F:35k K_R:55k                |
+|  85   | [0m COMPLETE [0m |  57.841s   | K_F:29k K_R:63k                |
+|  86   | [0m COMPLETE [0m |  59.357s   | K_F:27k K_R:64k                |
+|  87   | [0m COMPLETE [0m |  55.110s   | K_F:31k K_R:59k                |
+|  88   | [0m COMPLETE [0m |  59.428s   | K_F:31k K_R:65k                |
+|  89   | [0m COMPLETE [0m |  58.283s   | K_F:23k K_R:68k                |
+|  90   | [0m COMPLETE [0m |  57.669s   | K_F:28k K_R:58k                |
+|  91   | [0m COMPLETE [0m |  55.069s   | K_F:29k K_R:59k                |
+|  92   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  93   | [0m COMPLETE [0m |  56.405s   | K_F:25k K_R:59k                |
+|  94   | [0m COMPLETE [0m |  58.049s   | K_F:32k K_R:61k                |
+|  95   | [0m COMPLETE [0m |  58.162s   | K_F:29k K_R:63k                |
+|  96   | [0m COMPLETE [0m |  57.606s   | K_F:27k K_R:56k                |
+|  97   | [0m COMPLETE [0m |  58.906s   | K_F:31k K_R:58k                |
+|  98   | [0m COMPLETE [0m |  58.395s   | K_F:24k K_R:54k                |
+|  99   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  100  | [0m COMPLETE [0m |  57.320s   | K_F:26k K_R:60k                |
+|  101  | [0m COMPLETE [0m |  58.195s   | K_F:34k K_R:56k                |
+|  102  | [0m COMPLETE [0m |  55.225s   | K_F:32k K_R:61k                |
+|  103  | [0m COMPLETE [0m |  59.825s   | K_F:28k K_R:66k                |
+|  104  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  105  | [0m COMPLETE [0m |  55.361s   | K_F:31k K_R:64k                |
+|  106  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  107  | [0m COMPLETE [0m |  57.111s   | K_F:31k K_R:68k                |
+|  108  | [0m COMPLETE [0m |  58.706s   | K_F:36k K_R:62k                |
+|  109  | [0m COMPLETE [0m |  55.652s   | K_F:27k K_R:64k                |
+|  110  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  111  | [0m COMPLETE [0m |  55.301s   | K_F:25k K_R:65k                |
+|  112  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  113  | [0m COMPLETE [0m |  56.080s   | K_F:24k K_R:61k                |
+|  114  | [0m COMPLETE [0m |  59.142s   | K_F:21k K_R:64k                |
+|  115  | [0m COMPLETE [0m |  56.293s   | K_F:26k K_R:59k                |
+|  116  | [0m COMPLETE [0m |  56.637s   | K_F:29k K_R:63k                |
+|  117  | [0m COMPLETE [0m |  57.980s   | K_F:28k K_R:60k                |
+|  118  | [0m COMPLETE [0m |  57.101s   | K_F:20k K_R:62k                |
+|  119  | [0m COMPLETE [0m |  56.963s   | K_F:27k K_R:67k                |
+|  120  | [0m COMPLETE [0m |  56.468s   | K_F:33k K_R:57k                |
+|  121  | [0m COMPLETE [0m |  56.752s   | K_F:30k K_R:65k                |
+|  122  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  123  | [0m COMPLETE [0m |  59.385s   | K_F:26k K_R:59k                |
+|  124  | [0m COMPLETE [0m |  59.911s   | K_F:29k K_R:61k                |
+|  125  | [0m COMPLETE [0m |  58.526s   | K_F:22k K_R:70k                |
+|  126  | [0m COMPLETE [0m |  56.130s   | K_F:28k K_R:66k                |
+|  127  | [0m COMPLETE [0m |  57.300s   | K_F:33k K_R:69k                |
+|  128  | [0m COMPLETE [0m |  55.775s   | K_F:31k K_R:63k                |
+|  129  | [0m COMPLETE [0m |  57.000s   | K_F:25k K_R:60k                |
+|  130  | [0m COMPLETE [0m |  55.838s   | K_F:23k K_R:58k                |
+|  131  | [0m COMPLETE [0m |  55.281s   | K_F:35k K_R:60k                |
+|  132  | [0m COMPLETE [0m |  59.624s   | K_F:34k K_R:59k                |
+|  133  | [0m COMPLETE [0m |  57.871s   | K_F:29k K_R:64k                |
+|  134  | [0m COMPLETE [0m |  56.800s   | K_F:31k K_R:62k                |
+|  135  | [0m COMPLETE [0m |  58.821s   | K_F:27k K_R:60k                |
+|  136  | [0m COMPLETE [0m |  58.633s   | K_F:33k K_R:56k                |
+|  137  | [0m COMPLETE [0m |  58.414s   | K_F:30k K_R:55k                |
+|  138  | [0m COMPLETE [0m |  58.754s   | K_F:28k K_R:64k                |
+|  139  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  140  | [0m COMPLETE [0m |  57.883s   | K_F:31k K_R:59k                |
+|  141  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  142  | [0m COMPLETE [0m |  59.500s   | K_F:35k K_R:62k                |
+|  143  | [0m COMPLETE [0m |  56.056s   | K_F:35k K_R:58k                |
+|  144  | [0m COMPLETE [0m |  55.511s   | K_F:29k K_R:63k                |
+|  145  | [0m COMPLETE [0m |  59.010s   | K_F:29k K_R:63k                |
+|  146  | [0m COMPLETE [0m |  57.237s   | K_F:27k K_R:68k                |
+|  147  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  148  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  149  | [0m COMPLETE [0m |  55.988s   | K_F:28k K_R:61k                |
+|  150  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  151  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  152  | [0m COMPLETE [0m |  55.134s   | K_F:38k K_R:59k                |
+|  153  | [0m COMPLETE [0m |  56.441s   | K_F:33k K_R:59k                |
+|  154  | [0m COMPLETE [0m |  58.457s   | K_F:29k K_R:73k                |
+|  155  | [0m COMPLETE [0m |  57.693s   | K_F:38k K_R:62k                |
+|  156  | [0m COMPLETE [0m |  55.357s   | K_F:32k K_R:58k                |
+|  157  | [0m COMPLETE [0m |  56.721s   | K_F:43k K_R:56k                |
+|  158  | [0m COMPLETE [0m |  56.201s   | K_F:32k K_R:58k                |
+|  159  | [0m COMPLETE [0m |  55.857s   | K_F:36k K_R:54k                |
+|  160  | [0m COMPLETE [0m |  57.565s   | K_F:27k K_R:55k                |
+|  161  | [0m COMPLETE [0m |  58.520s   | K_F:31k K_R:60k                |
+|  162  | [0m COMPLETE [0m |  59.820s   | K_F:29k K_R:57k                |
+|  163  | [0m COMPLETE [0m |  57.983s   | K_F:32k K_R:52k                |
+|  164  | [0m COMPLETE [0m |  57.353s   | K_F:25k K_R:61k                |
+|  165  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  166  | [92m⭐ NEW BEST[0m |  55.035s   | K_F:28k K_R:59k                |
+|  167  | [0m COMPLETE [0m |  57.528s   | K_F:28k K_R:59k                |
+|  168  | [0m COMPLETE [0m |  55.408s   | K_F:27k K_R:57k                |
+|  169  | [0m COMPLETE [0m |  55.754s   | K_F:25k K_R:57k                |
+|  170  | [0m COMPLETE [0m |  56.222s   | K_F:24k K_R:55k                |
+|  171  | [0m COMPLETE [0m |  58.629s   | K_F:26k K_R:59k                |
+|  172  | [0m COMPLETE [0m |  59.562s   | K_F:27k K_R:58k                |
+|  173  | [0m COMPLETE [0m |  59.603s   | K_F:29k K_R:61k                |
+|  174  | [92m⭐ NEW BEST[0m |  55.012s   | K_F:28k K_R:59k                |
+|  175  | [0m COMPLETE [0m |  56.445s   | K_F:31k K_R:57k                |
+|  176  | [0m COMPLETE [0m |  55.838s   | K_F:28k K_R:58k                |
+|  177  | [0m COMPLETE [0m |  58.448s   | K_F:29k K_R:60k                |
+|  178  | [0m COMPLETE [0m |  56.147s   | K_F:32k K_R:56k                |
+|  179  | [0m COMPLETE [0m |  56.094s   | K_F:34k K_R:62k                |
+|  180  | [0m COMPLETE [0m |  55.916s   | K_F:23k K_R:58k                |
+|  181  | [0m COMPLETE [0m |  59.204s   | K_F:27k K_R:65k                |
+|  182  | [0m COMPLETE [0m |  58.660s   | K_F:28k K_R:61k                |
+|  183  | [0m COMPLETE [0m |  58.869s   | K_F:30k K_R:63k                |
+|  184  | [0m COMPLETE [0m |  56.267s   | K_F:26k K_R:59k                |
+|  185  | [0m COMPLETE [0m |  58.739s   | K_F:28k K_R:62k                |
+|  186  | [0m COMPLETE [0m |  57.031s   | K_F:31k K_R:57k                |
+|  187  | [0m COMPLETE [0m |  55.423s   | K_F:25k K_R:64k                |
+|  188  | [0m COMPLETE [0m |  58.206s   | K_F:25k K_R:60k                |
+|  189  | [0m COMPLETE [0m |  59.067s   | K_F:29k K_R:54k                |
+|  190  | [0m COMPLETE [0m |  58.421s   | K_F:57k K_R:59k                |
+|  191  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  192  | [0m COMPLETE [0m |  58.250s   | K_F:24k K_R:65k                |
+|  193  | [0m COMPLETE [0m |  59.028s   | K_F:30k K_R:62k                |
+|  194  | [0m COMPLETE [0m |  59.708s   | K_F:26k K_R:64k                |
+|  195  | [0m COMPLETE [0m |  56.133s   | K_F:28k K_R:49k                |
+|  196  | [0m COMPLETE [0m |  57.745s   | K_F:34k K_R:66k                |
+|  197  | [0m COMPLETE [0m |  55.529s   | K_F:23k K_R:61k                |
+|  198  | [0m COMPLETE [0m |  59.052s   | K_F:23k K_R:61k                |
+|  199  | [0m COMPLETE [0m |  55.825s   | K_F:32k K_R:58k                |
+|  200  | [0m COMPLETE [0m |  57.106s   | K_F:24k K_R:56k                |
+|  201  | [0m COMPLETE [0m |  55.575s   | K_F:22k K_R:63k                |
+|  202  | [0m COMPLETE [0m |  55.319s   | K_F:41k K_R:62k                |
+|  203  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  204  | [0m COMPLETE [0m |  59.781s   | K_F:36k K_R:59k                |
+|  205  | [0m COMPLETE [0m |  59.321s   | K_F:37k K_R:61k                |
+|  206  | [0m COMPLETE [0m |  59.447s   | K_F:39k K_R:57k                |
+|  207  | [0m COMPLETE [0m |  57.771s   | K_F:38k K_R:60k                |
+|  208  | [0m COMPLETE [0m |  56.100s   | K_F:42k K_R:62k                |
+|  209  | [0m COMPLETE [0m |  56.531s   | K_F:31k K_R:58k                |
+|  210  | [0m COMPLETE [0m |  58.835s   | K_F:44k K_R:61k                |
+|  211  | [0m COMPLETE [0m |  59.327s   | K_F:21k K_R:63k                |
+|  212  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  213  | [0m COMPLETE [0m |  55.989s   | K_F:39k K_R:62k                |
+|  214  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  215  | [0m COMPLETE [0m |  55.835s   | K_F:22k K_R:60k                |
+|  216  | [0m COMPLETE [0m |  58.501s   | K_F:35k K_R:63k                |
+|  217  | [0m COMPLETE [0m |  57.708s   | K_F:29k K_R:57k                |
+|  218  | [0m COMPLETE [0m |  56.904s   | K_F:25k K_R:59k                |
+|  219  | [0m COMPLETE [0m |  56.549s   | K_F:33k K_R:64k                |
+|  220  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  221  | [0m COMPLETE [0m |  57.995s   | K_F:27k K_R:62k                |
+|  222  | [0m COMPLETE [0m |  59.293s   | K_F:28k K_R:64k                |
+|  223  | [0m COMPLETE [0m |  59.832s   | K_F:27k K_R:66k                |
+|  224  | [0m COMPLETE [0m |  55.943s   | K_F:30k K_R:64k                |
+|  225  | [0m COMPLETE [0m |  56.992s   | K_F:25k K_R:62k                |
+|  226  | [0m COMPLETE [0m |  56.237s   | K_F:32k K_R:60k                |
+|  227  | [0m COMPLETE [0m |  57.601s   | K_F:29k K_R:67k                |
+|  228  | [0m COMPLETE [0m |  57.527s   | K_F:46k K_R:26k                |
+|  229  | [0m COMPLETE [0m |  59.625s   | K_F:20k K_R:59k                |
+|  230  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  231  | [0m COMPLETE [0m |  55.517s   | K_F:31k K_R:61k                |
+|  232  | [0m COMPLETE [0m |  55.961s   | K_F:33k K_R:61k                |
+|  233  | [0m COMPLETE [0m |  57.518s   | K_F:31k K_R:62k                |
+|  234  | [0m COMPLETE [0m |  57.428s   | K_F:41k K_R:60k                |
+|  235  | [0m COMPLETE [0m |  55.484s   | K_F:27k K_R:64k                |
+|  236  | [0m COMPLETE [0m |  58.830s   | K_F:37k K_R:58k                |
+|  237  | [0m COMPLETE [0m |  59.303s   | K_F:30k K_R:40k                |
+|  238  | [0m COMPLETE [0m |  56.262s   | K_F:28k K_R:61k                |
+|  239  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  240  | [0m COMPLETE [0m |  58.161s   | K_F:34k K_R:63k                |
+|  241  | [0m COMPLETE [0m |  56.635s   | K_F:28k K_R:64k                |
+|  242  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  243  | [0m COMPLETE [0m |  57.951s   | K_F:27k K_R:61k                |
+|  244  | [0m COMPLETE [0m |  55.092s   | K_F:24k K_R:59k                |
+|  245  | [0m COMPLETE [0m |  55.101s   | K_F:23k K_R:59k                |
+|  246  | [0m COMPLETE [0m |  58.117s   | K_F:23k K_R:59k                |
+|  247  | [0m COMPLETE [0m |  58.423s   | K_F:25k K_R:59k                |
+|  248  | [0m COMPLETE [0m |  58.608s   | K_F:24k K_R:57k                |
+|  249  | [0m COMPLETE [0m |  57.102s   | K_F:32k K_R:60k                |
+|  250  | [0m COMPLETE [0m |  59.327s   | K_F:26k K_R:59k                |
+|  251  | [0m COMPLETE [0m |  56.243s   | K_F:30k K_R:58k                |
+|  252  | [0m COMPLETE [0m |  58.622s   | K_F:29k K_R:56k                |
+|  253  | [0m COMPLETE [0m |  58.449s   | K_F:35k K_R:61k                |
+|  254  | [0m COMPLETE [0m |  56.154s   | K_F:32k K_R:59k                |
+|  255  | [0m COMPLETE [0m |  55.668s   | K_F:76k K_R:57k                |
+|  256  | [0m COMPLETE [0m |  58.022s   | K_F:51k K_R:61k                |
+|  257  | [0m COMPLETE [0m |  55.502s   | K_F:38k K_R:60k                |
+|  258  | [0m COMPLETE [0m |  57.212s   | K_F:38k K_R:59k                |
+|  259  | [0m COMPLETE [0m |  57.783s   | K_F:39k K_R:53k                |
+|  260  | [0m COMPLETE [0m |  57.033s   | K_F:31k K_R:55k                |
+|  261  | [0m COMPLETE [0m |  59.736s   | K_F:36k K_R:56k                |
+|  262  | [0m COMPLETE [0m |  57.548s   | K_F:38k K_R:60k                |
+|  263  | [0m COMPLETE [0m |  58.461s   | K_F:41k K_R:57k                |
+|  264  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  265  | [0m COMPLETE [0m |  59.973s   | K_F:40k K_R:62k                |
+|  266  | [0m COMPLETE [0m |  55.815s   | K_F:29k K_R:58k                |
+|  267  | [0m COMPLETE [0m |  57.252s   | K_F:27k K_R:60k                |
+|  268  | [0m COMPLETE [0m |  55.905s   | K_F:34k K_R:65k                |
+|  269  | [0m COMPLETE [0m |  59.783s   | K_F:30k K_R:59k                |
+|  270  | [0m COMPLETE [0m |  58.482s   | K_F:26k K_R:56k                |
+|  271  | [0m COMPLETE [0m |  56.815s   | K_F:31k K_R:76k                |
+|  272  | [0m COMPLETE [0m |  56.889s   | K_F:29k K_R:62k                |
+|  273  | [0m COMPLETE [0m |  55.645s   | K_F:35k K_R:66k                |
+|  274  | [0m COMPLETE [0m |  57.606s   | K_F:28k K_R:57k                |
+|  275  | [0m COMPLETE [0m |  56.737s   | K_F:39k K_R:61k                |
+|  276  | [0m COMPLETE [0m |  59.351s   | K_F:33k K_R:64k                |
+|  277  | [0m COMPLETE [0m |  58.590s   | K_F:25k K_R:51k                |
+|  278  | [0m COMPLETE [0m |  57.289s   | K_F:30k K_R:59k                |
+|  279  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  280  | [0m COMPLETE [0m |  55.953s   | K_F:26k K_R:68k                |
+|  281  | [0m COMPLETE [0m |  59.412s   | K_F:36k K_R:62k                |
+|  282  | [0m COMPLETE [0m |  56.041s   | K_F:29k K_R:61k                |
+|  283  | [0m COMPLETE [0m |  58.131s   | K_F:49k K_R:58k                |
+|  284  | [0m COMPLETE [0m |  59.527s   | K_F:34k K_R:60k                |
+|  285  | [0m COMPLETE [0m |  57.702s   | K_F:43k K_R:54k                |
+|  286  | [0m COMPLETE [0m |  58.652s   | K_F:65k K_R:63k                |
+|  287  | [0m COMPLETE [0m |  55.825s   | K_F:27k K_R:62k                |
+|  288  | [0m COMPLETE [0m |  56.324s   | K_F:24k K_R:59k                |
+|  289  | [0m COMPLETE [0m |  55.353s   | K_F:40k K_R:66k                |
+|  290  | [0m COMPLETE [0m |  58.467s   | K_F:39k K_R:67k                |
+|  291  | [0m COMPLETE [0m |  56.790s   | K_F:42k K_R:67k                |
+|  292  | [0m COMPLETE [0m |  55.161s   | K_F:44k K_R:65k                |
+|  293  | [0m COMPLETE [0m |  56.048s   | K_F:38k K_R:65k                |
+|  294  | [0m COMPLETE [0m |  58.223s   | K_F:40k K_R:69k                |
+|  295  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  296  | [0m COMPLETE [0m |  57.025s   | K_F:41k K_R:64k                |
+|  297  | [0m COMPLETE [0m |  58.628s   | K_F:41k K_R:68k                |
+|  298  | [0m COMPLETE [0m |  59.911s   | K_F:44k K_R:57k                |
+|  299  | [0m COMPLETE [0m |  58.880s   | K_F:38k K_R:79k                |
+|  300  | [0m COMPLETE [0m |  59.445s   | K_F:47k K_R:56k                |
+|  301  | [0m COMPLETE [0m |  55.688s   | K_F:44k K_R:65k                |
+|  302  | [0m COMPLETE [0m |  56.518s   | K_F:25k K_R:48k                |
+|  303  | [0m COMPLETE [0m |  59.338s   | K_F:52k K_R:58k                |
+|  304  | [0m COMPLETE [0m |  55.869s   | K_F:43k K_R:60k                |
+|  305  | [0m COMPLETE [0m |  59.008s   | K_F:39k K_R:68k                |
+|  306  | [0m COMPLETE [0m |  56.481s   | K_F:26k K_R:52k                |
+|  307  | [0m COMPLETE [0m |  55.656s   | K_F:37k K_R:64k                |
+|  308  | [0m COMPLETE [0m |  55.982s   | K_F:45k K_R:43k                |
+|  309  | [0m COMPLETE [0m |  57.296s   | K_F:24k K_R:66k                |
+|  310  | [0m COMPLETE [0m |  58.025s   | K_F:28k K_R:58k                |
+|  311  | [0m COMPLETE [0m |  56.264s   | K_F:41k K_R:60k                |
+|  312  | [0m COMPLETE [0m |  57.639s   | K_F:33k K_R:63k                |
+|  313  | [0m COMPLETE [0m |  55.726s   | K_F:47k K_R:59k                |
+|  314  | [0m COMPLETE [0m |  58.026s   | K_F:39k K_R:71k                |
+|  315  | [0m COMPLETE [0m |  58.671s   | K_F:46k K_R:57k                |
+|  316  | [0m COMPLETE [0m |  55.304s   | K_F:25k K_R:55k                |
+|  317  | [0m COMPLETE [0m |  59.119s   | K_F:25k K_R:54k                |
+|  318  | [0m COMPLETE [0m |  56.732s   | K_F:23k K_R:56k                |
+|  319  | [0m COMPLETE [0m |  57.738s   | K_F:26k K_R:52k                |
+|  320  | [0m COMPLETE [0m |  56.668s   | K_F:25k K_R:55k                |
+|  321  | [0m COMPLETE [0m |  58.368s   | K_F:22k K_R:55k                |
+|  322  | [0m COMPLETE [0m |  58.311s   | K_F:28k K_R:57k                |
+|  323  | [0m COMPLETE [0m |  59.543s   | K_F:27k K_R:54k                |
+|  324  | [0m COMPLETE [0m |  57.330s   | K_F:30k K_R:65k                |
+|  325  | [0m COMPLETE [0m |  56.156s   | K_F:42k K_R:67k                |
+|  326  | [0m COMPLETE [0m |  58.686s   | K_F:30k K_R:61k                |
+|  327  | [0m COMPLETE [0m |  59.587s   | K_F:45k K_R:27k                |
+|  328  | [0m COMPLETE [0m |  59.882s   | K_F:25k K_R:53k                |
+|  329  | [0m COMPLETE [0m |  59.612s   | K_F:32k K_R:23k                |
+|  330  | [0m COMPLETE [0m |  55.576s   | K_F:28k K_R:63k                |
+|  331  | [0m COMPLETE [0m |  57.280s   | K_F:27k K_R:57k                |
+|  332  | [0m COMPLETE [0m |  59.694s   | K_F:23k K_R:50k                |
+|  333  | [0m COMPLETE [0m |  55.869s   | K_F:24k K_R:51k                |
+|  334  | [0m COMPLETE [0m |  59.837s   | K_F:34k K_R:37k                |
+|  335  | [0m COMPLETE [0m |  56.409s   | K_F:30k K_R:59k                |
+|  336  | [0m COMPLETE [0m |  59.703s   | K_F:32k K_R:66k                |
+|  337  | [0m COMPLETE [0m |  57.303s   | K_F:58k K_R:63k                |
+|  338  | [0m COMPLETE [0m |  58.742s   | K_F:29k K_R:74k                |
+|  339  | [0m COMPLETE [0m |  58.741s   | K_F:26k K_R:61k                |
+|  340  | [0m COMPLETE [0m |  58.739s   | K_F:31k K_R:48k                |
+|  341  | [0m COMPLETE [0m |  58.795s   | K_F:27k K_R:59k                |
+|  342  | [0m COMPLETE [0m |  59.500s   | K_F:24k K_R:69k                |
+|  343  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  344  | [0m COMPLETE [0m |  55.726s   | K_F:43k K_R:56k                |
+|  345  | [0m COMPLETE [0m |  58.807s   | K_F:48k K_R:61k                |
+|  346  | [0m COMPLETE [0m |  59.480s   | K_F:29k K_R:65k                |
+|  347  | [0m COMPLETE [0m |  56.068s   | K_F:45k K_R:58k                |
+|  348  | [0m COMPLETE [0m |  55.914s   | K_F:25k K_R:45k                |
+|  349  | [0m COMPLETE [0m |  57.984s   | K_F:33k K_R:62k                |
+|  350  | [0m COMPLETE [0m |  55.278s   | K_F:31k K_R:60k                |
+|  351  | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_00-05-31
+🧠 Surrogate Warm Start: Loaded 501 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_00-05-31
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+Fatal Error: X has 12 features, but GaussianProcessRegressor is expecting 4 features as input.
+Traceback (most recent call last):
+  File "C:\Users\alexr\Desktop\Ter24 Simulation\Ter26 Carmaker\BlackBox_Optimization_Framework\run_real_optimization.py", line 60, in main
+    orchestrator.optimize(n_trials=args.trials)
+  File "C:\Users\alexr\Desktop\Ter24 Simulation\Ter26 Carmaker\BlackBox_Optimization_Framework\src\core\orchestrator.py", line 51, in optimize
+    study.optimize(self._objective, n_trials=n_trials)
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\optuna\study\study.py", line 451, in optimize
+    _optimize(
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\optuna\study\_optimize.py", line 66, in _optimize
+    _optimize_sequential(
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\optuna\study\_optimize.py", line 163, in _optimize_sequential
+    frozen_trial = _run_trial(study, func, catch)
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\optuna\study\_optimize.py", line 251, in _run_trial
+    raise func_err
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\optuna\study\_optimize.py", line 200, in _run_trial
+    value_or_values = func(trial)
+  File "C:\Users\alexr\Desktop\Ter24 Simulation\Ter26 Carmaker\BlackBox_Optimization_Framework\src\core\orchestrator.py", line 76, in _objective
+    pred_cost, uncertainty = self.surrogate.predict(params)
+  File "C:\Users\alexr\Desktop\Ter24 Simulation\Ter26 Carmaker\BlackBox_Optimization_Framework\src\core\surrogate.py", line 84, in predict
+    mu, sigma = self.model.predict(X, return_std=True)
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\sklearn\gaussian_process\_gpr.py", line 412, in predict
+    X = validate_data(self, X, ensure_2d=ensure_2d, dtype=dtype, reset=False)
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\sklearn\utils\validation.py", line 2975, in validate_data
+    _check_n_features(_estimator, X, reset=reset)
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\sklearn\utils\validation.py", line 2839, in _check_n_features
+    raise ValueError(
+ValueError: X has 12 features, but GaussianProcessRegressor is expecting 4 features as input.
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_00-06-09
+📂 Output: Output\Campaign_2026-02-03_00-06-09
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+|   0   | [92m⭐ NEW BEST[0m |  59.533s   | K:20/63k ARB:30/66k DampF:~4102                    |
+|   1   | [92m⭐ NEW BEST[0m |  56.152s   | K:46/50k ARB:54/18k DampF:~2950                    |
+|   2   | [0m COMPLETE [0m |  57.849s   | K:49/55k ARB:67/68k DampF:~4852                    |
+|   3   | [0m COMPLETE [0m |  59.606s   | K:75/53k ARB:24/60k DampF:~3637                    |
+|   4   | [0m COMPLETE [0m |  58.577s   | K:42/53k ARB:29/47k DampF:~1923                    |
+|   5   | [0m COMPLETE [0m |  57.573s   | K:58/61k ARB:51/12k DampF:~3266                    |
+|   6   | [0m COMPLETE [0m |  57.183s   | K:85/23k ARB:31/32k DampF:~5633                    |
+|   7   | [0m COMPLETE [0m |  58.871s   | K:49/87k ARB:26/47k DampF:~6297                    |
+|   8   | [0m COMPLETE [0m |  57.422s   | K:45/89k ARB:3/31k DampF:~4518                     |
+|   9   | [0m COMPLETE [0m |  58.516s   | K:66/56k ARB:34/30k DampF:~3249                    |
+|  10   | [0m COMPLETE [0m |  57.269s   | K:35/36k ARB:52/3k DampF:~1548                     |
+|  11   | [0m COMPLETE [0m |  58.672s   | K:89/21k ARB:45/18k DampF:~5109                    |
+|  12   | [92m⭐ NEW BEST[0m |  56.095s   | K:88/24k ARB:66/21k DampF:~5069                    |
+|  13   | [0m COMPLETE [0m |  57.948s   | K:62/38k ARB:69/19k DampF:~5025                    |
+|  14   | [0m COMPLETE [0m |  58.034s   | K:74/33k ARB:61/21k DampF:~4263                    |
+|  15   | [0m COMPLETE [0m |  56.463s   | K:70/43k ARB:59/0k DampF:~4362                     |
+|  16   | [92m⭐ NEW BEST[0m |  55.977s   | K:80/26k ARB:46/12k DampF:~3894                    |
+|  17   | [0m COMPLETE [0m |  58.644s   | K:82/28k ARB:43/8k DampF:~3709                     |
+|  18   | [92m⭐ NEW BEST[0m |  55.435s   | K:80/20k ARB:42/7k DampF:~4365                     |
+|  19   | [0m COMPLETE [0m |  55.705s   | K:79/20k ARB:41/6k DampF:~4001                     |
+|  20   | [0m COMPLETE [0m |  58.884s   | K:79/21k ARB:40/6k DampF:~4157                     |
+|  21   | [0m COMPLETE [0m |  56.952s   | K:80/28k ARB:38/0k DampF:~4379                     |
+|  22   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  23   | [0m COMPLETE [0m |  55.950s   | K:76/30k ARB:38/11k DampF:~3957                    |
+|  24   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  25   | [0m COMPLETE [0m |  58.133s   | K:84/30k ARB:40/6k DampF:~4266                     |
+|  26   | [0m COMPLETE [0m |  56.513s   | K:89/20k ARB:36/13k DampF:~4677                    |
+|  27   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  28   | [0m COMPLETE [0m |  59.017s   | K:77/25k ARB:48/26k DampF:~4059                    |
+|  29   | [0m COMPLETE [0m |  56.003s   | K:71/38k ARB:42/15k DampF:~4370                    |
+|  30   | [0m COMPLETE [0m |  56.896s   | K:82/43k ARB:34/9k DampF:~3955                     |
+|  31   | [92m⭐ NEW BEST[0m |  55.428s   | K:79/26k ARB:43/13k DampF:~3890                    |
+|  32   | [0m COMPLETE [0m |  58.739s   | K:79/20k ARB:43/16k DampF:~4202                    |
+|  33   | [0m COMPLETE [0m |  59.903s   | K:84/25k ARB:50/5k DampF:~3637                     |
+|  34   | [92m⭐ NEW BEST[0m |  55.275s   | K:74/31k ARB:53/11k DampF:~4468                    |
+|  35   | [0m COMPLETE [0m |  58.135s   | K:72/24k ARB:55/15k DampF:~4721                    |
+|  36   | [0m COMPLETE [0m |  59.776s   | K:75/30k ARB:55/9k DampF:~4710                     |
+|  37   | [0m COMPLETE [0m |  56.805s   | K:62/25k ARB:49/24k DampF:~4513                    |
+|  38   | [0m COMPLETE [0m |  56.675s   | K:84/33k ARB:44/3k DampF:~4563                     |
+|  39   | [0m COMPLETE [0m |  56.101s   | K:80/27k ARB:53/15k DampF:~4415                    |
+|  40   | [0m COMPLETE [0m |  59.259s   | K:67/23k ARB:48/11k DampF:~4866                    |
+|  41   | [0m COMPLETE [0m |  56.629s   | K:75/32k ARB:41/11k DampF:~4155                    |
+|  42   | [0m COMPLETE [0m |  55.393s   | K:73/28k ARB:34/8k DampF:~3787                     |
+|  43   | [0m COMPLETE [0m |  56.023s   | K:72/20k ARB:32/7k DampF:~3995                     |
+|  44   | [0m COMPLETE [0m |  57.544s   | K:86/23k ARB:29/2k DampF:~3185                     |
+|  45   | [0m COMPLETE [0m |  56.596s   | K:82/28k ARB:36/17k DampF:~4396                    |
+|  46   | [0m COMPLETE [0m |  57.319s   | K:86/36k ARB:44/4k DampF:~3987                     |
+|  47   | [0m COMPLETE [0m |  59.642s   | K:64/22k ARB:51/14k DampF:~4793                    |
+|  48   | [0m COMPLETE [0m |  56.578s   | K:70/27k ARB:45/19k DampF:~4239                    |
+|  49   | [0m COMPLETE [0m |  58.770s   | K:56/32k ARB:34/8k DampF:~3481                     |
+|  50   | [0m COMPLETE [0m |  57.746s   | K:78/42k ARB:30/36k DampF:~4287                    |
+|  51   | [92m⭐ NEW BEST[0m |  55.050s   | K:77/29k ARB:38/11k DampF:~3949                    |
+|  52   | [0m COMPLETE [0m |  58.671s   | K:74/23k ARB:39/13k DampF:~3816                    |
+|  53   | [0m COMPLETE [0m |  59.503s   | K:81/28k ARB:41/8k DampF:~3793                     |
+|  54   | [0m COMPLETE [0m |  58.419s   | K:78/32k ARB:36/2k DampF:~4421                     |
+|  55   | [0m COMPLETE [0m |  58.391s   | K:73/22k ARB:45/6k DampF:~4182                     |
+|  56   | [0m COMPLETE [0m |  57.632s   | K:76/27k ARB:33/0k DampF:~4447                     |
+|  57   | [0m COMPLETE [0m |  58.049s   | K:87/35k ARB:38/11k DampF:~3876                    |
+|  58   | [0m COMPLETE [0m |  56.021s   | K:70/22k ARB:48/4k DampF:~3633                     |
+|  59   | [0m COMPLETE [0m |  55.779s   | K:82/29k ARB:42/18k DampF:~3247                    |
+|  60   | [0m COMPLETE [0m |  58.965s   | K:83/25k ARB:27/7k DampF:~3827                     |
+|  61   | [0m COMPLETE [0m |  58.917s   | K:81/29k ARB:42/17k DampF:~3273                    |
+|  62   | [0m COMPLETE [0m |  55.537s   | K:77/31k ARB:40/13k DampF:~2872                    |
+|  63   | [0m COMPLETE [0m |  56.332s   | K:74/32k ARB:37/13k DampF:~2819                    |
+|  64   | [0m COMPLETE [0m |  58.355s   | K:77/20k ARB:31/10k DampF:~3223                    |
+|  65   | [0m COMPLETE [0m |  56.032s   | K:80/26k ARB:39/6k DampF:~3564                     |
+|  66   | [0m COMPLETE [0m |  55.340s   | K:88/22k ARB:46/15k DampF:~3664                    |
+|  67   | [0m COMPLETE [0m |  55.566s   | K:87/31k ARB:46/14k DampF:~3209                    |
+|  68   | [0m COMPLETE [0m |  56.453s   | K:89/34k ARB:35/21k DampF:~2611                    |
+|  69   | [0m COMPLETE [0m |  59.897s   | K:84/22k ARB:52/12k DampF:~3768                    |
+|  70   | [0m COMPLETE [0m |  56.158s   | K:88/25k ARB:44/15k DampF:~3905                    |
+|  71   | [0m COMPLETE [0m |  56.991s   | K:86/30k ARB:47/14k DampF:~3221                    |
+|  72   | [0m COMPLETE [0m |  57.323s   | K:83/28k ARB:47/9k DampF:~2863                     |
+|  73   | [0m COMPLETE [0m |  58.463s   | K:87/31k ARB:49/12k DampF:~3368                    |
+|  74   | [0m COMPLETE [0m |  56.457s   | K:78/39k ARB:46/15k DampF:~3477                    |
+|  75   | [0m COMPLETE [0m |  57.435s   | K:76/24k ARB:40/9k DampF:~3079                     |
+|  76   | [0m COMPLETE [0m |  59.987s   | K:86/27k ARB:50/20k DampF:~3781                    |
+|  77   | [0m COMPLETE [0m |  59.575s   | K:71/34k ARB:38/7k DampF:~4291                     |
+|  78   | [0m COMPLETE [0m |  59.423s   | K:84/30k ARB:43/17k DampF:~3833                    |
+|  79   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  80   | [0m COMPLETE [0m |  58.466s   | K:74/32k ARB:34/4k DampF:~3669                     |
+|  81   | [0m COMPLETE [0m |  58.346s   | K:79/21k ARB:41/11k DampF:~4179                    |
+|  82   | [0m COMPLETE [0m |  55.719s   | K:77/25k ARB:43/7k DampF:~4450                     |
+|  83   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  84   | [0m COMPLETE [0m |  58.523s   | K:79/21k ARB:38/9k DampF:~3866                     |
+|  85   | [0m COMPLETE [0m |  57.389s   | K:85/26k ARB:46/12k DampF:~3341                    |
+|  86   | [0m COMPLETE [0m |  57.168s   | K:75/28k ARB:49/3k DampF:~4472                     |
+|  87   | [0m COMPLETE [0m |  58.586s   | K:82/28k ARB:45/14k DampF:~3482                    |
+|  88   | [0m COMPLETE [0m |  59.311s   | K:68/31k ARB:40/1k DampF:~4509                     |
+|  89   | [0m COMPLETE [0m |  56.922s   | K:78/20k ARB:36/16k DampF:~4251                    |
+|  90   | [0m COMPLETE [0m |  59.991s   | K:73/23k ARB:43/6k DampF:~3177                     |
+|  91   | [0m COMPLETE [0m |  58.899s   | K:78/25k ARB:44/10k DampF:~4480                    |
+|  92   | [0m COMPLETE [0m |  56.887s   | K:81/24k ARB:43/7k DampF:~4260                     |
+|  93   | [0m COMPLETE [0m |  55.744s   | K:77/21k ARB:47/8k DampF:~4683                     |
+|  94   | [0m COMPLETE [0m |  56.121s   | K:71/26k ARB:41/12k DampF:~4172                    |
+|  95   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  96   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  97   | [0m COMPLETE [0m |  57.099s   | K:75/28k ARB:43/13k DampF:~3820                    |
+|  98   | [0m COMPLETE [0m |  58.838s   | K:73/25k ARB:50/10k DampF:~3702                    |
+|  99   | [0m COMPLETE [0m |  55.956s   | K:79/33k ARB:33/1k DampF:~4430                     |
+----------------------------------------------------------------------------------------
+✅ Optimization Complete.
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_00-06-42
+🧠 Surrogate Warm Start: Loaded 100 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_00-06-42
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+|   0   | [92m⭐NEW BEST [0m |  55.602s   | K:33/30k ARB:21/54k DampF:~5075                    |
+|   1   | [0m COMPLETE [0m |  56.415s   | K:51/45k ARB:64/54k DampF:~2686                    |
+|   2   | [0m COMPLETE [0m |  56.797s   | K:41/25k ARB:47/47k DampF:~2645                    |
+|   3   | [0m COMPLETE [0m |  57.118s   | K:70/28k ARB:9/43k DampF:~2148                     |
+|   4   | [0m COMPLETE [0m |  56.357s   | K:37/74k ARB:29/4k DampF:~3188                     |
+|   5   | [0m COMPLETE [0m |  57.864s   | K:28/24k ARB:14/55k DampF:~3319                    |
+|   6   | [0m COMPLETE [0m |  59.386s   | K:49/30k ARB:25/60k DampF:~5775                    |
+|   7   | [0m COMPLETE [0m |  57.456s   | K:58/56k ARB:63/29k DampF:~3365                    |
+|   8   | [0m COMPLETE [0m |  58.527s   | K:72/77k ARB:68/35k DampF:~3585                    |
+|   9   | [0m COMPLETE [0m |  58.438s   | K:33/39k ARB:64/49k DampF:~3163                    |
+|  10   | [0m COMPLETE [0m |  57.965s   | K:20/58k ARB:1/68k DampF:~5198                     |
+|  11   | [92m⭐NEW BEST [0m |  55.262s   | K:38/88k ARB:31/1k DampF:~3137                     |
+|  12   | [0m COMPLETE [0m |  59.016s   | K:21/86k ARB:39/2k DampF:~3174                     |
+|  13   | [0m COMPLETE [0m |  56.651s   | K:41/64k ARB:18/22k DampF:~3143                    |
+|  14   | [0m COMPLETE [0m |  56.168s   | K:84/43k ARB:36/16k DampF:~4740                    |
+|  15   | [0m COMPLETE [0m |  58.276s   | K:31/66k ARB:22/14k DampF:~3542                    |
+|  16   | [0m COMPLETE [0m |  57.060s   | K:43/86k ARB:29/31k DampF:~5465                    |
+|  17   | [0m COMPLETE [0m |  56.912s   | K:28/49k ARB:44/38k DampF:~2961                    |
+|  18   | [0m COMPLETE [0m |  57.093s   | K:45/36k ARB:33/41k DampF:~2170                    |
+|  19   | [0m COMPLETE [0m |  59.487s   | K:36/20k ARB:22/27k DampF:~5156                    |
+|  20   | [92m⭐NEW BEST [0m |  55.119s   | K:55/50k ARB:12/0k DampF:~3818                     |
+|  21   | [0m COMPLETE [0m |  58.558s   | K:54/50k ARB:11/0k DampF:~3869                     |
+|  22   | [0m COMPLETE [0m |  59.191s   | K:59/34k ARB:6/8k DampF:~5318                      |
+|  23   | [0m COMPLETE [0m |  59.649s   | K:44/40k ARB:17/7k DampF:~3388                     |
+|  24   | [0m COMPLETE [0m |  55.351s   | K:49/50k ARB:5/20k DampF:~4362                     |
+|  25   | [0m COMPLETE [0m |  59.247s   | K:50/51k ARB:1/0k DampF:~4292                      |
+|  26   | [0m COMPLETE [0m |  55.206s   | K:61/60k ARB:7/15k DampF:~3962                     |
+|  27   | [0m COMPLETE [0m |  58.636s   | K:63/61k ARB:12/10k DampF:~3884                    |
+|  28   | [0m COMPLETE [0m |  55.885s   | K:64/68k ARB:8/5k DampF:~3269                      |
+|  29   | [0m COMPLETE [0m |  58.139s   | K:53/58k ARB:17/13k DampF:~3352                    |
+|  30   | [0m COMPLETE [0m |  59.670s   | K:57/55k ARB:4/5k DampF:~4499                      |
+|  31   | [0m COMPLETE [0m |  57.914s   | K:48/54k ARB:5/17k DampF:~3596                     |
+|  32   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  33   | [0m COMPLETE [0m |  55.840s   | K:53/61k ARB:1/10k DampF:~4467                     |
+|  34   | [0m COMPLETE [0m |  59.615s   | K:41/52k ARB:13/11k DampF:~3396                    |
+|  35   | [0m COMPLETE [0m |  58.591s   | K:50/69k ARB:9/22k DampF:~3932                     |
+|  36   | [0m COMPLETE [0m |  57.128s   | K:48/48k ARB:5/3k DampF:~3698                      |
+|  37   | [0m COMPLETE [0m |  55.959s   | K:37/78k ARB:16/16k DampF:~3042                    |
+|  38   | [0m COMPLETE [0m |  55.780s   | K:60/89k ARB:0/8k DampF:~4028                      |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_00-07-13
+🧠 Surrogate Warm Start: Loaded 139 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_00-07-13
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+|   0   | [92m  ⭐ BEST  [0m |  59.840s   | K:89/61k ARB:51/21k DampF:~3595                    |
+|   1   | [92m  ⭐ BEST  [0m |  57.276s   | K:66/66k ARB:59/17k DampF:~1930                    |
+|   2   | [0m COMPLETE [0m |  57.784s   | K:65/86k ARB:23/50k DampF:~6108                    |
+|   3   | [0m COMPLETE [0m |  58.549s   | K:59/26k ARB:68/8k DampF:~2142                     |
+|   4   | [0m COMPLETE [0m |  57.766s   | K:67/68k ARB:17/62k DampF:~3662                    |
+|   5   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|   6   | [0m COMPLETE [0m |  59.070s   | K:31/32k ARB:59/32k DampF:~4088                    |
+|   7   | [0m COMPLETE [0m |  58.313s   | K:43/77k ARB:10/69k DampF:~3918                    |
+|   8   | [92m  ⭐ BEST  [0m |  55.615s   | K:55/23k ARB:26/25k DampF:~4597                    |
+|   9   | [0m COMPLETE [0m |  59.649s   | K:21/34k ARB:57/5k DampF:~3013                     |
+|  10   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  11   | [0m COMPLETE [0m |  55.720s   | K:75/48k ARB:40/21k DampF:~1988                    |
+|  12   | [0m COMPLETE [0m |  57.574s   | K:79/21k ARB:36/27k DampF:~1907                    |
+|  13   | [92m  ⭐ BEST  [0m |  55.555s   | K:75/45k ARB:3/36k DampF:~4100                     |
+|  14   | [0m COMPLETE [0m |  58.423s   | K:53/40k ARB:0/39k DampF:~4245                     |
+|  15   | [0m COMPLETE [0m |  55.700s   | K:76/53k ARB:26/45k DampF:~4536                    |
+|  16   | [0m COMPLETE [0m |  56.963s   | K:47/20k ARB:4/34k DampF:~4248                     |
+|  17   | [0m COMPLETE [0m |  55.749s   | K:56/41k ARB:10/1k DampF:~5421                     |
+|  18   | [0m COMPLETE [0m |  57.408s   | K:89/30k ARB:27/27k DampF:~3677                    |
+|  19   | [0m COMPLETE [0m |  59.525s   | K:63/56k ARB:16/48k DampF:~3575                    |
+|  20   | [0m COMPLETE [0m |  55.777s   | K:74/37k ARB:7/14k DampF:~4812                     |
+|  21   | [0m COMPLETE [0m |  57.026s   | K:81/49k ARB:27/42k DampF:~4444                    |
+|  22   | [0m COMPLETE [0m |  58.949s   | K:69/53k ARB:0/44k DampF:~4890                     |
+|  23   | [0m COMPLETE [0m |  55.703s   | K:72/43k ARB:18/29k DampF:~4492                    |
+|  24   | [0m COMPLETE [0m |  57.143s   | K:60/53k ARB:27/38k DampF:~3686                    |
+|  25   | [0m COMPLETE [0m |  56.227s   | K:79/27k ARB:13/53k DampF:~5168                    |
+|  26   | [92m  ⭐ BEST  [0m |  55.500s   | K:84/36k ARB:21/31k DampF:~4188                    |
+|  27   | [0m COMPLETE [0m |  59.766s   | K:85/36k ARB:6/31k DampF:~4214                     |
+|  28   | [92m  ⭐ BEST  [0m |  55.372s   | K:81/34k ARB:22/23k DampF:~3284                    |
+|  29   | [0m COMPLETE [0m |  56.929s   | K:84/43k ARB:18/23k DampF:~3197                    |
+|  30   | [0m COMPLETE [0m |  59.875s   | K:85/34k ARB:13/19k DampF:~3064                    |
+|  31   | [92m  ⭐ BEST  [0m |  55.081s   | K:72/27k ARB:21/25k DampF:~3796                    |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_00-07-28
+🧠 Surrogate Warm Start: Loaded 171 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_00-07-28
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+|   0   | [92m⭐ NEW BEST[0m |  59.935s   | K:49/53k ARB:55/62k DampF:~3327                    |
+|   1   | [92m⭐ NEW BEST[0m |  57.698s   | K:59/69k ARB:22/48k DampF:~5168                    |
+|   2   | [92m⭐ NEW BEST[0m |  56.543s   | K:59/38k ARB:9/7k DampF:~5284                      |
+|   3   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|   4   | [92m⭐ NEW BEST[0m |  55.609s   | K:25/60k ARB:16/50k DampF:~2450                    |
+|   5   | [0m COMPLETE [0m |  57.508s   | K:56/85k ARB:36/10k DampF:~2520                    |
+|   6   | [0m COMPLETE [0m |  57.923s   | K:32/45k ARB:58/3k DampF:~1069                     |
+|   7   | [0m COMPLETE [0m |  55.875s   | K:24/86k ARB:7/41k DampF:~4401                     |
+|   8   | [0m COMPLETE [0m |  59.609s   | K:54/36k ARB:16/49k DampF:~4742                    |
+|   9   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  10   | [0m COMPLETE [0m |  59.319s   | K:20/23k ARB:0/67k DampF:~2336                     |
+|  11   | [0m COMPLETE [0m |  56.008s   | K:24/88k ARB:1/36k DampF:~4129                     |
+|  12   | [0m COMPLETE [0m |  59.290s   | K:34/73k ARB:12/37k DampF:~3465                    |
+|  13   | [0m COMPLETE [0m |  56.233s   | K:35/59k ARB:24/28k DampF:~2320                    |
+|  14   | [0m COMPLETE [0m |  58.244s   | K:20/80k ARB:8/47k DampF:~4549                     |
+|  15   | [92m⭐ NEW BEST[0m |  55.223s   | K:42/78k ARB:31/27k DampF:~2694                    |
+|  16   | [0m COMPLETE [0m |  56.992s   | K:41/65k ARB:33/27k DampF:~1788                    |
+|  17   | [0m COMPLETE [0m |  56.840s   | K:42/74k ARB:69/22k DampF:~3165                    |
+|  18   | [0m COMPLETE [0m |  59.665s   | K:28/65k ARB:32/20k DampF:~1256                    |
+|  19   | [0m COMPLETE [0m |  59.779s   | K:42/80k ARB:18/31k DampF:~2589                    |
+|  20   | [0m COMPLETE [0m |  59.369s   | K:31/54k ARB:28/56k DampF:~2943                    |
+|  21   | [0m COMPLETE [0m |  57.202s   | K:26/89k ARB:19/42k DampF:~4273                    |
+|  22   | [0m COMPLETE [0m |  58.583s   | K:25/81k ARB:8/39k DampF:~3516                     |
+|  23   | [0m COMPLETE [0m |  55.996s   | K:36/80k ARB:12/33k DampF:~2791                    |
+|  24   | [0m COMPLETE [0m |  55.757s   | K:29/75k ARB:18/43k DampF:~3432                    |
+|  25   | [0m COMPLETE [0m |  59.899s   | K:29/69k ARB:19/45k DampF:~3288                    |
+|  26   | [0m COMPLETE [0m |  58.147s   | K:37/76k ARB:28/34k DampF:~2693                    |
+|  27   | [0m COMPLETE [0m |  59.659s   | K:20/67k ARB:39/51k DampF:~3209                    |
+|  28   | [0m COMPLETE [0m |  58.160s   | K:30/60k ARB:27/42k DampF:~3295                    |
+|  29   | [0m COMPLETE [0m |  58.459s   | K:47/56k ARB:21/61k DampF:~3233                    |
+|  30   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  31   | [0m COMPLETE [0m |  58.516s   | K:25/85k ARB:4/43k DampF:~4260                     |
+|  32   | [0m COMPLETE [0m |  59.871s   | K:28/86k ARB:15/37k DampF:~3796                    |
+|  33   | [0m COMPLETE [0m |  59.792s   | K:33/70k ARB:5/52k DampF:~4089                     |
+|  34   | [0m COMPLETE [0m |  57.454s   | K:24/89k ARB:20/47k DampF:~4022                    |
+|  35   | [0m COMPLETE [0m |  58.510s   | K:30/83k ARB:11/44k DampF:~3585                    |
+|  36   | [0m COMPLETE [0m |  59.065s   | K:22/78k ARB:22/39k DampF:~4047                    |
+|  37   | [0m COMPLETE [0m |  59.282s   | K:28/72k ARB:15/33k DampF:~3148                    |
+|  38   | [0m COMPLETE [0m |  56.301s   | K:33/85k ARB:10/49k DampF:~3241                    |
+|  39   | [0m COMPLETE [0m |  59.428s   | K:24/76k ARB:25/41k DampF:~3537                    |
+|  40   | [0m COMPLETE [0m |  57.688s   | K:46/82k ARB:17/17k DampF:~3792                    |
+|  41   | [0m COMPLETE [0m |  55.408s   | K:37/78k ARB:11/34k DampF:~2808                    |
+|  42   | [92m⭐ NEW BEST[0m |  55.032s   | K:38/72k ARB:5/35k DampF:~3027                     |
+|  43   | [0m COMPLETE [0m |  55.794s   | K:38/70k ARB:4/30k DampF:~3002                     |
+|  44   | [0m COMPLETE [0m |  58.873s   | K:53/72k ARB:12/35k DampF:~2791                    |
+|  45   | [0m COMPLETE [0m |  59.347s   | K:34/78k ARB:8/25k DampF:~2649                     |
+|  46   | [0m COMPLETE [0m |  59.221s   | K:41/68k ARB:0/37k DampF:~2753                     |
+|  47   | [0m COMPLETE [0m |  55.514s   | K:45/73k ARB:14/44k DampF:~2958                    |
+|  48   | [0m COMPLETE [0m |  55.491s   | K:50/63k ARB:6/30k DampF:~2540                     |
+|  49   | [0m COMPLETE [0m |  59.932s   | K:49/65k ARB:6/28k DampF:~2421                     |
+|  50   | [0m COMPLETE [0m |  55.293s   | K:45/73k ARB:9/30k DampF:~2513                     |
+|  51   | [0m COMPLETE [0m |  57.626s   | K:44/72k ARB:3/35k DampF:~2694                     |
+|  52   | [0m COMPLETE [0m |  58.629s   | K:51/74k ARB:10/31k DampF:~2416                    |
+|  53   | [0m COMPLETE [0m |  55.767s   | K:45/63k ARB:7/24k DampF:~3020                     |
+|  54   | [0m COMPLETE [0m |  56.610s   | K:56/68k ARB:2/29k DampF:~2491                     |
+|  55   | [0m COMPLETE [0m |  56.047s   | K:49/78k ARB:14/32k DampF:~2777                    |
+|  56   | [0m COMPLETE [0m |  59.866s   | K:40/62k ARB:6/28k DampF:~2648                     |
+|  57   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  58   | [0m COMPLETE [0m |  58.426s   | K:47/72k ARB:1/35k DampF:~2916                     |
+|  59   | [0m COMPLETE [0m |  59.632s   | K:51/75k ARB:5/32k DampF:~2464                     |
+|  60   | [0m COMPLETE [0m |  58.330s   | K:43/81k ARB:13/26k DampF:~2441                    |
+|  61   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  62   | [0m COMPLETE [0m |  59.074s   | K:36/67k ARB:10/39k DampF:~2686                    |
+|  63   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  64   | [0m COMPLETE [0m |  59.152s   | K:42/70k ARB:12/22k DampF:~3155                    |
+|  65   | [0m COMPLETE [0m |  57.549s   | K:35/64k ARB:17/34k DampF:~2882                    |
+|  66   | [0m COMPLETE [0m |  56.493s   | K:46/51k ARB:6/27k DampF:~2628                     |
+|  67   | [0m COMPLETE [0m |  55.127s   | K:38/79k ARB:3/44k DampF:~2812                     |
+|  68   | [0m COMPLETE [0m |  59.215s   | K:39/79k ARB:2/44k DampF:~2827                     |
+|  69   | [0m COMPLETE [0m |  58.985s   | K:44/76k ARB:0/41k DampF:~2078                     |
+|  70   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  71   | [0m COMPLETE [0m |  56.647s   | K:37/80k ARB:11/45k DampF:~2540                    |
+|  72   | [0m COMPLETE [0m |  58.417s   | K:42/83k ARB:9/48k DampF:~3332                     |
+|  73   | [0m COMPLETE [0m |  56.036s   | K:31/77k ARB:19/30k DampF:~2988                    |
+|  74   | [0m COMPLETE [0m |  57.114s   | K:35/71k ARB:15/43k DampF:~2474                    |
+|  75   | [0m COMPLETE [0m |  59.786s   | K:45/67k ARB:5/40k DampF:~3071                     |
+|  76   | [0m COMPLETE [0m |  57.935s   | K:40/74k ARB:8/42k DampF:~2560                     |
+|  77   | [0m COMPLETE [0m |  58.022s   | K:32/79k ARB:2/34k DampF:~3404                     |
+|  78   | [0m COMPLETE [0m |  59.069s   | K:36/70k ARB:21/32k DampF:~3427                    |
+|  79   | [0m COMPLETE [0m |  56.497s   | K:42/77k ARB:14/47k DampF:~2177                    |
+|  80   | [0m COMPLETE [0m |  57.228s   | K:47/65k ARB:24/39k DampF:~1933                    |
+|  81   | [0m COMPLETE [0m |  58.853s   | K:27/75k ARB:11/43k DampF:~3658                    |
+|  82   | [0m COMPLETE [0m |  56.604s   | K:29/72k ARB:19/37k DampF:~3191                    |
+|  83   | [0m COMPLETE [0m |  59.005s   | K:39/80k ARB:17/50k DampF:~3255                    |
+|  84   | [0m COMPLETE [0m |  55.417s   | K:32/78k ARB:4/45k DampF:~2614                     |
+|  85   | [0m COMPLETE [0m |  56.537s   | K:34/82k ARB:9/44k DampF:~2530                     |
+|  86   | [0m COMPLETE [0m |  56.914s   | K:40/77k ARB:3/54k DampF:~2782                     |
+|  87   | [0m COMPLETE [0m |  58.872s   | K:43/69k ARB:5/46k DampF:~2830                     |
+|  88   | [0m COMPLETE [0m |  59.950s   | K:32/84k ARB:0/48k DampF:~2862                     |
+|  89   | [0m COMPLETE [0m |  56.854s   | K:46/86k ARB:7/40k DampF:~2559                     |
+|  90   | [0m COMPLETE [0m |  57.400s   | K:41/79k ARB:6/29k DampF:~2485                     |
+|  91   | [0m COMPLETE [0m |  56.856s   | K:29/74k ARB:15/43k DampF:~2818                    |
+|  92   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  93   | [0m COMPLETE [0m |  56.335s   | K:35/73k ARB:10/35k DampF:~3486                    |
+|  94   | [0m COMPLETE [0m |  57.592s   | K:37/77k ARB:9/45k DampF:~3186                     |
+|  95   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+|  96   | [0m COMPLETE [0m |  58.853s   | K:33/71k ARB:2/38k DampF:~2728                     |
+|  97   | [0m COMPLETE [0m |  59.687s   | K:30/76k ARB:16/42k DampF:~2677                    |
+|  98   | [0m COMPLETE [0m |  57.247s   | K:22/80k ARB:11/40k DampF:~2668                    |
+|  99   | [0m COMPLETE [0m |  56.481s   | K:44/73k ARB:6/34k DampF:~2744                     |
+----------------------------------------------------------------------------------------
+✅ Optimization Complete.

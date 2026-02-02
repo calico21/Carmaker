@@ -42,8 +42,8 @@ class Orchestrator:
         
         self.logger.info(f"📂 Output: {self.resources.get_campaign_path()}")
         
-        # Table Header
-        header = f"| {'TRIAL':^5} | {'STATUS':^10} | {'LAP TIME':^10} | {'NOTES':^30} |"
+        # Expanded Table Header
+        header = f"| {'TRIAL':^5} | {'STATUS':^10} | {'LAP TIME':^10} | {'SETUP NOTES':^50} |"
         self.logger.info("-" * len(header))
         self.logger.info(header)
         self.logger.info("-" * len(header))
@@ -58,13 +58,19 @@ class Orchestrator:
         # 1. Suggest Params
         if self.optimization_mode == "dynamics":
             params = self._suggest_dynamics_params(trial)
-            # FIX: Use "Spring_F" (dict key) not "k_spring_f" (internal name)
-            k_f = int(params.get('Spring_F', 0) / 1000)
-            k_r = int(params.get('Spring_R', 0) / 1000)
-            note = f"K_F:{k_f}k K_R:{k_r}k"
+            
+            # --- LOGGING: Compact view of critical params ---
+            kf = int(params['Spring_F'] / 1000)
+            kr = int(params['Spring_R'] / 1000)
+            abf = int(params['Stabilizer_F'] / 1000)
+            abr = int(params['Stabilizer_R'] / 1000)
+            # Average damping for quick reference
+            damp_f = int((params['Damp_Bump_F'] + params['Damp_Reb_F']) / 2)
+            
+            note = f"K:{kf}/{kr}k ARB:{abf}/{abr}k DampF:~{damp_f}"
         else:
             params = self._suggest_kinematics_params(trial)
-            note = "Geometry Update"
+            note = "Geometry Hardpoint Update"
 
         # 2. Surrogate Pruning
         pred_cost, uncertainty = self.surrogate.predict(params)
@@ -106,7 +112,6 @@ class Orchestrator:
 
     def _log_row(self, trial_num, status, time_str, note):
         """Prints a formatted table row"""
-        # ANSI Colors
         RESET = "\033[0m"
         GREEN = "\033[92m"
         RED = "\033[91m"
@@ -117,16 +122,37 @@ class Orchestrator:
         elif "CRASH" in status: color = RED
         elif "PRUNED" in status: color = YELLOW
         
-        # Use simple ASCII for compatibility if needed, but ANSI usually works in VS Code
-        msg = f"| {trial_num:^5} | {color}{status:^10}{RESET} | {time_str:^10} | {note:<30} |"
+        msg = f"| {trial_num:^5} | {color}{status:^10}{RESET} | {time_str:^10} | {note:<50} |"
         self.logger.info(msg)
 
     def _suggest_dynamics_params(self, trial):
+        """
+        FULL VEHICLE DYNAMICS SEARCH SPACE
+        """
         return {
-            "Spring_F": trial.suggest_float("k_spring_f", 20000, 80000),
-            "Spring_R": trial.suggest_float("k_spring_r", 20000, 80000),
-            "Damp_Bump_F": trial.suggest_float("d_bump_f", 1000, 5000),
-            "Damp_Reb_F": trial.suggest_float("d_reb_f", 2000, 8000),
+            # --- SPRINGS (N/m) ---
+            "Spring_F": trial.suggest_float("k_spring_f", 20000, 90000),
+            "Spring_R": trial.suggest_float("k_spring_r", 20000, 90000),
+            
+            # --- DAMPERS FRONT (N/(m/s)) ---
+            "Damp_Bump_F": trial.suggest_float("d_bump_f", 500, 5000),
+            "Damp_Reb_F":  trial.suggest_float("d_reb_f", 1000, 8000),
+            
+            # --- DAMPERS REAR ---
+            "Damp_Bump_R": trial.suggest_float("d_bump_r", 500, 5000),
+            "Damp_Reb_R":  trial.suggest_float("d_reb_r", 1000, 8000),
+
+            # --- ANTI-ROLL BARS (N/m) ---
+            "Stabilizer_F": trial.suggest_float("arb_f", 0, 70000),
+            "Stabilizer_R": trial.suggest_float("arb_r", 0, 70000),
+
+            # --- STATIC ALIGNMENT (rad) ---
+            # Camber: -3.5 deg to -0.5 deg
+            "Camber_Static_F": trial.suggest_float("camber_f", -0.06, -0.008), 
+            "Camber_Static_R": trial.suggest_float("camber_r", -0.04, -0.008),
+            # Toe: -0.5 deg (out) to +0.5 deg (in)
+            "Toe_Static_F": trial.suggest_float("toe_f", -0.008, 0.008),
+            "Toe_Static_R": trial.suggest_float("toe_r", -0.008, 0.008),
         }
 
     def _suggest_kinematics_params(self, trial):
