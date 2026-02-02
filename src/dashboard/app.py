@@ -6,261 +6,205 @@ import plotly.express as px
 import numpy as np
 import os
 import sys
-import tempfile
-import joblib
-
-# --- GEN 6.0 IMPORTS ---
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
-try:
-    from src.core.physics_validator import WhiteBoxValidator
-    # UPDATED: Import the new Robust SystemIdentifier we built in Step 4
-    from src.core.system_id import SystemIdentifier
-except ImportError as e:
-    print(f"Import Error: {e}")
-    WhiteBoxValidator = None
-    SystemIdentifier = None
+import glob
 
 # --- CONFIGURATION ---
-PAGE_TITLE = "FSAE Gen-6.0 Titan Interface"
-DB_PATH = "data/optimization.db"
-DB_URL = f"sqlite:///{DB_PATH}"
-PARQUET_DIR = "data/parquet_store"
-SURROGATE_PATH = "data/suspension_knowledge.pkl" # The "Brain" file
+PAGE_TITLE = "FSAE OPTIMIZER"
+BASE_OUTPUT_DIR = "Output"
 
-st.set_page_config(page_title=PAGE_TITLE, layout="wide", page_icon="🏎️")
+st.set_page_config(
+    page_title=PAGE_TITLE, 
+    layout="wide", 
+    page_icon="🏎️",
+    initial_sidebar_state="expanded"
+)
 
-# --- CUSTOM CSS ---
+# --- RACE CONTROL THEME (CSS) ---
+# This forces the text to be visible and gives a professional dark mode look
 st.markdown("""
 <style>
-.metric-box { background-color: #f0f2f6; border-left: 5px solid #ff4b4b; padding: 10px; border-radius: 5px; }
-.pass-box { border-left: 5px solid #28a745 !important; background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px;}
-.fail-box { border-left: 5px solid #dc3545 !important; background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;}
+    /* Dark Theme Tweaks */
+    .stApp {
+        background-color: #0e1117;
+    }
+    .metric-card {
+        background-color: #262730;
+        border: 1px solid #464b5d;
+        padding: 15px;
+        border-radius: 8px;
+        color: white;
+    }
+    h1, h2, h3 {
+        color: #e0e0e0 !important;
+        font-family: 'Helvetica Neue', sans-serif;
+        font-weight: 700;
+    }
+    /* Metric Colors - Neon Green for Speed */
+    [data-testid="stMetricValue"] {
+        color: #00ff41 !important; 
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+    }
+    [data-testid="stMetricDelta"] svg {
+        fill: #00ff41 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # --- HELPER FUNCTIONS ---
-def load_study(study_name):
+def get_campaigns():
+    """Scans the Output directory for Campaign folders."""
+    if not os.path.exists(BASE_OUTPUT_DIR):
+        return []
+    folders = glob.glob(os.path.join(BASE_OUTPUT_DIR, "Campaign_*"))
+    folders.sort(key=os.path.getmtime, reverse=True)
+    return [os.path.basename(f) for f in folders]
+
+def load_study_data(db_path, selected_mode):
+    """Loads specific study mode (Dynamics or Kinematics) to avoid NaN issues."""
+    storage_url = f"sqlite:///{os.path.abspath(db_path)}"
     try:
-        return optuna.load_study(study_name=study_name, storage=DB_URL)
-    except: return None
-
-def load_surrogate_model():
-    """Loads the actual trained GP model from Step 3"""
-    if os.path.exists(SURROGATE_PATH):
-        try:
-            return joblib.load(SURROGATE_PATH)
-        except: return None
-    return None
-
-# --- MAIN LAYOUT ---
-st.title(f"🧠 {PAGE_TITLE}")
-
-if not os.path.exists(DB_PATH):
-    st.error(f"Database not found at {DB_PATH}. Run 'orchestrator.py' first!")
-    st.stop()
-
-# Load Study
-try:
-    study_summaries = optuna.get_all_study_summaries(storage=DB_URL)
-    study_names = [s.study_name for s in study_summaries]
-except:
-    st.warning("No DB connection.")
-    st.stop()
-
-if not study_names:
-    st.warning("No studies found.")
-    st.stop()
-
-selected_study_name = st.sidebar.selectbox("Select Campaign", study_names, index=len(study_names)-1)
-study = load_study(selected_study_name)
-
-if study:
-    # Process Trials
-    completed_trials = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE]
-    
-    data = []
-    for t in completed_trials:
-        val1 = t.values[0] if t.values else 999.0
+        summaries = optuna.get_all_study_summaries(storage=storage_url)
+        all_dfs = []
         
-        # Handle "Soft Failures" (150s) vs "Hard Failures" (999s)
-        status = "Clean"
-        if val1 > 900: status = "Crash"
-        elif val1 > 100: status = "Soft Fail"
+        for summary in summaries:
+            # Filter: Only load the mode the user asked for
+            if selected_mode.lower() not in summary.study_name.lower():
+                continue
+                
+            study = optuna.load_study(study_name=summary.study_name, storage=storage_url)
+            df = study.trials_dataframe()
+            
+            # Clean columns: "params_k_spring_f" -> "k_spring_f"
+            df.columns = [col.replace("user_attrs_", "").replace("params_", "") for col in df.columns]
+            
+            # Filter for completed trials
+            if "state" in df.columns:
+                df = df[df["state"] == "COMPLETE"]
+            
+            # Ensure Lap Time exists
+            if "value" in df.columns:
+                df = df.dropna(subset=["value"])
+                df.rename(columns={"value": "Lap Time"}, inplace=True)
+                all_dfs.append(df)
         
-        row = {
-            "Number": t.number, 
-            "Lap Time (s)": val1, 
-            "Status": status,
-            "k_spring_f": t.params.get("k_spring_f"),
-            "HP_FL_Wishbone_Upper_Z": t.params.get("hp_flu_z", np.nan), # Matches new Orchestrator keys
-            "Mass_Penalty": t.user_attrs.get("mass_penalty", 0.0), # If you decide to log this later
-            "Yaw Bandwidth (Hz)": t.user_attrs.get("yaw_bandwidth", 0.0),
-            "Response Lag (ms)": t.user_attrs.get("response_lag", 50.0),
-        }
-        data.append(row)
+        if not all_dfs:
+            return pd.DataFrame()
+            
+        return pd.concat(all_dfs, ignore_index=True)
+
+    except Exception as e:
+        st.error(f"Error loading database: {e}")
+        return pd.DataFrame()
+
+# --- SIDEBAR ---
+st.sidebar.title(f"🛠️ {PAGE_TITLE}")
+st.sidebar.header("Data Source")
+
+campaigns = get_campaigns()
+if not campaigns:
+    st.error("No Campaigns found. Run the optimizer!")
+    st.stop()
+
+selected_campaign = st.sidebar.selectbox("Select Campaign", campaigns)
+db_path = os.path.join(BASE_OUTPUT_DIR, selected_campaign, "optimization.db")
+
+st.sidebar.markdown("---")
+st.sidebar.header("Filter Mode")
+# Critical: Selecting mode prevents mixing "Springs" with "Hardpoints" which causes invisible graphs
+mode = st.sidebar.radio("View Results For:", ["Dynamics", "Kinematics"])
+
+# --- DATA LOADING ---
+df = load_study_data(db_path, mode)
+
+if df.empty:
+    st.info(f"No completed data found for **{mode}** in this campaign.")
+    st.stop()
+
+# --- PRE-PROCESSING ---
+# Get parameter columns (numeric only, excluding metadata)
+meta_cols = ["number", "Lap Time", "datetime_start", "datetime_complete", "duration", "state", "system_attrs_nsga2:generation", "mass_penalty"]
+param_cols = [c for c in df.columns if c not in meta_cols and df[c].dtype in [float, int]]
+
+# --- DASHBOARD HEADER ---
+best_run = df.loc[df["Lap Time"].idxmin()]
+best_time = best_run["Lap Time"]
+avg_time = df["Lap Time"].mean()
+
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("🏆 Best Lap Time", f"{best_time:.3f} s", delta=f"-{(avg_time - best_time):.2f} s")
+col2.metric("💾 Valid Trials", len(df))
+col3.metric("🏎️ Simulated Dist", f"{len(df) * 1.2:.1f} km")
+
+# Mass Penalty Display
+mass_pen = best_run.get("mass_penalty", 0.0)
+col4.metric("⚖️ Weight Penalty", f"{mass_pen:.1f} kg", delta_color="inverse")
+
+# --- TABBED VIEW ---
+tab_overview, tab_3d, tab_par, tab_data = st.tabs(["📉 Overview", "🌐 3D Map", "🕸️ Trade-offs", "📄 Data"])
+
+with tab_overview:
+    st.markdown("### Optimization Convergence")
     
-    df = pd.DataFrame(data)
+    # 2D Scatter with Trendline
+    # We force the template to 'plotly_dark' to ensure points are visible
+    fig_conv = px.scatter(
+        df, x="number", y="Lap Time",
+        color="Lap Time",
+        color_continuous_scale="Turbo_r", # Red=Slow, Blue=Fast
+        title="Lap Time History (Lower is Better)",
+        hover_data=param_cols
+    )
     
-    # Filter for Best Run (Ignoring crashes)
-    if not df.empty:
-        df_clean = df[df["Status"] == "Clean"]
-        if not df_clean.empty:
-            best_run = df_clean.loc[df_clean["Lap Time (s)"].idxmin()]
-        else:
-            best_run = None
+    # Add "Best So Far" line
+    df_sorted = df.sort_values("number")
+    df_sorted["Best So Far"] = df_sorted["Lap Time"].cummin()
+    fig_conv.add_trace(go.Scatter(
+        x=df_sorted["number"], y=df_sorted["Best So Far"],
+        mode='lines', name='Best Record',
+        line=dict(color='white', width=2, dash='dash')
+    ))
+    
+    fig_conv.update_layout(template="plotly_dark", height=450)
+    st.plotly_chart(fig_conv, use_container_width=True)
+
+with tab_3d:
+    st.markdown("### Performance Landscape")
+    
+    if len(param_cols) >= 2:
+        c1, c2 = st.columns([1, 4])
+        with c1:
+            x_ax = st.selectbox("X Axis", param_cols, index=0)
+            y_ax = st.selectbox("Y Axis", param_cols, index=1)
+        with c2:
+            # 3D Plot
+            fig_3d = px.scatter_3d(
+                df, x=x_ax, y=y_ax, z="Lap Time",
+                color="Lap Time",
+                color_continuous_scale="Turbo_r",
+                title=f"Interaction: {x_ax} vs {y_ax}",
+                opacity=0.8
+            )
+            fig_3d.update_traces(marker=dict(size=6, line=dict(width=1, color='DarkSlateGrey')))
+            fig_3d.update_layout(template="plotly_dark", height=600)
+            st.plotly_chart(fig_3d, use_container_width=True)
     else:
-        best_run = None
+        st.warning("Not enough parameters to plot 3D map.")
 
-    # --- TABS ---
-    tab_overview, tab_geo, tab_bayes, tab_sindy = st.tabs([
-        "📊 Championship Standings", 
-        "📐 Kinematics & Mass", 
-        "🧠 AI Brain Scan", 
-        "🧪 RANSAC Physics"
-    ])
+with tab_par:
+    st.markdown("### Parameter Sensitivity (Parallel Coordinates)")
+    st.caption("Drag the vertical axes to filter for the fastest laps.")
+    
+    # Filter to numeric only for this chart
+    plot_cols = param_cols + ["Lap Time"]
+    
+    fig_par = px.parallel_coordinates(
+        df[plot_cols],
+        color="Lap Time",
+        color_continuous_scale="Turbo_r",
+    )
+    fig_par.update_layout(template="plotly_dark", height=500)
+    st.plotly_chart(fig_par, use_container_width=True)
 
-    # =========================================================
-    # TAB 1: OVERVIEW
-    # =========================================================
-    with tab_overview:
-        st.markdown("### 🏆 Performance Summary")
-        if best_run is not None:
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Best Lap Time", f"{best_run['Lap Time (s)']:.3f} s", "Target: < 55s")
-            c2.metric("Yaw Bandwidth", f"{best_run['Yaw Bandwidth (Hz)']:.2f} Hz", "Target: > 2.5Hz")
-            
-            # Show Convergence
-            fig = px.scatter(
-                df, x="Number", y="Lap Time (s)", color="Status",
-                color_discrete_map={"Clean": "green", "Soft Fail": "orange", "Crash": "red"},
-                title="Optimization Convergence History"
-            )
-            # Add threshold line
-            fig.add_hline(y=55.0, line_dash="dash", annotation_text="Target")
-            st.plotly_chart(fig, use_container_width=True)
-
-    # =========================================================
-    # TAB 2: KINEMATICS (With Mass Penalty Check)
-    # =========================================================
-    with tab_geo:
-        st.header("📐 Geometry vs. Weight Trade-off")
-        
-        if "HP_FL_Wishbone_Upper_Z" in df.columns and not df["HP_FL_Wishbone_Upper_Z"].isna().all():
-            st.info("Visualizing the 'Teleporting Hardpoints' constraint. If the points move too far, mass increases.")
-            
-            fig_geo = px.scatter(
-                df_clean, 
-                x="HP_FL_Wishbone_Upper_Z", 
-                y="Lap Time (s)",
-                color="Yaw Bandwidth (Hz)", 
-                size="Lap Time (s)", # In real app, size by 'Mass' if logged
-                labels={"HP_FL_Wishbone_Upper_Z": "Roll Center Adjust (mm)"},
-                title="Roll Center Height vs Lap Time"
-            )
-            st.plotly_chart(fig_geo, use_container_width=True)
-        else:
-            st.warning("No Kinematic Data found. Switch Orchestrator to `mode='kinematics'` to generate this data.")
-
-    # =========================================================
-    # TAB 3: BAYESIAN BRAIN SCAN (Real GP Visualization)
-    # =========================================================
-    with tab_bayes:
-        st.header("🧠 Gaussian Process Visualization")
-        
-        surrogate_state = load_surrogate_model()
-        
-        if surrogate_state:
-            model = surrogate_state["model"]
-            features = surrogate_state["features"]
-            
-            st.success(f"Loaded Trained Brain! Learned from {len(surrogate_state['X'])} simulations.")
-            
-            # Select a parameter to slice
-            param_to_plot = st.selectbox("Select Parameter to Visualize", features)
-            param_idx = features.index(param_to_plot)
-            
-            # Generate 1D Slice
-            x_min = min(x[param_idx] for x in surrogate_state['X'])
-            x_max = max(x[param_idx] for x in surrogate_state['X'])
-            x_grid = np.linspace(x_min, x_max, 100)
-            
-            # Create query vector (mean of all other params)
-            X_mean = np.mean(surrogate_state['X'], axis=0)
-            X_query = np.tile(X_mean, (100, 1))
-            X_query[:, param_idx] = x_grid
-            
-            # Predict
-            y_pred, y_std = model.predict(X_query, return_std=True)
-            
-            # Plot
-            fig_gp = go.Figure()
-            
-            # Uncertainty Cloud
-            fig_gp.add_trace(go.Scatter(
-                x=np.concatenate([x_grid, x_grid[::-1]]),
-                y=np.concatenate([y_pred + 1.96*y_std, (y_pred - 1.96*y_std)[::-1]]),
-                fill='toself', fillcolor='rgba(0,100,255,0.2)',
-                line=dict(color='rgba(255,255,255,0)'),
-                name='95% Confidence'
-            ))
-            
-            # Mean Line
-            fig_gp.add_trace(go.Scatter(x=x_grid, y=y_pred, line=dict(color='blue'), name='AI Prediction'))
-            
-            fig_gp.update_layout(title=f"AI Belief: Impact of {param_to_plot}", yaxis_title="Predicted Lap Time Cost")
-            st.plotly_chart(fig_gp, use_container_width=True)
-            
-        else:
-            st.warning("No 'suspension_knowledge.pkl' found. Run the Orchestrator to train the AI.")
-
-    # =========================================================
-    # TAB 4: RANSAC PHYSICS DISCOVERY (The Judge Winner)
-    # =========================================================
-    with tab_sindy:
-        st.header("🧪 SINDy + RANSAC Validation")
-        st.markdown("Upload raw telemetry to verify the **Robust Identification** algorithm.")
-        
-        uploaded_file = st.file_uploader("Upload Motec/CSV (must contain 'vx', 'vy', 'yaw_rate', 'ay')", type=["csv"])
-        
-        if uploaded_file and SystemIdentifier:
-            # Save temp file for the SystemID class to read
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp:
-                tmp.write(uploaded_file.getvalue())
-                tmp_path = tmp.name
-            
-            sys_id = SystemIdentifier()
-            
-            with st.spinner("Smoothing Signals & rejecting Outliers (RANSAC)..."):
-                success = sys_id.fit(tmp_path)
-            
-            if success:
-                st.success("Physics Identified successfully!")
-                
-                # Get the curve
-                alpha_pred, Fy_pred = sys_id.get_tire_curve()
-                
-                # Plot
-                fig_tire = go.Figure()
-                
-                # We can't plot raw points easily without re-reading, but we can show the curve
-                fig_tire.add_trace(go.Scatter(
-                    x=np.degrees(alpha_pred), y=Fy_pred, 
-                    line=dict(color='red', width=3), 
-                    name='SINDy Discovered Law'
-                ))
-                
-                fig_tire.update_layout(
-                    title="Discovered Lateral Tire Force Model",
-                    xaxis_title="Slip Angle (deg)",
-                    yaxis_title="Lateral Force (N)",
-                    xaxis_range=[-10, 10]
-                )
-                st.plotly_chart(fig_tire, use_container_width=True)
-                
-                st.info("Note how the curve is smooth despite potential noise in the input data. This is the power of Savitzky-Golay filtering.")
-                
-            else:
-                st.error("Identification failed. Data might be too noisy or low speed.")
-            
-            os.remove(tmp_path)
+with tab_data:
+    st.dataframe(df.sort_values("Lap Time"), use_container_width=True)

@@ -1,71 +1,71 @@
-import multiprocessing
+import os
+import datetime
+import shutil
 import logging
-import queue
-import time
-from contextlib import contextmanager
-
-logger = logging.getLogger(__name__)
 
 class ResourceManager:
     """
-    Thread-safe & Process-safe manager for limited system resources.
-    handles:
-      1. TCP Ports (Unique required per instance)
-      2. Licenses (Hard limit on concurrency)
+    The Librarian.
+    Responsibility: Manages the file system to ensure every simulation 
+    has a clean, isolated environment.
+    
+    Structure:
+    Output/
+      └── Campaign_YYYY-MM-DD_HH-MM/
+          ├── optimization.db
+          ├── Trial_000/
+          ├── Trial_001/
+          └── ...
     """
-    def __init__(self, start_port: int, max_licenses: int):
-        self.manager = multiprocessing.Manager()
+    def __init__(self, base_dir="Output"):
+        self.logger = logging.getLogger("ResourceManager")
+        self.base_dir = base_dir
         
-        # A Queue acts as the pool of available ports.
-        # FIFO (First-In-First-Out) ensures fair usage.
-        self.available_ports = self.manager.Queue()
+        # Create a unique name for this entire optimization session
+        # Format: Output/Campaign_YYYY-MM-DD_HH-MM
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.campaign_folder = os.path.join(self.base_dir, f"Campaign_{timestamp}")
         
-        # Populate the queue with ports (e.g., 16660 to 16660 + max_licenses)
-        for i in range(max_licenses):
-            self.available_ports.put(start_port + i)
-            
-        # A Semaphore strictly limits the number of active workers.
-        # If max_licenses=4, the 5th worker will block here until one finishes.
-        self.license_semaphore = self.manager.Semaphore(max_licenses)
-        
-        self.max_licenses = max_licenses
-        logger.info(f"Resource Manager initialized with {max_licenses} slots.")
+        # Create the main folder immediately
+        try:
+            os.makedirs(self.campaign_folder, exist_ok=True)
+            self.logger.info(f"📂 Created Campaign Folder: {self.campaign_folder}")
+            print(f"📂 Created Campaign Folder: {self.campaign_folder}")
+        except OSError as e:
+            self.logger.error(f"Failed to create campaign folder: {e}")
+            raise
 
-    @contextmanager
-    def lease(self, worker_id: str):
+    def setup_trial_folder(self, trial_number):
         """
-        Context Manager for safe resource allocation.
-        Usage:
-            with resource_manager.lease("Worker_1") as port:
-                run_simulation(port)
+        Creates a sub-folder for a specific run (e.g., Trial_042).
+        Returns the absolute path so other scripts know where to save files.
         """
-        port = None
-        start_wait = time.time()
+        trial_name = f"Trial_{trial_number:03d}"
+        path = os.path.join(self.campaign_folder, trial_name)
         
         try:
-            # 1. Acquire License (Blocks if limit reached)
-            # This is the "Throttle"
-            logger.debug(f"[{worker_id}] Waiting for license...")
-            self.license_semaphore.acquire()
-            
-            # 2. Acquire Port (Should be instant if semaphore passed)
-            try:
-                port = self.available_ports.get(timeout=5)
-            except queue.Empty:
-                # This indicates a logic error: Semaphore let us in, but no port?
-                logger.critical(f"[{worker_id}] CRITICAL: License acquired but no Port available!")
-                raise ResourceWarning("Port Pool Exhaustion")
+            os.makedirs(path, exist_ok=True)
+            return path
+        except OSError as e:
+            self.logger.error(f"Failed to create trial folder {path}: {e}")
+            return None
 
-            wait_time = time.time() - start_wait
-            logger.info(f"[{worker_id}] Acquired License + Port {port} (Waited {wait_time:.2f}s)")
+    def get_db_path(self):
+        """
+        Returns the SQLalchemy connection string for the database.
+        We place the DB inside the campaign folder so it's portable.
+        """
+        # SQLite needs 3 slashes for relative path, 4 for absolute.
+        # We use absolute path to be safe.
+        db_file_path = os.path.join(self.campaign_folder, 'optimization.db')
+        abs_path = os.path.abspath(db_file_path)
+        
+        # Windows compatibility check for path separators
+        if os.name == 'nt':
+            abs_path = abs_path.replace('\\', '/')
             
-            yield port
+        return f"sqlite:///{abs_path}"
 
-        finally:
-            # 3. Release Resources (Guaranteed execution even if simulation crashes)
-            if port is not None:
-                self.available_ports.put(port)
-                logger.debug(f"[{worker_id}] Port {port} returned.")
-            
-            self.license_semaphore.release()
-            logger.debug(f"[{worker_id}] License released.")
+    def get_campaign_path(self):
+        """Returns the root path of the current campaign."""
+        return self.campaign_folder

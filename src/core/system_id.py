@@ -2,31 +2,33 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LassoCV, RANSACRegressor
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
-from sklearn.pipeline import Pipeline
 from scipy.signal import savgol_filter
 import logging
 
 class SystemIdentifier:
     """
-    SINDy (Sparse Identification of Nonlinear Dynamics) for Tire Modeling.
+    SINDy (Sparse Identification of Nonlinear Dynamics) with RANSAC.
     
-    UPGRADED: Now features Signal Smoothing (Savitzky-Golay) and 
-    Robust Regression (RANSAC) to ignore outliers (cones, curbs).
+    Purpose:
+    1. Read noisy telemetry data.
+    2. Remove outliers (cone strikes, curb hits) using RANSAC.
+    3. Identify the underlying Tire Model (Lateral Force vs Slip Angle).
     """
     def __init__(self):
         self.logger = logging.getLogger("SystemID")
+        # Degree 3 polynomial allows capturing the peak and fall-off of a tire curve
         self.poly = PolynomialFeatures(degree=3, include_bias=False)
-        self.scaler = StandardScaler()
         
-        # --- ROBUST ESTIMATOR ---
-        # 1. LassoCV: Enforces sparsity (finds the simplest equation).
-        # 2. RANSAC: Ignores data points that don't fit the trend (outliers).
+        # --- ROBUST ESTIMATOR CONFIGURATION ---
+        # Base estimator: LassoCV (L1 regularization) to find sparse physics terms
         base_estimator = LassoCV(cv=5, fit_intercept=False, max_iter=10000, n_jobs=-1)
         
+        # Wrapper: RANSAC (Robust regression)
+        # It assumes at least 60% of data is "Real Physics" and up to 40% could be "Garbage/Noise"
         self.model = RANSACRegressor(
             estimator=base_estimator,
-            min_samples=0.6,  # Require at least 60% of data to agree
-            residual_threshold=None, # Auto-detect based on MAD
+            min_samples=0.6, 
+            residual_threshold=None, # Auto-detect based on Median Absolute Deviation
             random_state=42
         )
         
@@ -35,69 +37,61 @@ class SystemIdentifier:
 
     def fit(self, telemetry_path):
         """
-        Reads telemetry, cleans noise, and discovers the governing equations.
+        Ingests a CSV, cleans it, and identifies the tire curve.
+        Returns: True if a valid model was found.
         """
         try:
-            # 1. Load Data
-            df = pd.read_csv(telemetry_path)
-            required_cols = ['time', 'vx', 'vy', 'yaw_rate', 'steer_angle', 'ax', 'ay']
-            if not all(col in df.columns for col in required_cols):
-                self.logger.error(f"Missing columns in {telemetry_path}")
-                return False
+            if not isinstance(telemetry_path, pd.DataFrame):
+                 # Handle path string input
+                df = pd.read_csv(telemetry_path)
+            else:
+                df = telemetry_path
 
-            # 2. Pre-Process (The "Reality" Filter)
-            # Raw telemetry is too noisy for derivative calculation.
-            # We use Savitzky-Golay to smooth it without killing the peaks.
+            # 1. Signal Smoothing (Savitzky-Golay)
+            # Differentiating noisy signals (like calculating Slip Angle) is dangerous.
+            # We smooth the raw sensors first.
             df_clean = self._smooth_signals(df)
 
-            # 3. Calculate States (Slip Angles)
-            # alpha = atan(vy + r*lf / vx) - steer
-            # (Simplified for single track)
-            lf = 1.53 # Approx CG to front axle (m) - should be config
+            # 2. Physics Calculation (Single Track Model approximation)
+            # You might need to adjust 'lf' (CG to Front Axle) based on your car
+            lf = 1.53 
             
             # Avoid division by zero
-            vx_safe = np.maximum(df_clean['vx'], 1.0) 
+            vx_safe = np.maximum(df_clean['vx'], 1.0)
             
+            # Slip Angle (Alpha) = atan((vy + r*lf) / vx) - delta
             alpha_f = np.arctan((df_clean['vy'] + df_clean['yaw_rate']*lf) / vx_safe) - df_clean['steer_angle']
-            Fy_f = df_clean['ay'] * 250.0 # Approx Effective Mass (kg)
             
-            # 4. Prepare SINDy Matrices
-            X = alpha_f.values.reshape(-1, 1)
-            y = Fy_f.values
+            # Lateral Force (Fy) = ay * Mass (approx)
+            # For pure curve fitting, using 'ay' directly is often enough to see the shape
+            Fy_f = df_clean['ay'] * 250.0 
             
-            # Filter out low-speed data (physics don't apply at < 3 m/s)
-            mask = df_clean['vx'] > 3.0
-            X = X[mask]
-            y = y[mask]
-
-            if len(y) < 100:
-                self.logger.warning("Not enough high-speed data to fit tire model.")
+            # 3. Filter Low Speed Data
+            # Tire physics are singular (undefined) at v=0. 
+            # We only trust data above 5 m/s.
+            mask = df_clean['vx'] > 5.0
+            
+            if mask.sum() < 100:
+                self.logger.warning("Not enough high-speed data to identify physics.")
                 return False
 
-            # 5. Fit the Model (Discover Physics)
-            # Create pipeline: Polynomials -> Scale -> RANSAC(Lasso)
-            # Note: We manually transform X to polynomials first so we can extract names later
+            X = alpha_f.values[mask].reshape(-1, 1)
+            y = Fy_f.values[mask]
+
+            # 4. Fit the RANSAC Model
+            # Transform Alpha into [Alpha, Alpha^2, Alpha^3]
             X_poly = self.poly.fit_transform(X)
             
-            self.logger.info("Fitting SINDy model with RANSAC...")
+            self.logger.info("fitting robust tire model...")
             self.model.fit(X_poly, y)
             
-            # 6. Validate Physics (Guardrail)
-            # Check R-squared on the inliers only
+            # 5. Validation
+            # Check the R^2 score on the INLIERS (the clean data)
             score = self.model.score(X_poly, y)
-            if score < 0.8:
-                self.logger.warning(f"SINDy Fit Poor (R2={score:.2f}). Data might be garbage.")
-                return False
-
-            self.is_fitted = True
-            self.logger.info(f"Tire Model Identified! (R2={score:.2f})")
+            self.logger.info(f"Model identified. R2 Score on inliers: {score:.2f}")
             
-            # Extract coefficients for inspection
-            estimator = self.model.estimator_
-            coeffs = estimator.coef_
-            self._log_equation(coeffs)
-            
-            return True
+            self.is_fitted = (score > 0.6) # Threshold for "Good Model"
+            return self.is_fitted
 
         except Exception as e:
             self.logger.error(f"System ID Failed: {e}")
@@ -105,41 +99,34 @@ class SystemIdentifier:
 
     def _smooth_signals(self, df):
         """
-        Applies Savitzky-Golay filter to remove sensor jitter.
-        Window length must be odd.
+        Applies Savitzky-Golay filter to remove high-freq noise (engine vibration/sensor jitter).
         """
         df_new = df.copy()
-        window = 11 # 110ms at 100Hz
-        poly = 2
+        window = 11 # Window size (must be odd)
+        poly_order = 2
         
-        for col in ['vx', 'vy', 'yaw_rate', 'steer_angle', 'ax', 'ay']:
-            try:
-                df_new[col] = savgol_filter(df[col], window_length=window, polyorder=poly)
-            except Exception:
-                pass # If signal is too short, skip filtering
+        target_cols = ['vx', 'vy', 'yaw_rate', 'steer_angle', 'ay', 'ax']
         
+        for col in target_cols:
+            if col in df.columns:
+                try:
+                    df_new[col] = savgol_filter(df[col], window_length=window, polyorder=poly_order)
+                except ValueError:
+                    # Skip if signal is shorter than window
+                    pass
         return df_new
-
-    def _log_equation(self, coeffs):
-        """
-        Pretty-prints the discovered math.
-        """
-        feature_names = self.poly.get_feature_names_out(['alpha'])
-        equation = "Fy = "
-        for name, coef in zip(feature_names, coeffs):
-            if abs(coef) > 0.1: # Threshold for sparsity
-                equation += f"{coef:+.2f}*{name} "
-        self.logger.info(f"Discovered Law: {equation}")
 
     def get_tire_curve(self):
         """
-        Returns x, y arrays for plotting the discovered curve.
+        Returns (Alpha, Fy) arrays for plotting the discovered curve.
         """
         if not self.is_fitted:
             return None, None
             
-        alpha_range = np.linspace(-0.3, 0.3, 100).reshape(-1, 1) # -15 to +15 deg
-        X_poly = self.poly.transform(alpha_range)
-        Fy_pred = self.model.predict(X_poly)
+        # Generate a smooth sweep from -15 to +15 degrees (approx -0.3 to 0.3 rad)
+        alpha_sweep = np.linspace(-0.3, 0.3, 100).reshape(-1, 1)
+        X_poly_sweep = self.poly.transform(alpha_sweep)
         
-        return alpha_range.flatten(), Fy_pred
+        Fy_pred = self.model.predict(X_poly_sweep)
+        
+        return alpha_sweep.flatten(), Fy_pred

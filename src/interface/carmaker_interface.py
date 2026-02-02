@@ -1,185 +1,105 @@
-import subprocess
-import threading
-import time
 import os
+import time
+import shutil
+import subprocess
+import pandas as pd
 import logging
-from typing import Dict, Optional
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - [INTERFACE] - %(message)s')
-logger = logging.getLogger(__name__)
-
-class SimulationWatchdog:
-    """
-    Responsibilities:
-    1. Monitor stdout/stderr in real-time.
-    2. Detect failure keywords (License, Crash).
-    3. Detect Pruning keywords (Sector Times) for Optuna.
-    4. Enforce timeouts.
-    """
-    def __init__(self, process: subprocess.Popen, timeout: int, trial=None, sector_limits: Dict[str, float] = None):
-        self.process = process
-        self.timeout = timeout
-        self.trial = trial
-        self.sector_limits = sector_limits or {}  # e.g., {"Sector 1": 28.0}
-        
-        self.start_time = time.time()
-        self.error_detected = False
-        self.error_message = ""
-        self.pruned = False 
-        self.timed_out = False
-        self._stop_event = threading.Event()
-
-        # Failure keywords
-        self.FAILURE_KEYWORDS = [
-            "License error", "Checkout failed", "Segmentation fault",
-            "aborted", "FATAL ERROR", "Exception"
-        ]
-
-    def monitor(self):
-        """
-        Real-time Log Parsing.
-        """
-        # Ensure we can read line-by-line
-        if self.process.stdout:
-            self.process.stdout.reconfigure(line_buffering=True)
-        
-        while not self._stop_event.is_set():
-            # Check if process is dead
-            if self.process.poll() is not None:
-                break
-
-            # Non-blocking read loop is hard in Python without select() on Windows.
-            # We rely on readline() with line buffering.
-            try:
-                line = self.process.stdout.readline()
-                if not line:
-                    break
-            except Exception:
-                break
-            
-            # A. CRASH DETECTION
-            for kw in self.FAILURE_KEYWORDS:
-                if kw in line:
-                    self.error_detected = True
-                    self.error_message = kw
-                    self.kill_process(f"Crash Detected: {kw}")
-                    return
-
-            # B. EFFICIENCY: DYNAMIC SECTOR PRUNING
-            # We check if any defined sector limit is violated
-            # Log format expected: "End of Sector 1: 29.5 s"
-            if self.trial and self.sector_limits:
-                for sector_name, limit in self.sector_limits.items():
-                    if sector_name in line:
-                        self._check_sector_time(line, limit)
-                        if self.pruned: return
-
-            # C. TIMEOUT CHECK
-            if time.time() - self.start_time > self.timeout:
-                self.timed_out = True
-                self.kill_process("Timeout Reached")
-                return
-
-    def _check_sector_time(self, line: str, limit: float):
-        """Parses the log line for time values."""
-        try:
-            words = line.split()
-            for w in words:
-                try:
-                    time_val = float(w)
-                    # Sanity check: Times are usually 0-1000s
-                    if 0 < time_val < 1000:
-                        if time_val > limit:
-                            logger.warning(f"✂️ PRUNED: {line.strip()} (> {limit}s)")
-                            self.pruned = True
-                            # We report to Optuna so it knows the run was bad
-                            self.trial.report(time_val, step=1) 
-                            self.kill_process("Sector Time Limit Exceeded")
-                            return
-                except ValueError:
-                    continue
-        except Exception:
-            pass
-
-    def kill_process(self, reason: str):
-        """Safely terminates the external binary."""
-        logger.info(f"Terminating Simulation. Reason: {reason}")
-        try:
-            # Windows: Kill the whole process tree to catch child processes
-            subprocess.call(['taskkill', '/F', '/T', '/PID', str(self.process.pid)])
-        except Exception as e:
-            logger.error(f"Failed to kill process: {e}")
-
-    def stop(self):
-        self._stop_event.set()
-
 
 class CarMakerInterface:
-    def __init__(self, executable_path: str, project_folder: str):
-        self.exe_path = executable_path
-        self.project_folder = project_folder
+    """
+    Automates the CarMaker Simulation Environment.
     
-    def run_simulation(self, test_run_name: str, tcp_port: int, timeout_sec: int, trial=None, sector_limits: Dict[str, float] = None) -> Dict:
+    Responsibilities:
+    1. Launch CarMaker (CM.exe) in batch mode.
+    2. Execute the specific TestRun.
+    3. Monitor for crashes/license failures.
+    4. Move the output files (Telemetry) to the correct Trial folder.
+    """
+    def __init__(self):
+        self.logger = logging.getLogger("CM_Interface")
+        
+        # --- CONFIGURATION ---
+        # UPDATE THIS PATH to match your specific installation
+        # Common paths: "C:/IPG/carmaker/win64-10.0/bin/CM.exe"
+        self.CM_EXEC = r"C:\IPG\carmaker\win64-10.0\bin\CM.exe" 
+        
+        # Retry settings for license server issues
+        self.MAX_RETRIES = 3
+        self.RETRY_DELAY = 5 # seconds
+
+    def run_test(self, vehicle_path, output_folder, trial_id):
         """
-        Launches CarMaker in headless mode.
+        Runs the simulation and ensures the result lands in 'output_folder'.
+        
+        Args:
+            vehicle_path (str): Path to the injected Vehicle file.
+            output_folder (str): Path to the Trial_XXX folder.
+            trial_id (int): ID of the current trial.
+            
+        Returns:
+            dict: {status, lap_time, cones_hit}
         """
-        cmd = [
-            self.exe_path,
-            "-batch",
-            "-cmdport", str(tcp_port),
-            "-d", self.project_folder,
-            "-run", test_run_name
-        ]
-
-        logger.info(f"Starting: {test_run_name} (Port {tcp_port})")
-
-        watchdog = None
-        process = None
-
         try:
-            # Use CREATE_NEW_PROCESS_GROUP for Windows safety (allows clean kills)
-            process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                encoding='utf-8',
-                errors='ignore',
-                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP 
-            )
+            # 1. Validation
+            if not os.path.exists(vehicle_path):
+                 self.logger.error(f"Vehicle file not found: {vehicle_path}")
+                 return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
 
-            # Attach the Watchdog
-            watchdog = SimulationWatchdog(process, timeout_sec, trial, sector_limits)
-            monitor_thread = threading.Thread(target=watchdog.monitor)
-            monitor_thread.start()
-
-            # Wait for finish
-            process.wait() 
+            # 2. Construct TCL Command (The 'Script')
+            # In a real deployment, you generate a .tcl file that tells CarMaker:
+            # "Load TestRun X, Load Vehicle Y, Start Sim, Save to Z"
+            # For this code to run without CM installed, we simulate the outcome.
             
-            # Cleanup
-            watchdog.stop()
-            monitor_thread.join()
-
-            # Result Logic
-            if watchdog.pruned:
-                return {"status": "PRUNED", "reason": "Early Stopping"}
-
-            if watchdog.timed_out:
-                return {"status": "FAILED", "reason": "Timeout"}
+            # self._execute_carmaker_batch(vehicle_path, trial_id)
             
-            if watchdog.error_detected:
-                return {"status": "FAILED", "reason": watchdog.error_message}
-
-            if process.returncode != 0:
-                # CM sometimes returns non-zero on forced kill, check if we caused it
-                if not (watchdog.pruned or watchdog.timed_out):
-                    return {"status": "FAILED", "reason": f"Exit Code {process.returncode}"}
-
-            return {"status": "SUCCESS", "run_id": test_run_name}
+            # --- SIMULATION MOCK (Remove this block when connecting to real CM) ---
+            time.sleep(0.1) # Simulate compute time
+            
+            # 3. File Movement (Organization)
+            # CarMaker typically dumps to "SimOutput/User/<TestRunName>.csv"
+            # We must move it to "Output/Campaign_X/Trial_Y/telemetry.csv"
+            
+            # Example logic for real implementation:
+            # source_file = f"SimOutput/User/TestRun_{trial_id}.csv"
+            # if os.path.exists(source_file):
+            #     shutil.move(source_file, os.path.join(output_folder, "telemetry.csv"))
+            
+            # 4. Result Parsing
+            # We would read the CSV here to get lap time.
+            # Mocking the result for now:
+            import random
+            
+            # Simulate a "Crash" (10% chance)
+            if random.random() < 0.1:
+                return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
+            
+            # Simulate a result based on "Physics"
+            # (Just a placeholder so you see numbers change in the dashboard)
+            mock_time = 60.0 - random.uniform(0, 5) 
+            return {'status': 'Complete', 'lap_time': mock_time, 'cones_hit': 0}
 
         except Exception as e:
-            logger.error(f"Interface Error: {e}")
-            if process:
-                try: process.kill()
-                except: pass
-            return {"status": "ERROR", "reason": str(e)}
+            self.logger.error(f"Sim Failed: {e}")
+            return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
+
+    def _execute_carmaker_batch(self, vehicle_path, trial_id):
+        """
+        Real command execution logic.
+        """
+        cmd = [
+            self.CM_EXEC,
+            "-batch",
+            # "-tcl", "your_automation_script.tcl" 
+        ]
+        
+        for attempt in range(self.MAX_RETRIES):
+            try:
+                subprocess.run(cmd, check=True, timeout=120)
+                return True
+            except subprocess.CalledProcessError:
+                self.logger.warning(f"CarMaker crashed. Retrying ({attempt+1}/{self.MAX_RETRIES})...")
+                time.sleep(self.RETRY_DELAY)
+            except subprocess.TimeoutExpired:
+                self.logger.error("Simulation timed out (Stuck loop?).")
+                return False
+        return False

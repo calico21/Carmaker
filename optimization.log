@@ -1,0 +1,96 @@
+2026-02-02 23:24:17,109 - Main - INFO - ========================================
+2026-02-02 23:24:17,109 - Main - INFO -    STARTING OPTIMIZATION: Titan_Campaign_001
+2026-02-02 23:24:17,109 - Main - INFO -    MODE: DYNAMICS
+2026-02-02 23:24:17,109 - Main - INFO -    TRIALS: 50
+2026-02-02 23:24:17,109 - Main - INFO - ========================================
+2026-02-02 23:24:17,129 - Orchestrator - INFO - Switched to DYNAMICS mode.
+2026-02-02 23:24:28,106 - Main - INFO - Optimization Completed Successfully.
+2026-02-02 23:24:28,106 - Main - INFO - Best Parameters: {'k_spring_f': 79054.60363628226, 'k_spring_r': 21880.820547853116, 'd_bump_f': 2807.511895754826, 'd_reb_f': 2116.173097947964}
+📂 Created Campaign Folder: Output\Campaign_2026-02-02_23-26-44
+🧠 Surrogate Warm Start: Loaded 50 prior simulations.
+Switched to DYNAMICS mode.
+🚀 Starting DYNAMICS Optimization.
+📂 Output Location: Output\Campaign_2026-02-02_23-26-44
+📂 Created Campaign Folder: Output\Campaign_2026-02-02_23-27-21
+🧠 Surrogate Warm Start: Loaded 100 prior simulations.
+📂 Output: Output\Campaign_2026-02-02_23-27-21
+--------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |             NOTES              |
+--------------------------------------------------------------------
+Fatal Error: 'k_spring_f'
+Traceback (most recent call last):
+  File "c:\Users\alexr\Desktop\Ter24 Simulation\Ter26 Carmaker\BlackBox_Optimization_Framework\run_real_optimization.py", line 60, in main
+    orchestrator.optimize(n_trials=args.trials)
+  File "c:\Users\alexr\Desktop\Ter24 Simulation\Ter26 Carmaker\BlackBox_Optimization_Framework\src\core\orchestrator.py", line 53, in optimize
+    study.optimize(self._objective, n_trials=n_trials)
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\optuna\study\study.py", line 451, in optimize
+    _optimize(
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\optuna\study\_optimize.py", line 66, in _optimize
+    _optimize_sequential(
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\optuna\study\_optimize.py", line 163, in _optimize_sequential
+    frozen_trial = _run_trial(study, func, catch)
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\optuna\study\_optimize.py", line 251, in _run_trial
+    raise func_err
+  File "C:\Users\alexr\AppData\Local\Programs\Python\Python310\lib\site-packages\optuna\study\_optimize.py", line 200, in _run_trial
+    value_or_values = func(trial)
+  File "c:\Users\alexr\Desktop\Ter24 Simulation\Ter26 Carmaker\BlackBox_Optimization_Framework\src\core\orchestrator.py", line 63, in _objective
+    note = f"K_F:{int(params['k_spring_f']/1000)}k K_R:{int(params['k_spring_r']/1000)}k"
+KeyError: 'k_spring_f'
+📂 Created Campaign Folder: Output\Campaign_2026-02-02_23-28-23
+🧠 Surrogate Warm Start: Loaded 100 prior simulations.
+📂 Output: Output\Campaign_2026-02-02_23-28-23
+--------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |             NOTES              |
+--------------------------------------------------------------------
+|   0   | [92m⭐ NEW BEST[0m |  56.018s   | K_F:30k K_R:25k                |
+|   1   | [92m⭐ NEW BEST[0m |  55.251s   | K_F:49k K_R:72k                |
+|   2   | [0m COMPLETE [0m |  57.001s   | K_F:44k K_R:38k                |
+|   3   | [0m COMPLETE [0m |  57.601s   | K_F:29k K_R:46k                |
+|   4   | [0m COMPLETE [0m |  59.813s   | K_F:20k K_R:66k                |
+|   5   | [0m COMPLETE [0m |  59.913s   | K_F:40k K_R:57k                |
+|   6   | [0m COMPLETE [0m |  55.487s   | K_F:42k K_R:42k                |
+|   7   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|   8   | [0m COMPLETE [0m |  56.194s   | K_F:64k K_R:78k                |
+|   9   | [0m COMPLETE [0m |  57.565s   | K_F:55k K_R:39k                |
+|  10   | [0m COMPLETE [0m |  58.087s   | K_F:76k K_R:77k                |
+|  11   | [0m COMPLETE [0m |  58.818s   | K_F:40k K_R:58k                |
+|  12   | [0m COMPLETE [0m |  58.074s   | K_F:53k K_R:51k                |
+|  13   | [92m⭐ NEW BEST[0m |  55.179s   | K_F:63k K_R:68k                |
+|  14   | [0m COMPLETE [0m |  57.190s   | K_F:64k K_R:69k                |
+|  15   | [0m COMPLETE [0m |  55.785s   | K_F:61k K_R:70k                |
+|  16   | [0m COMPLETE [0m |  59.236s   | K_F:74k K_R:79k                |
+|  17   | [0m COMPLETE [0m |  57.960s   | K_F:58k K_R:63k                |
+|  18   | [0m COMPLETE [0m |  56.087s   | K_F:67k K_R:72k                |
+|  19   | [0m COMPLETE [0m |  59.360s   | K_F:69k K_R:63k                |
+|  20   | [0m COMPLETE [0m |  57.988s   | K_F:49k K_R:72k                |
+|  21   | [0m COMPLETE [0m |  57.382s   | K_F:48k K_R:55k                |
+|  22   | [0m COMPLETE [0m |  59.778s   | K_F:57k K_R:60k                |
+|  23   | [0m COMPLETE [0m |  57.617s   | K_F:79k K_R:66k                |
+|  24   | [0m COMPLETE [0m |  56.129s   | K_F:46k K_R:48k                |
+|  25   | [0m COMPLETE [0m |  55.292s   | K_F:52k K_R:74k                |
+|  26   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  27   | [0m COMPLETE [0m |  55.564s   | K_F:53k K_R:69k                |
+|  28   | [0m COMPLETE [0m |  59.829s   | K_F:55k K_R:74k                |
+|  29   | [0m COMPLETE [0m |  55.682s   | K_F:50k K_R:65k                |
+|  30   | [0m COMPLETE [0m |  57.183s   | K_F:60k K_R:79k                |
+|  31   | [0m COMPLETE [0m |  59.214s   | K_F:43k K_R:70k                |
+|  32   | [0m COMPLETE [0m |  57.463s   | K_F:38k K_R:75k                |
+|  33   | [0m COMPLETE [0m |  59.251s   | K_F:47k K_R:41k                |
+|  34   | [0m COMPLETE [0m |  56.542s   | K_F:35k K_R:32k                |
+|  35   | [0m COMPLETE [0m |  58.399s   | K_F:43k K_R:44k                |
+|  36   | [0m COMPLETE [0m |  57.846s   | K_F:50k K_R:55k                |
+|  37   | [0m COMPLETE [0m |  56.853s   | K_F:45k K_R:66k                |
+|  38   | [0m COMPLETE [0m |  58.597s   | K_F:33k K_R:76k                |
+|  39   | [0m COMPLETE [0m |  58.053s   | K_F:41k K_R:71k                |
+|  40   | [0m COMPLETE [0m |  57.076s   | K_F:51k K_R:61k                |
+|  41   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+|  42   | [0m COMPLETE [0m |  55.191s   | K_F:48k K_R:69k                |
+|  43   | [0m COMPLETE [0m |  56.137s   | K_F:49k K_R:76k                |
+|  44   | [0m COMPLETE [0m |  56.614s   | K_F:56k K_R:79k                |
+|  45   | [0m COMPLETE [0m |  55.908s   | K_F:45k K_R:71k                |
+|  46   | [0m COMPLETE [0m |  57.889s   | K_F:43k K_R:64k                |
+|  47   | [0m COMPLETE [0m |  55.486s   | K_F:52k K_R:68k                |
+|  48   | [0m COMPLETE [0m |  57.703s   | K_F:55k K_R:68k                |
+|  49   | [91m  CRASH   [0m |   999.0s   | Sim Failed                     |
+--------------------------------------------------------------------
+✅ Optimization Complete.

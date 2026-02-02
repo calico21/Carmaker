@@ -1,80 +1,68 @@
-import os
-import sys
 import logging
-import time
-import numpy as np
+import argparse
+import sys
+import os
 
-# Patch for library compatibility (Fixes 'np.bool' error in newer numpy versions)
-np.bool = np.bool_
+# --- CRITICAL FIX: Force UTF-8 Output on Windows ---
+# This prevents the UnicodeEncodeError when printing emojis like 🚀 or 📂
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding='utf-8')
 
-# Add project root to path
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(PROJECT_ROOT)
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from src.core.orchestrator import OptimizationOrchestrator
+from src.core.orchestrator import Orchestrator
 
-# --- CONFIGURATION ---
-STUDY_NAME = "FSAE_Championship_Run_v1"
-N_TRIALS = 100
-N_WORKERS = 1  # Set this to the number of CarMaker licenses you have available
+def setup_logging():
+    """
+    Configures a clean, table-like log format.
+    """
+    # Remove default handlers to reset format
+    root = logging.getLogger()
+    if root.handlers:
+        for handler in root.handlers:
+            root.removeHandler(handler)
+            
+    logging.basicConfig(
+        level=logging.INFO,
+        # We remove timestamps/names for a cleaner 'Dashboard' look
+        format='%(message)s', 
+        handlers=[
+            logging.FileHandler("optimization.log", encoding='utf-8'),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
 
-# UPDATED PATH: Pointing to your specific 14.1 executable
-CM_EXE_PATH = r"C:\IPG\carmaker\win64-14.1\bin\CarMaker.win64.exe"
+def main():
+    setup_logging()
+    logger = logging.getLogger("Main")
 
-# Paths
-DB_PATH = os.path.join(PROJECT_ROOT, "data", "optimization.db")
-DB_URL = f"sqlite:///{DB_PATH}"
-LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
-LOG_FILE = os.path.join(LOG_DIR, "production.log")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mode', type=str, default='dynamics', choices=['dynamics', 'kinematics'])
+    parser.add_argument('--trials', type=int, default=50)
+    parser.add_argument('--study_name', type=str, default='Titan_Campaign_001')
+    args = parser.parse_args()
 
-# Setup Directories
-os.makedirs(LOG_DIR, exist_ok=True)
-os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-
-# --- LOGGING SETUP ---
-# We log to BOTH file and console so you can see what's happening
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - [%(levelname)s] - %(message)s',
-    handlers=[
-        logging.FileHandler(LOG_FILE, mode='w'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-
-if __name__ == "__main__":
-    print(f"\n🚀 FSAE DESIGN OPTIMIZATION SYSTEM STARTING")
-    print(f"-------------------------------------------")
-    print(f"📂 Project Root: {PROJECT_ROOT}")
-    print(f"📂 Database:     {DB_PATH}")
-    print(f"🏎️  CarMaker:     {CM_EXE_PATH}")
-    print(f"🧵 Workers:      {N_WORKERS}")
-    print(f"-------------------------------------------\n")
-
-    # Check if CarMaker exists before starting
-    if not os.path.exists(CM_EXE_PATH):
-        logging.critical(f"❌ CRITICAL: CarMaker executable not found at {CM_EXE_PATH}")
-        sys.exit(1)
+    # ASCII Art Header
+    print("\n")
+    print("╔════════════════════════════════════════════════════════════════════╗")
+    print("║                  FSAE SUSPENSION OPTIMIZER v6.0                    ║")
+    print("╠════════════════════════════════════════════════════════════════════╣")
+    print(f"║  CAMPAIGN: {args.study_name:<47} ║")
+    print(f"║  MODE:     {args.mode.upper():<47} ║")
+    print(f"║  TRIALS:   {args.trials:<47} ║")
+    print("╚════════════════════════════════════════════════════════════════════╝\n")
 
     try:
-        # Initialize the Brain
-        orchestrator = OptimizationOrchestrator(
-            project_root=PROJECT_ROOT,
-            cm_exe_path=CM_EXE_PATH,
-            study_name=STUDY_NAME,
-            storage_url=DB_URL,
-            n_workers=N_WORKERS
-        )
-
-        logging.info("✅ Orchestrator Initialized. Starting Optimization Loop...")
+        orchestrator = Orchestrator(study_name=args.study_name)
+        orchestrator.set_mode(args.mode)
         
-        # Run the Optimization
-        # Note: We use n_jobs=1 here because the Orchestrator handles threading internally via ResourceManager
-        orchestrator.run(n_trials=N_TRIALS, n_jobs=1) 
-        
-        logging.info("🏁 Optimization Finished Successfully.")
+        # Run
+        orchestrator.optimize(n_trials=args.trials)
         
     except KeyboardInterrupt:
-        logging.warning("⚠️ Process Interrupted by User.")
+        print("\n\n🛑 Optimization Aborted by User.")
     except Exception as e:
-        logging.critical(f"❌ FATAL ERROR: {e}", exc_info=True)
+        logger.exception(f"Fatal Error: {e}")
+
+if __name__ == "__main__":
+    main()

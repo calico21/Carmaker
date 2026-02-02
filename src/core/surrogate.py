@@ -41,6 +41,7 @@ class SurrogateOracle:
         self.y_history = [] 
         self.feature_names = []
         
+        # Expected Improvement parameters
         self.xi = 0.01 
         self.SOFT_FAILURE_COST = 150.0 
 
@@ -54,8 +55,18 @@ class SurrogateOracle:
         2. Retrains the model.
         3. Saves state to disk (Persistence).
         """
-        # Adapt scalar cost to tuple format expected by internal logic
-        self.add_observation(params, (cost, 0.0))
+        self.feature_names = list(params.keys())
+        
+        # --- CRASH HANDLING (Soft Fail) ---
+        # If cost is near 999 (Crash), we map it to 150 (Soft Fail).
+        # This creates a "gradient" pointing away from the crash, 
+        # instead of a flat "impossible" plateau.
+        if cost >= 900.0:
+            cost = self.SOFT_FAILURE_COST + np.random.normal(0, 1.0) 
+            
+        self.X_history.append(list(params.values()))
+        self.y_history.append(cost)
+        
         self.train()
         self._save_state()
 
@@ -64,23 +75,14 @@ class SurrogateOracle:
         Interface wrapper for Orchestrator.
         Returns: (predicted_cost, uncertainty_sigma)
         """
-        prediction_tuple, sigma, _ = self.evaluate_trust(params)
-        predicted_cost = prediction_tuple[0]
-        return predicted_cost, sigma
+        if not self.is_trained:
+            # If untrained, return 0 cost but HIGH uncertainty (999)
+            # This forces the optimizer to explore.
+            return 0.0, 999.0
 
-    def add_observation(self, params: dict, results: tuple):
-        """
-        Ingest simulation data.
-        """
-        self.feature_names = list(params.keys())
-        cost, _ = results
-        
-        # --- CRASH HANDLING ---
-        if cost >= 900.0:
-            cost = self.SOFT_FAILURE_COST + np.random.normal(0, 1.0) 
-            
-        self.X_history.append(list(params.values()))
-        self.y_history.append(cost) 
+        X = np.array([list(params.values())])
+        mu, sigma = self.model.predict(X, return_std=True)
+        return mu[0], sigma[0]
 
     def train(self):
         """
@@ -95,38 +97,8 @@ class SurrogateOracle:
         try:
             self.model.fit(X, y)
             self.is_trained = True
-            
-            # Optional: Log marginal likelihood rarely to reduce spam
-            if len(self.X_history) % 10 == 0:
-                lml = self.model.log_marginal_likelihood()
-                logger.info(f"🧠 GP Retrained (N={len(X)}). LML: {lml:.2f}")
-            
         except Exception as e:
             logger.error(f"GP Training Failed: {e}")
-
-    def evaluate_trust(self, params: dict):
-        """
-        Calculates Expected Improvement (EI).
-        """
-        if not self.is_trained:
-            return (0.0, 0.0), 100.0, True
-
-        X = np.array([list(params.values())])
-        mu, sigma = self.model.predict(X, return_std=True)
-        mu = mu[0]
-        sigma = sigma[0]
-        
-        current_best = np.min(self.y_history)
-        
-        with np.errstate(divide='warn'):
-            imp = current_best - mu - self.xi
-            Z = imp / sigma
-            ei = imp * norm.cdf(Z) + sigma * norm.pdf(Z)
-            ei[sigma <= 0.0] = 0.0
-            
-        is_promising = (ei > 0.001) or (sigma > 0.5)
-        
-        return (mu, 0.0), sigma, is_promising
 
     def _save_state(self):
         """
@@ -165,18 +137,3 @@ class SurrogateOracle:
                 logger.info(f"🧠 Surrogate Warm Start: Loaded {len(self.X_history)} prior simulations.")
         except Exception as e:
             logger.warning(f"Failed to load Surrogate state (starting fresh): {e}")
-
-    def get_length_scales(self):
-        if not self.is_trained: return {}
-        try:
-            kernel = self.model.kernel_
-            if hasattr(kernel, 'k1'): 
-                matern_kernel = kernel.k1.k2 
-            else:
-                matern_kernel = kernel
-            scales = matern_kernel.length_scale
-            if np.isscalar(scales):
-                scales = [scales] * len(self.feature_names)
-            return dict(zip(self.feature_names, scales))
-        except Exception as e:
-            return {}
