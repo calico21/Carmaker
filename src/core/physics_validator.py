@@ -1,63 +1,71 @@
 import numpy as np
+import logging
 
-class WhiteBoxValidator:
+class PhysicsValidator:
     """
-    The 'Sanity Check'. 
-    Compares Complex Multibody Simulation (CarMaker) against 
-    First-Principles Physics (Bicycle Model).
-    
-    If they disagree, the design is suspect.
+    PHASE 3: PRE-SIMULATION PHYSICS GATEKEEPER
+    Filters out 'Black Hole' configurations that are physically unstable 
+    before wasting simulation time.
     """
-    def __init__(self, wheelbase=1.53, track_width=1.2, mass_base=250):
-        self.L = wheelbase
-        self.W = track_width
-        self.m_base = mass_base
-        self.g = 9.81
+    def __init__(self):
+        self.logger = logging.getLogger("Physics_Validator")
+        
+        # --- CONSTANTS FOR FS CAR (AMZ/Delft Benchmarks) ---
+        self.M_CAR_SPRUNG = 230.0  # kg (Total Sprung Mass)
+        self.M_DRIVER = 75.0       # kg
+        self.WD_F = 0.48           # Weight Distribution Front (48%)
+        
+        # Per Corner Sprung Mass (Approximate)
+        self.m_s_f = ((self.M_CAR_SPRUNG + self.M_DRIVER) * self.WD_F) / 2.0
+        self.m_s_r = ((self.M_CAR_SPRUNG + self.M_DRIVER) * (1 - self.WD_F)) / 2.0
+        
+        # Limits [Cite: Document Section 4.2]
+        self.MIN_FREQ_HZ = 1.5
+        self.MAX_FREQ_HZ = 4.5
+        self.MAX_STATIC_SAG_MM = 25.0 # Max compression under gravity
+        self.MIN_STATIC_SAG_MM = 5.0
 
-    def validate_steady_state(self, params: dict, kpis: dict):
+    def check_viability(self, params: dict) -> tuple[bool, str]:
         """
-        Checks if the Understeer Gradient calculated from Sim 
-        matches the Theoretical Understeer Gradient (F=ma).
+        Returns: (is_valid, reason)
         """
-        # 1. Extract Design Parameters
-        k_f = params.get('k_spring_f', 30000)
-        k_r = params.get('k_spring_r', 30000)
-        mass = self.m_base * params.get('mass_scale', 1.0)
+        # 1. Calculate Ride Frequencies (Hz)
+        # f = (1/2pi) * sqrt(k / m)
+        # Note: We assume Motion Ratio (MR) ~ 1.0 for simplicity, 
+        # or that 'k_spring' is Wheel Rate. If k is Spring Rate, k_wheel = k_spring * MR^2
+        mr_front = 1.0 # Update if Bellcrank exists
+        mr_rear = 1.0
         
-        # 2. Theoretical Load Transfer Distribution (simplified)
-        # Assuming roll stiffness is proportional to spring rate (ignoring ARBs for simplicity)
-        LLTD = k_f / (k_f + k_r)
+        k_f = params.get("Spring_F", 0) * (mr_front**2)
+        k_r = params.get("Spring_R", 0) * (mr_rear**2)
         
-        # 3. Theoretical Understeer (Simplified Bundorf Analysis)
-        # Higher Front Stiffness -> Higher LLTD -> More Understeer
-        # This is a 'Trend Check'. 
-        theoretical_trend = "Understeer" if LLTD > 0.55 else "Oversteer"
+        freq_f = (1 / (2 * np.pi)) * np.sqrt(k_f / self.m_s_f)
+        freq_r = (1 / (2 * np.pi)) * np.sqrt(k_r / self.m_s_r)
         
-        # 4. Simulation Reality
-        sim_ug = kpis.get('understeer_grad', 0.0)
-        sim_behavior = "Understeer" if sim_ug > 0 else "Oversteer"
-        
-        # 5. The Judge's Check
-        is_plausible = (theoretical_trend == sim_behavior)
-        
-        return {
-            "Physics_Check": "PASS" if is_plausible else "WARN",
-            "Theoretical_LLTD": LLTD,
-            "Sim_Understeer_Grad": sim_ug,
-            "Explanation": f"Sim shows {sim_behavior} ({sim_ug:.2f} deg/g), Physics predicts {theoretical_trend} (LLTD {LLTD:.2f})."
-        }
+        # CHECK 1: Frequency Range (Comfort vs Grip window)
+        if not (self.MIN_FREQ_HZ <= freq_f <= self.MAX_FREQ_HZ):
+            return False, f"Front Freq {freq_f:.2f}Hz out of bounds"
+            
+        if not (self.MIN_FREQ_HZ <= freq_r <= self.MAX_FREQ_HZ):
+            return False, f"Rear Freq {freq_r:.2f}Hz out of bounds"
 
-    def check_grip_limit(self, lap_time_s, track_length_m=269.0):
-        """
-        Checks if the Lap Time implies impossible friction.
-        """
-        avg_speed = track_length_m / lap_time_s # m/s
+        # CHECK 2: Flat Ride / Pitch Sensitivity
+        # Usually Rear Freq > Front Freq is preferred for flat ride,
+        # but in Aero cars (FS), stiff front is common for platform control.
+        # We just check they aren't wildly mismatched.
+        ratio = freq_f / freq_r
+        if ratio > 1.5 or ratio < 0.7:
+             return False, f"Freq Imbalance F/R ratio: {ratio:.2f}"
+
+        # CHECK 3: Static Sag (Gravity Drop)
+        # Sag = F / k = (m * g) / k
+        sag_f = (self.m_s_f * 9.81) / k_f * 1000 # mm
+        sag_r = (self.m_s_r * 9.81) / k_r * 1000 # mm
         
-        # Skidpad (R=9.125m) Max Speed Estimate: V = sqrt(mu * g * R)
-        # Assuming mu=1.6 (FSAE Softs)
-        max_theoretical_v = np.sqrt(1.6 * 9.81 * 9.125) # ~11.9 m/s
-        
-        # If we are significantly faster than theory, the Sim is broken (e.g. hitting cones adds grip?)
-        if avg_speed > max_theoretical_v * 1.1: # 10% buffer
-            return "FAIL: Supernatural Grip"
-        return "PASS: Physically Possible"
+        if sag_f > self.MAX_STATIC_SAG_MM or sag_f < self.MIN_STATIC_SAG_MM:
+            return False, f"Front Static Sag {sag_f:.1f}mm invalid"
+            
+        if sag_r > self.MAX_STATIC_SAG_MM or sag_r < self.MIN_STATIC_SAG_MM:
+            return False, f"Rear Static Sag {sag_r:.1f}mm invalid"
+
+        return True, "Valid"

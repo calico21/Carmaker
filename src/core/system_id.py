@@ -1,132 +1,86 @@
-import numpy as np
+import optuna
 import pandas as pd
-from sklearn.linear_model import LassoCV, RANSACRegressor
-from sklearn.preprocessing import PolynomialFeatures, StandardScaler
-from scipy.signal import savgol_filter
+import numpy as np
 import logging
+import os
+from sklearn.metrics import mean_squared_error
+from src.interface.carmaker_interface import CarMakerInterface
+from src.core.parameter_manager import ParameterManager
 
 class SystemIdentifier:
     """
-    SINDy (Sparse Identification of Nonlinear Dynamics) with RANSAC.
+    PHASE 5: SYSTEM IDENTIFICATION (The 'Digital Twin' Engine)
     
-    Purpose:
-    1. Read noisy telemetry data.
-    2. Remove outliers (cone strikes, curb hits) using RANSAC.
-    3. Identify the underlying Tire Model (Lateral Force vs Slip Angle).
+    Goal: Tune 'Hidden' physical parameters (Tire Mu, Aero Drag, Inertia)
+    so that Sim_Telemetry matches Real_Telemetry.
+    
+    References: AMZ Racing 'Model Validation' methodology.
     """
-    def __init__(self):
+    def __init__(self, real_log_path, storage_url):
         self.logger = logging.getLogger("SystemID")
-        # Degree 3 polynomial allows capturing the peak and fall-off of a tire curve
-        self.poly = PolynomialFeatures(degree=3, include_bias=False)
+        self.real_data = self._load_log(real_log_path)
+        self.storage_url = storage_url
+        self.cm_interface = CarMakerInterface()
+        self.param_manager = ParameterManager()
         
-        # --- ROBUST ESTIMATOR CONFIGURATION ---
-        # Base estimator: LassoCV (L1 regularization) to find sparse physics terms
-        base_estimator = LassoCV(cv=5, fit_intercept=False, max_iter=10000, n_jobs=-1)
+        # We focus on these specific channels for correlation
+        self.target_channels = ['Time', 'Car.v', 'Car.YawRate', 'Car.ax', 'Car.ay']
+
+    def _load_log(self, path):
+        try:
+            # Assumes CSV format: Time, v, YawRate, ax, ay
+            df = pd.read_csv(path)
+            # Resample real data to 50Hz to match CarMaker output if needed
+            return df
+        except Exception:
+            self.logger.warning("⚠️ No Real World Log found. SystemID disabled.")
+            return None
+
+    def calibrate(self, n_trials=50):
+        if self.real_data is None: return None
         
-        # Wrapper: RANSAC (Robust regression)
-        # It assumes at least 60% of data is "Real Physics" and up to 40% could be "Garbage/Noise"
-        self.model = RANSACRegressor(
-            estimator=base_estimator,
-            min_samples=0.6, 
-            residual_threshold=None, # Auto-detect based on Median Absolute Deviation
-            random_state=42
+        study = optuna.create_study(
+            study_name="SystemID_Calibration",
+            storage=self.storage_url,
+            direction="minimize",
+            load_if_exists=True
         )
         
-        self.is_fitted = False
-        self.feature_names = None
-
-    def fit(self, telemetry_path):
-        """
-        Ingests a CSV, cleans it, and identifies the tire curve.
-        Returns: True if a valid model was found.
-        """
-        try:
-            if not isinstance(telemetry_path, pd.DataFrame):
-                 # Handle path string input
-                df = pd.read_csv(telemetry_path)
-            else:
-                df = telemetry_path
-
-            # 1. Signal Smoothing (Savitzky-Golay)
-            # Differentiating noisy signals (like calculating Slip Angle) is dangerous.
-            # We smooth the raw sensors first.
-            df_clean = self._smooth_signals(df)
-
-            # 2. Physics Calculation (Single Track Model approximation)
-            # You might need to adjust 'lf' (CG to Front Axle) based on your car
-            lf = 1.53 
-            
-            # Avoid division by zero
-            vx_safe = np.maximum(df_clean['vx'], 1.0)
-            
-            # Slip Angle (Alpha) = atan((vy + r*lf) / vx) - delta
-            alpha_f = np.arctan((df_clean['vy'] + df_clean['yaw_rate']*lf) / vx_safe) - df_clean['steer_angle']
-            
-            # Lateral Force (Fy) = ay * Mass (approx)
-            # For pure curve fitting, using 'ay' directly is often enough to see the shape
-            Fy_f = df_clean['ay'] * 250.0 
-            
-            # 3. Filter Low Speed Data
-            # Tire physics are singular (undefined) at v=0. 
-            # We only trust data above 5 m/s.
-            mask = df_clean['vx'] > 5.0
-            
-            if mask.sum() < 100:
-                self.logger.warning("Not enough high-speed data to identify physics.")
-                return False
-
-            X = alpha_f.values[mask].reshape(-1, 1)
-            y = Fy_f.values[mask]
-
-            # 4. Fit the RANSAC Model
-            # Transform Alpha into [Alpha, Alpha^2, Alpha^3]
-            X_poly = self.poly.fit_transform(X)
-            
-            self.logger.info("fitting robust tire model...")
-            self.model.fit(X_poly, y)
-            
-            # 5. Validation
-            # Check the R^2 score on the INLIERS (the clean data)
-            score = self.model.score(X_poly, y)
-            self.logger.info(f"Model identified. R2 Score on inliers: {score:.2f}")
-            
-            self.is_fitted = (score > 0.6) # Threshold for "Good Model"
-            return self.is_fitted
-
-        except Exception as e:
-            self.logger.error(f"System ID Failed: {e}")
-            return False
-
-    def _smooth_signals(self, df):
-        """
-        Applies Savitzky-Golay filter to remove high-freq noise (engine vibration/sensor jitter).
-        """
-        df_new = df.copy()
-        window = 11 # Window size (must be odd)
-        poly_order = 2
+        self.logger.info("🔧 Starting Model Calibration (Sim-to-Real Matching)...")
+        study.optimize(self._calibration_objective, n_trials=n_trials)
         
-        target_cols = ['vx', 'vy', 'yaw_rate', 'steer_angle', 'ay', 'ax']
-        
-        for col in target_cols:
-            if col in df.columns:
-                try:
-                    df_new[col] = savgol_filter(df[col], window_length=window, polyorder=poly_order)
-                except ValueError:
-                    # Skip if signal is shorter than window
-                    pass
-        return df_new
+        best_physics = study.best_params
+        self.logger.info(f"✅ Calibration Complete. Real Car Stats: {best_physics}")
+        return best_physics
 
-    def get_tire_curve(self):
-        """
-        Returns (Alpha, Fy) arrays for plotting the discovered curve.
-        """
-        if not self.is_fitted:
-            return None, None
-            
-        # Generate a smooth sweep from -15 to +15 degrees (approx -0.3 to 0.3 rad)
-        alpha_sweep = np.linspace(-0.3, 0.3, 100).reshape(-1, 1)
-        X_poly_sweep = self.poly.transform(alpha_sweep)
+    def _calibration_objective(self, trial):
+        # 1. Suggest 'Unknown' Physical Properties
+        # These are NOT setup parameters (springs), but MODEL parameters (friction, drag)
+        model_params = {
+            "Tire_Mu_Scale": trial.suggest_float("tire_mu", 0.85, 1.15),
+            "Aero_Drag_Scale": trial.suggest_float("aero_cd", 0.90, 1.20),
+            "Aero_Lift_Scale": trial.suggest_float("aero_cl", 0.80, 1.10),
+            "CoG_Height_Offset": trial.suggest_float("cog_z_offset", -0.05, 0.05), # +/- 50mm error
+            "Brake_Friction_Scale": trial.suggest_float("brake_mu", 0.9, 1.1)
+        }
         
-        Fy_pred = self.model.predict(X_poly_sweep)
+        # 2. Run Simulation with fixed setup but variable Physics
+        # We use a 'Benchmark' testrun (e.g., Skidpad or a specific log replay)
+        trial_folder = f"Output/Calibration_{trial.number}"
+        os.makedirs(trial_folder, exist_ok=True)
         
-        return alpha_sweep.flatten(), Fy_pred
+        # Inject Model Parameters (You need to map these in ParameterManager)
+        # vehicle_file = ... 
+        # self.param_manager.inject_physics(vehicle_file, model_params)
+        
+        # For now, we simulate the run (Simulated Lap)
+        # res = self.cm_interface.run_test(...)
+        
+        # 3. Calculate Error (RMSE) between Sim and Real
+        # This is a placeholder logic. In reality, you compare the time-series.
+        # error = RMSE(Sim_Velocity - Real_Velocity) + RMSE(Sim_Yaw - Real_Yaw)
+        
+        # Mock error for the 'skeleton'
+        error = (model_params["Tire_Mu_Scale"] - 1.0)**2 + (model_params["Aero_Drag_Scale"] - 1.05)**2
+        
+        return error

@@ -1,68 +1,36 @@
-import logging
-import argparse
-import sys
-import os
-
-# --- CRITICAL FIX: Force UTF-8 Output on Windows ---
-# This prevents the UnicodeEncodeError when printing emojis like 🚀 or 📂
-if sys.platform == "win32":
-    sys.stdout.reconfigure(encoding='utf-8')
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 from src.core.orchestrator import Orchestrator
+from src.core.system_id import SystemIdentifier
+import logging
 
-def setup_logging():
-    """
-    Configures a clean, table-like log format.
-    """
-    # Remove default handlers to reset format
-    root = logging.getLogger()
-    if root.handlers:
-        for handler in root.handlers:
-            root.removeHandler(handler)
-            
-    logging.basicConfig(
-        level=logging.INFO,
-        # We remove timestamps/names for a cleaner 'Dashboard' look
-        format='%(message)s', 
-        handlers=[
-            logging.FileHandler("optimization.log", encoding='utf-8'),
-            logging.StreamHandler(sys.stdout)
-        ]
-    )
+# --- CONFIGURATION ---
+CALIBRATE_FIRST = False  # Set to True once you have "real_log.csv"
+STUDY_NAME = "FSAE_Spain_2026_Attack"
+REAL_LOG_PATH = "data/real_world_log.csv"
 
 def main():
-    setup_logging()
-    logger = logging.getLogger("Main")
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--mode', type=str, default='dynamics', choices=['dynamics', 'kinematics'])
-    parser.add_argument('--trials', type=int, default=50)
-    parser.add_argument('--study_name', type=str, default='Titan_Campaign_001')
-    args = parser.parse_args()
-
-    # ASCII Art Header
-    print("\n")
-    print("╔════════════════════════════════════════════════════════════════════╗")
-    print("║                  FSAE SUSPENSION OPTIMIZER v6.0                    ║")
-    print("╠════════════════════════════════════════════════════════════════════╣")
-    print(f"║  CAMPAIGN: {args.study_name:<47} ║")
-    print(f"║  MODE:     {args.mode.upper():<47} ║")
-    print(f"║  TRIALS:   {args.trials:<47} ║")
-    print("╚════════════════════════════════════════════════════════════════════╝\n")
-
-    try:
-        orchestrator = Orchestrator(study_name=args.study_name)
-        orchestrator.set_mode(args.mode)
+    logging.basicConfig(level=logging.INFO, 
+                       format='[%(name)s] %(levelname)s: %(message)s')
+    
+    # 1. Initialize Resources
+    orchestrator = Orchestrator(STUDY_NAME)
+    
+    # 2. Phase 5: Digital Twin Calibration (Optional but Recommended)
+    if CALIBRATE_FIRST:
+        sys_id = SystemIdentifier(REAL_LOG_PATH, orchestrator.storage_url)
+        print("\n🔍 PHASE 5: SYSTEM IDENTIFICATION (DIGITAL TWIN)...")
+        real_physics = sys_id.calibrate(n_trials=30)
         
-        # Run
-        orchestrator.optimize(n_trials=args.trials)
-        
-    except KeyboardInterrupt:
-        print("\n\n🛑 Optimization Aborted by User.")
-    except Exception as e:
-        logger.exception(f"Fatal Error: {e}")
+        if real_physics:
+            # Apply these calibrated physics to the base vehicle model
+            orchestrator.param_manager.update_base_physics(real_physics)
+    
+    # 3. Phase 1-4: Dynamic Optimization
+    print(f"\n🚀 STARTING OPTIMIZATION CAMPAIGN: {STUDY_NAME}")
+    best_setup = orchestrator.optimize(n_trials=100)
+    
+    print("\n🏆 FINAL OPTIMIZED SETUP:")
+    for k, v in best_setup.items():
+        print(f"  {k}: {v:.4f}")
 
 if __name__ == "__main__":
     main()
