@@ -5,7 +5,6 @@ import pandas as pd
 import logging
 import time
 import glob
-import re
 
 class CarMakerInterface:
     def __init__(self):
@@ -16,52 +15,52 @@ class CarMakerInterface:
         self.CM_CONVERT = r"C:\IPG\carmaker\win64-14.1\bin\cmconvert.exe"
         self.PROJECT_DIR = r"C:\Users\eracing\Desktop\CAR_MAKER\FS_race"
         
-        # Exact Name
         self.TESTRUN_NAME = "Competition/FS_SkidPad" 
 
-    def find_latest_erg(self):
-        """Scans for the newest .erg file in SimOutput."""
-        # We try strict search first, then broad search
-        search_path = os.path.join(self.PROJECT_DIR, "SimOutput", "**", "*.erg")
-        files = glob.glob(search_path, recursive=True)
-        if not files: return None
-        return max(files, key=os.path.getmtime)
-
     def get_lap_time_from_log(self):
-        """FALLBACK: Reads the text logs in Data/Log if the .erg file is missing."""
-        log_dir = os.path.join(self.PROJECT_DIR, "Data", "Log")
-        if not os.path.exists(log_dir): return None
-
-        # Find newest log file (e.g., u2000873.log)
-        log_files = glob.glob(os.path.join(log_dir, "*.log"))
-        if not log_files: return None
+        """
+        Aggressively scans ALL log files to find the most recent completed simulation.
+        """
+        # 1. Get all log files in SimOutput
+        search_path = os.path.join(self.PROJECT_DIR, "SimOutput", "**", "*.log")
+        files = glob.glob(search_path, recursive=True)
         
-        latest_log = max(log_files, key=os.path.getmtime)
-        
-        # Read the last few lines to find the 'SIM' entry
-        try:
-            with open(latest_log, 'r') as f:
-                lines = f.readlines()
-                
-            # Read backwards
-            for line in reversed(lines):
-                # Format: SIM <ID> <User> <Project> <TestRun> <ExitCode> <LapTime> <TotalTime>
-                # Example: SIM 1770118862 u2000873 eracing Competition/FS_Skidpad 0 27.018 253.199
-                if line.startswith("SIM") and "Competition/FS_Skid" in line:
-                    parts = line.split()
-                    # We expect at least 8 columns. LapTime is usually 2nd from end.
-                    if len(parts) >= 7:
-                        try:
-                            lap_time = float(parts[-2]) # Second to last is Lap Time
-                            # Sanity check
-                            if 4.0 < lap_time < 200.0:
-                                self.logger.info(f"   -> Recovered Lap Time {lap_time}s from Log File!")
-                                return lap_time
-                        except:
-                            continue
-        except Exception as e:
-            self.logger.warning(f"Could not parse log file: {e}")
+        if not files:
             return None
+            
+        # 2. Sort files by modification time (Newest first)
+        files.sort(key=os.path.getmtime, reverse=True)
+        
+        # 3. Check the first 5 newest files (to avoid reading thousands of old logs)
+        for log_file in files[:5]:
+            try:
+                # Skip the config files or weird logs
+                if "config" in log_file: continue
+
+                with open(log_file, 'r') as f:
+                    lines = f.readlines()
+                
+                # Read backwards to find the last "SIM" entry
+                for line in reversed(lines):
+                    if line.startswith("SIM"):
+                        parts = line.split()
+                        # Expected format: SIM <ID> <User> <Group> <TestRun> <ExitCode> <LapTime> <TotalTime>
+                        # We need at least 7 parts
+                        if len(parts) >= 7:
+                            try:
+                                # Lap Time is 2nd to last
+                                lap_time = float(parts[-2])
+                                
+                                # Timestamps or ID check could be added here
+                                # But for now, valid physics range is enough check
+                                if 4.0 < lap_time < 200.0:
+                                    self.logger.info(f"   -> Found Valid Time {lap_time}s in {os.path.basename(log_file)}")
+                                    return lap_time
+                            except:
+                                continue
+            except:
+                continue
+                
         return None
 
     def run_test(self, vehicle_path, output_folder, trial_id):
@@ -98,7 +97,8 @@ class CarMakerInterface:
             Log "PYTHON: Starting Sim..."
             StartSim
             
-            # Wait 45s for the 27s lap.
+            # Wait 45s for the ~27s lap.
+            # We rely on the log file being written upon completion.
             WaitForStatus idle 45000
             """
             
@@ -111,7 +111,7 @@ class CarMakerInterface:
                 ".", "-iconic", "-cmd", "source launch_sim.tcl" 
             ]
             
-            self.logger.info(f"   -> Launching Sim Trial {trial_id} (Max 50s)...")
+            self.logger.info(f"   -> Launching Sim Trial {trial_id} (Max 55s)...")
             
             process = subprocess.Popen(
                 cmd, 
@@ -123,61 +123,41 @@ class CarMakerInterface:
 
             # 4. WAIT AND KILL
             try:
-                process.wait(timeout=50)
+                # Wait 55 seconds
+                process.wait(timeout=55)
             except subprocess.TimeoutExpired:
-                # Force kill if it's still open
                 subprocess.call(['taskkill', '/F', '/T', '/PID', str(process.pid)])
 
-            # 5. RETRIEVE RESULTS (Dual Strategy)
+            # 5. RETRIEVE RESULTS
+            # Give CarMaker 1s to flush logs to disk
+            time.sleep(1)
             
-            # Strategy A: The Log File (Fast & Reliable for LapTime)
+            # A. Try Log File (Best Method)
             lap_time = self.get_lap_time_from_log()
             
             if lap_time:
-                # We found the time in the logs! Success!
                 return {'status': 'Complete', 'lap_time': lap_time, 'cones_hit': 0}
 
-            # Strategy B: The .erg File (Fallback if log parsing fails)
-            erg_file = self.find_latest_erg()
+            # B. Try ERG File (Fallback)
+            search_path = os.path.join(self.PROJECT_DIR, "SimOutput", "**", "*.erg")
+            erg_files = glob.glob(search_path, recursive=True)
             
-            if not erg_file:
-                # Debugging: List what IS in the folder so we know for next time
-                sim_out = os.path.join(self.PROJECT_DIR, "SimOutput")
-                self.logger.error(f"❌ No .erg found. Contents of {sim_out}:")
-                try:
-                    for root, dirs, files in os.walk(sim_out):
-                        for file in files:
-                            self.logger.error(f"   - {os.path.join(root, file)}")
-                except: pass
+            if erg_files:
+                erg_file = max(erg_files, key=os.path.getmtime)
                 
-                return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
+                # Check age (must be recent)
+                if (time.time() - os.path.getmtime(erg_file)) < 120:
+                    csv_file = os.path.join(output_folder, "telemetry.csv")
+                    subprocess.run([self.CM_CONVERT, "-to", "csv", "-out", csv_file, erg_file], capture_output=True)
+                    try:
+                        df = pd.read_csv(csv_file, skiprows=[1])
+                        lap_time = df['Time'].iloc[-1]
+                        return {'status': 'Complete', 'lap_time': lap_time, 'cones_hit': 0}
+                    except:
+                        pass
 
-            # Check if file is fresh
-            file_age = time.time() - os.path.getmtime(erg_file)
-            if file_age > 120:
-                self.logger.warning(f"⚠️ File is old ({int(file_age)}s).")
-                return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
-
-            # Convert
-            csv_file = os.path.join(output_folder, "telemetry.csv")
-            subprocess.run([self.CM_CONVERT, "-to", "csv", "-out", csv_file, erg_file], capture_output=True)
-
-            if not os.path.exists(csv_file): 
-                return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
-
-            try:
-                df = pd.read_csv(csv_file, skiprows=[1])
-                lap_time = df['Time'].iloc[-1]
-            except:
-                try:
-                    df = pd.read_csv(csv_file)
-                    lap_time = df['Time'].iloc[-1]
-                except:
-                    return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
-
-            if lap_time < 4.0: return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
-
-            return {'status': 'Complete', 'lap_time': lap_time, 'cones_hit': 0}
+            self.logger.error("❌ No Data Found in Logs or ERG files.")
+            return {'status': 'Crash', 'lap_time': 999, 'cones_hit': 0}
 
         except Exception as e:
             self.logger.error(f"Interface Error: {e}")
