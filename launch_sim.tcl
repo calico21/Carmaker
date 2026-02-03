@@ -1,24 +1,32 @@
 
-            # CarMaker Automation Script for Trial 4
+            set log_fd [open "C:/Users/eracing/Desktop/CAR_MAKER/FS_race/debug_tcl.txt" w]
+            puts $log_fd "Step 1: Init"
+            flush $log_fd
+
+            after 2000
             
-            Log "PYTHON: Waiting for GUI..."
-            after 3000
+            # Discard any current testrun to ensure clean load
+            catch {Project::Discard}
             
-            Log "PYTHON: Loading TestRun Competition/FS_SkidPad..."
-            if { [catch {LoadTestRun "Competition/FS_SkidPad"} err] } {
-                Log "PYTHON: Load Error $err"
+            puts $log_fd "Step 2: Loading Run_1"
+            flush $log_fd
+            
+            # CarMaker adds the extension automatically
+            if { [catch {LoadTestRun "Run_1"} err] } {
+                puts $log_fd "FATAL: LoadTestRun Failed: $err"
+                close $log_fd; Exit
             }
-            after 1000
             
-            Log "PYTHON: Swapping Vehicle to Optimized_Car_4..."
-            if { [catch {TestRun:Set Vehicle "Optimized_Car_4"} err] } {
-                 Log "PYTHON: Vehicle Set Error: $err"
-            }
-            
-            Log "PYTHON: Starting Sim..."
+            puts $log_fd "Step 3: StartSim"
+            flush $log_fd
             StartSim
             
-            # Wait 45s for the ~27s lap.
-            # We rely on the log file being written upon completion.
-            WaitForStatus idle 45000
+            puts $log_fd "Step 4: Running..."
+            flush $log_fd
+            
+            WaitForStatus idle 60000
+            
+            puts $log_fd "Step 5: Done."
+            close $log_fd
+            Exit
             

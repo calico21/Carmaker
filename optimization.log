@@ -1863,3 +1863,245 @@ Simulation Timed Out
    -> Launching Sim Trial 4 (Max 55s)...
    -> Found Valid Time 27.018s in u2000873.log
 |   4   | [0m COMPLETE [0m |  27.018s   | K:65/55k ARB:26/43k DampF:~4220                    |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_13-56-30
+🧠 Surrogate Warm Start: Loaded 138 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_13-56-30
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0 (Max 60s)...
+❌ Sim Finished but No Fresh Data found.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1 (Max 60s)...
+❌ Sim Finished but No Fresh Data found.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2 (Max 60s)...
+❌ Sim Finished but No Fresh Data found.
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 3 (Max 60s)...
+   -> Found FRESH Result (0s old): 27.018s
+|   3   | [92m⭐ NEW BEST[0m |  27.018s   | K:78/78k ARB:61/36k DampF:~954                     |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-01-22
+🧠 Surrogate Warm Start: Loaded 141 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-01-22
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Sim Failed. Checking Logs for details...
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Sim Failed. Checking Logs for details...
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2...
+❌ Sim Failed. Checking Logs for details...
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 3...
+❌ Sim Failed. Checking Logs for details...
+|   3   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 4...
+❌ Sim Failed. Checking Logs for details...
+|   4   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-04-38
+🧠 Surrogate Warm Start: Loaded 146 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-04-38
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Sim Failed. Reading Tcl Debug Log:
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Sim Failed. Reading Tcl Debug Log:
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2...
+❌ Sim Failed. Reading Tcl Debug Log:
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-07-35
+🧠 Surrogate Warm Start: Loaded 148 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-07-35
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+   -> Found Result: 27.018s
+|   0   | [92m⭐ NEW BEST[0m |  27.018s   | K:82/26k ARB:40/43k DampF:~4281                    |
+   -> Launching Sim Trial 1...
+   -> Found Result: 27.018s
+|   1   | [0m COMPLETE [0m |  27.018s   | K:60/74k ARB:8/48k DampF:~3539                     |
+   -> Launching Sim Trial 2...
+   -> Found Result: 27.018s
+|   2   | [0m COMPLETE [0m |  27.018s   | K:70/62k ARB:23/4k DampF:~2247                     |
+   -> Launching Sim Trial 3...
+   -> Found Result: 27.018s
+|   3   | [0m COMPLETE [0m |  27.018s   | K:43/88k ARB:20/44k DampF:~4700                    |
+   -> Launching Sim Trial 4...
+   -> Found Result: 27.018s
+|   4   | [0m COMPLETE [0m |  27.018s   | K:31/37k ARB:16/63k DampF:~4757                    |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-13-18
+🧠 Surrogate Warm Start: Loaded 152 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-13-18
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ No fresh data found (Sim likely crashed or didn't run)
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ No fresh data found (Sim likely crashed or didn't run)
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-15-30
+🧠 Surrogate Warm Start: Loaded 153 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-15-30
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ No fresh data.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ No fresh data.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2...
+❌ No fresh data.
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 3...
+❌ No fresh data.
+|   3   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-18-08
+🧠 Surrogate Warm Start: Loaded 156 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-18-08
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ No fresh data.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-20-26
+🧠 Surrogate Warm Start: Loaded 156 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-20-26
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ No fresh data.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ No fresh data.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-23-42
+🧠 Surrogate Warm Start: Loaded 157 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-23-42
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ No fresh data.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ No fresh data.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-29-06
+🧠 Surrogate Warm Start: Loaded 158 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-29-06
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ No fresh data.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-31-07
+🧠 Surrogate Warm Start: Loaded 159 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-31-07
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Sim Failed. Tcl Debug Trace:
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Sim Failed. Tcl Debug Trace:
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-32-16
+🧠 Surrogate Warm Start: Loaded 161 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-32-16
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ No fresh data.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ No fresh data.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2...
+❌ No fresh data.
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-35-21
+🧠 Surrogate Warm Start: Loaded 163 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-35-21
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ No fresh data.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ No fresh data.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-37-42
+🧠 Surrogate Warm Start: Loaded 165 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-37-42
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ No fresh data.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ No fresh data.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-41-22
+🧠 Surrogate Warm Start: Loaded 166 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-41-22
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-45-59
+🧠 Surrogate Warm Start: Loaded 166 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-45-59
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Timed out or Crashed without results.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-46-21
+🧠 Surrogate Warm Start: Loaded 167 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-46-21
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Timed out or Crashed without results.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Timed out or Crashed without results.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2...
+❌ Timed out or Crashed without results.
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_14-49-27
+🧠 Surrogate Warm Start: Loaded 169 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_14-49-27
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Timed out or Crashed without results.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Timed out or Crashed without results.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
