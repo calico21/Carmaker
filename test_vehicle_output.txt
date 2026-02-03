@@ -172,12 +172,12 @@ SuspF.Spring = 35000
 SuspF.Parasitic.Stiffness.Kind =
 SuspF.Parasitic.Friction.Kind =
 SuspF.Damper.Kind = Newtonian 1
-SuspF.Damp_Push.Amplify = 1
+SuspF.Damp_Push.Amplify = 1.250
 SuspF.Damp_Push:
 	0.0 0.0
 	0.125 149
 	0.25 224
-SuspF.Damp_Pull.Amplify = 1
+SuspF.Damp_Pull.Amplify = 2.000
 SuspF.Damp_Pull:
 	0.0 0.0
 	0.125 336
@@ -203,7 +203,7 @@ SuspF.Buf_Pull:
 	0.025 13500
 SuspF.Stabi.Kind = Hookean 1
 SuspF.Stabi.Amplify = 1
-SuspF.Stabi = 287
+SuspF.Stabi = 20000
 SuspF.Kin.N = 1
 SuspF.Com.N = 0
 SuspF.Kin.0.FName = FS_RaceCar_8.0_front.skc
@@ -214,12 +214,12 @@ SuspR.Spring = 45000
 SuspR.Parasitic.Stiffness.Kind =
 SuspR.Parasitic.Friction.Kind =
 SuspR.Damper.Kind = Newtonian 1
-SuspR.Damp_Push.Amplify = 1
+SuspR.Damp_Push.Amplify = 1.250
 SuspR.Damp_Push:
 	0.0 0.0
 	0.125 164
 	0.25 246.37
-SuspR.Damp_Pull.Amplify = 1
+SuspR.Damp_Pull.Amplify = 2.000
 SuspR.Damp_Pull:
 	0.0 0.0
 	0.125 369.06
@@ -245,7 +245,7 @@ SuspR.Buf_Pull:
 	0.025 13500
 SuspR.Stabi.Kind = Hookean 1
 SuspR.Stabi.Amplify = 1
-SuspR.Stabi = 171.9
+SuspR.Stabi = 15000
 SuspR.Kin.N = 1
 SuspR.Com.N = 0
 SuspR.Kin.0.FName = FS_RaceCar_8.0_rear.skc
@@ -900,15 +900,3 @@ CarGen.Steer.MaxSteerAngle = 600.0
 CarGen.Vehicle.freqf = 1.296
 CarGen.Vehicle.freqr = 1.487
 CarGen.Aero.DragCoeff = 0.32
-Susp.Spring.F.stiff = 67843.05685861796
-Susp.Spring.R.stiff = 54487.69495306245
-Susp.Damp.F.Cmp = 4807.252916184161
-Susp.Damp.F.Reb = 1974.2188212930537
-Susp.Damp.R.Cmp = 4145.013211775362
-Susp.Damp.R.Reb = 3148.591362817052
-Susp.Stabi.F.stiff = 24421.618012750096
-Susp.Stabi.R.stiff = 16706.740850581682
-Susp.Kin.F.Camber = -0.0546996526631309
-Susp.Kin.R.Camber = -0.03380773510917335
-Susp.Kin.F.Toe = -0.005832567329264146
-Susp.Kin.R.Toe = -0.0045649128887248125

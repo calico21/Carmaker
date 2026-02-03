@@ -4,4 +4,4 @@ git push
 git pull
 
 streamlit run src/dashboard/app.py
-streamlit run titan_app.py
+python run_real_optimization.py --mode dynamics --trials 100

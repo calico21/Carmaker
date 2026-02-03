@@ -5,7 +5,7 @@ import numpy as np
 class ParameterManager:
     """
     Handles the modification of CarMaker text files (Vehicle or TestRun).
-    Includes automatic key mapping for standard CarMaker datasets.
+    CORRECTED for FSE_AllWheelDrive format.
     """
 
     def __init__(self, template_path):
@@ -19,93 +19,124 @@ class ParameterManager:
         self.MASS_PENALTY_FACTOR = 0.5  
         self.INERTIA_SCALING = 1.05
 
-        # --- CARMAKER KEY MAPPING ---
-        # Maps "Python Friendly Names" -> "Official CarMaker Infofile Keys"
+        # --- CORRECTED CARMAKER KEY MAPPING ---
+        # Based on actual FSE_AllWheelDrive file format
         self.PARAM_MAP = {
-            # Springs
-            "Spring_F": "Susp.Spring.F.stiff",
-            "Spring_R": "Susp.Spring.R.stiff",
-            # Dampers (Assuming linear coeff 'Cmp'/'Reb' or Scaling Factor 'Fac')
-            # Adjust these keys if you use a specific Non-Linear Map
-            "Damp_Bump_F": "Susp.Damp.F.Cmp", 
-            "Damp_Reb_F":  "Susp.Damp.F.Reb",
-            "Damp_Bump_R": "Susp.Damp.R.Cmp",
-            "Damp_Reb_R":  "Susp.Damp.R.Reb",
-            # Anti-Roll Bars
-            "Stabilizer_F": "Susp.Stabi.F.stiff",
-            "Stabilizer_R": "Susp.Stabi.R.stiff",
-            # Alignment (Kinematics)
-            "Camber_Static_F": "Susp.Kin.F.Camber",
-            "Camber_Static_R": "Susp.Kin.R.Camber",
-            "Toe_Static_F": "Susp.Kin.F.Toe",
-            "Toe_Static_R": "Susp.Kin.R.Toe"
+            # Springs - Direct value assignment
+            "Spring_F": "SuspF.Spring",
+            "Spring_R": "SuspR.Spring",
+            
+            # Anti-Roll Bars - Direct value assignment
+            "Stabilizer_F": "SuspF.Stabi",
+            "Stabilizer_R": "SuspR.Stabi",
+            
+            # Dampers - These use lookup tables, we'll use Amplify factors
+            "Damp_Bump_F": "SuspF.Damp_Push.Amplify",
+            "Damp_Reb_F": "SuspF.Damp_Pull.Amplify",
+            "Damp_Bump_R": "SuspR.Damp_Push.Amplify",
+            "Damp_Reb_R": "SuspR.Damp_Pull.Amplify",
+            
+            # Note: Camber/Toe are NOT simple parameters in the vehicle file
+            # They're part of the kinematic .skc file, so we skip them for now
         }
 
     def inject_parameters(self, output_path, parameters):
+        """
+        Inject parameters into the vehicle file.
+        Only modifies parameters that exist in PARAM_MAP.
+        """
         try:
             if not os.path.exists(self.template_path):
                 self.logger.error(f"Template not found: {self.template_path}")
                 return False
 
-            with open(self.template_path, 'r') as f:
+            with open(self.template_path, 'r', encoding='utf-8', errors='ignore') as f:
                 lines = f.readlines()
 
-            # 1. Physics Calcs (Mass Penalty)
+            # Calculate any mass penalties
             mass_updates = self._calculate_mass_penalty(parameters)
             raw_params = {**parameters, **mass_updates}
             
-            # 2. Translate Keys (Python Name -> CarMaker Name)
-            # If the user's template ALREADY uses 'Spring_F', we keep it.
-            # If not, we try the mapped key 'Susp.Spring.F.stiff'.
-            full_parameters = {}
+            # Filter to only valid parameters
+            valid_params = {}
             for k, v in raw_params.items():
-                # Add the original key
-                full_parameters[k] = v
-                # Add the mapped key if it exists
                 if k in self.PARAM_MAP:
-                    full_parameters[self.PARAM_MAP[k]] = v
+                    # Map to CarMaker key
+                    cm_key = self.PARAM_MAP[k]
+                    valid_params[cm_key] = v
+                elif k in ["Body.Mass", "Body.Ixx", "Body.Iyy", "Body.Izz"]:
+                    # Direct body parameters
+                    valid_params[k] = v
 
+            self.logger.info(f"   -> Injecting {len(valid_params)} parameters")
+            
             new_lines = []
             keys_handled = set()
 
-            # 3. Line-by-Line Replacement
+            # Process each line
             for line in lines:
                 line_handled = False
                 stripped = line.strip()
                 
-                for key, val in full_parameters.items():
-                    # Check for "Key = Value" match
-                    if stripped.startswith(key) and (len(stripped) > len(key)) and (stripped[len(key)] in [' ', '=', '\t']):
-                        new_lines.append(f"{key} = {val}\n")
-                        keys_handled.add(key)
-                        # Mark BOTH the alias and the official key as handled
-                        line_handled = True
-                        break
+                # Check if this line matches any parameter we want to change
+                for key, val in valid_params.items():
+                    # Match "Key = Value" or "Key = ..." pattern
+                    if stripped.startswith(key):
+                        # Check next character is space, =, or tab
+                        if len(stripped) > len(key) and stripped[len(key)] in [' ', '=', '\t']:
+                            # Special handling for damper amplify (has $ variable)
+                            if "Amplify" in key:
+                                # Convert raw damping value to amplify factor
+                                # Base values from template: ~150-500 N/(m/s)
+                                # User values: 500-8000 N/(m/s)
+                                # Amplify = user_value / base_value
+                                base_value = 1.0  # We'll scale relative to current Amplify
+                                
+                                # Extract current amplify if it exists
+                                if "=" in stripped:
+                                    parts = stripped.split("=")
+                                    if len(parts) > 1:
+                                        try:
+                                            current = parts[1].strip().replace("$amp=", "")
+                                            base_value = float(current)
+                                        except:
+                                            base_value = 1.0
+                                
+                                # Calculate new amplify factor
+                                # Assuming base damping ~2000 N/(m/s)
+                                new_amplify = val / 2000.0
+                                new_lines.append(f"{key} = {new_amplify:.3f}\n")
+                            else:
+                                # Simple value replacement
+                                new_lines.append(f"{key} = {val}\n")
+                            
+                            keys_handled.add(key)
+                            line_handled = True
+                            break
                 
                 if not line_handled:
                     new_lines.append(line)
 
-            # 4. Append missing keys 
-            # (Only append the Official Key if mapped, otherwise the Raw Key)
-            for k, v in raw_params.items():
-                # Determine which key to check/write
-                target_key = self.PARAM_MAP.get(k, k)
-                
-                # Check if EITHER version was handled
-                if (k not in keys_handled) and (target_key not in keys_handled):
-                    new_lines.append(f"{target_key} = {v}\n")
+            # Log what was changed
+            if keys_handled:
+                self.logger.info(f"   -> Modified keys: {', '.join(sorted(keys_handled))}")
+            else:
+                self.logger.warning(f"   -> No parameters were modified!")
 
-            with open(output_path, 'w') as f:
+            # Write output
+            with open(output_path, 'w', encoding='utf-8') as f:
                 f.writelines(new_lines)
             
             return True
 
         except Exception as e:
             self.logger.error(f"Failed to inject parameters: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
     def _calculate_mass_penalty(self, parameters):
-        # ... (Same as before) ...
+        """Calculate mass penalty for geometry changes"""
         geo_keywords = ["Wishbone", "Tierod", "Rack", "Pushrod"]
         geo_changes = [val for key, val in parameters.items() if any(k in key for k in geo_keywords)]
         
@@ -113,7 +144,8 @@ class ParameterManager:
             return {}
 
         complexity_score = np.std(geo_changes) if len(geo_changes) > 1 else 0
-        if complexity_score < 1.0: return {}
+        if complexity_score < 1.0: 
+            return {}
 
         added_mass = complexity_score * self.MASS_PENALTY_FACTOR
         new_mass = self.NOMINAL_MASS + added_mass

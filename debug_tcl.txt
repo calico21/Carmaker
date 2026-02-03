@@ -1,5 +1,24 @@
-Step 1: Init
-Step 2: Loading Run_0
-Step 3: StartSim
-Step 4: Running...
-Step 5: Done.
+=== CarMaker Simulation Log ===
+TestRun: Run_0
+Trial: 0
+Timestamp: Tue Feb 03 19:14:14 +0100 2026
+
+Loading TestRun: Run_0
+TestRun loaded successfully
+
+Configuring output...
+WARNING: Could not enable output: invalid command name "SaveCfgSet"
+
+Starting Simulation...
+Waiting for simulation to start...
+Simulation is now running
+
+Waiting for simulation to complete (max 90s)...
+Final SimStatus: -2
+Could not get simulation time: invalid command name "erg::get"
+Could not get SimDir: invalid command name "erg::get"
+
+Saving results...
+WARNING: SaveResults failed: invalid command name "SaveResults"
+
+=== Simulation Complete ===

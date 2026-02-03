@@ -2105,3 +2105,132 @@ Simulation Timed Out
    -> Launching Sim Trial 1...
 ❌ Timed out or Crashed without results.
 |   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_17-59-17
+🧠 Surrogate Warm Start: Loaded 170 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_17-59-17
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Timed out or Crashed without results.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Timed out or Crashed without results.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2...
+❌ Timed out or Crashed without results.
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_18-03-45
+🧠 Surrogate Warm Start: Loaded 172 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_18-03-45
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Timed out or Crashed without results.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Timed out or Crashed without results.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_18-39-11
+🧠 Surrogate Warm Start: Loaded 173 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_18-39-11
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Timed out or Crashed without results.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Timed out or Crashed without results.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2...
+❌ Timed out or Crashed without results.
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_18-42-09
+🧠 Surrogate Warm Start: Loaded 175 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_18-42-09
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Timed out or Crashed without results.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Timed out or Crashed without results.
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_18-43-40
+🧠 Surrogate Warm Start: Loaded 176 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_18-43-40
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Timed out or Crashed without results.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Timed out or Crashed without results.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_18-52-50
+🧠 Surrogate Warm Start: Loaded 177 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_18-52-50
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Trial 0...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_19-01-01
+🧠 Surrogate Warm Start: Loaded 177 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_19-01-01
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Trial 0...
+   -> Process exited with code 0
+   -> Timeout or crash detected
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Trial 1...
+   -> Process exited with code 0
+   -> Timeout or crash detected
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_19-05-12
+🧠 Surrogate Warm Start: Loaded 178 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_19-05-12
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Trial 0...
+   -> Process exited with code 0
+   -> Doing final result scan...
+   -> No results found after process exit
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+----------------------------------------------------------------------------------------
+✅ Optimization Complete.
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_19-09-27
+🧠 Surrogate Warm Start: Loaded 179 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_19-09-27
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Copied vehicle to C:\Users\eracing\Desktop\CAR_MAKER\FS_race\Data/Vehicle\Optimized_Car_0
+   -> Created TestRun: C:\Users\eracing\Desktop\CAR_MAKER\FS_race\Data/TestRun\Run_0.ts
+   -> Created TCL script: C:\Users\eracing\Desktop\CAR_MAKER\FS_race\launch_sim.tcl
+   -> Launching Trial 0...
+   -> Process exited with code 0
+   -> Performing final result scan...
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+----------------------------------------------------------------------------------------
+✅ Optimization Complete.
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_19-14-02
+🧠 Surrogate Warm Start: Loaded 180 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_19-14-02
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Copied vehicle
+   -> Created TestRun with output enabled
+   -> Created TCL script
+   -> Launching Trial 0...
+   -> Process exited with code 0
+   -> Performing final result scan...
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+----------------------------------------------------------------------------------------
+✅ Optimization Complete.

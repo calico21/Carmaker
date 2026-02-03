@@ -2,7 +2,7 @@
 FileIdent = CarMaker-TestRun 14
 FileCreator = CarMaker Office 14.1
 Description:
-Vehicle = Optimized_Car_0
+Vehicle = Optimized_Car_2
 Trailer =
 Tire.0 =
 Tire.1 =
@@ -251,7 +251,3 @@ ErrorClass.10.WarningLimit = 3 5
 ErrorClass.11.Action = abort
 ErrorClass.11.Save = 0
 ErrorClass.11.WarningLimit = 3 5
-
-## Output Configuration (Added by Optimizer)
-SaveConfig.Enabled = 1
-SaveConfig.Write.Enabled = 1
