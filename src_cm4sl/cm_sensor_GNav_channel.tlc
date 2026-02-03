@@ -1,0 +1,93 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_GNav_channel" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_GNav.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sdata = LibBlockPWork(SData, "", "", 0)
+	%<sdata> = (tGNavSensor *) GNavSensor_Get();
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+	%<sisfirststep> = 1;
+    %else
+	%assign _cindex = block.SFcnParamSettings[0]._CIndex
+	%assign cindex  = block.SFcnParamSettings[0].CIndex
+	%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	%<shandle> = MdlItems_Add(MdlItem_GNavSensor, "%<cindex>", MdlIdx_ChannelId); // %<_cindex>
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    {
+	%assign chasextindex = block.SFcnParamSettings[0].CHasExtIndex != 0
+
+	%if CM_IsCarMakerTarget
+	    %assign cindex = LibBlockIWork(CIndex, "", "", 0)
+	    %assign sdata  = LibBlockPWork(SData, "", "", 0)
+
+	    const tGNavSensor *gnav = %<sdata>;
+
+	    %if %<chasextindex>
+		%<cindex> = %<LibBlockInputSignal(0, "", "", 0)>;
+	    %else
+		%assign calphaindex = CAST("Number", block.SFcnParamSettings[0].CAlphaIndex)
+		%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %<cindex> = %<calphaindex> < 1 ? 1 : (GPSCHANNEL < %<calphaindex> ? GPSCHANNEL : %<calphaindex>);
+		    %<sisfirststep> = 0;
+		}
+	    %endif
+	%else
+	    %if %<chasextindex>
+		%assign cindex = LibBlockIWork(CIndex, "", "", 0)
+		%<cindex> = %<LibBlockInputSignal(0, "", "", 0)>;
+	    %else
+		%assign cindex = "ms->Index"
+	    %endif
+
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+
+	    const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+	    const tGNavSensor *gnav = ms->Item;
+	%endif
+
+	%assign sig0 = LibBlockOutputSignal(0, "", "", 0)
+	%assign sig1 = LibBlockOutputSignal(1, "", "", 0)
+
+	// Port 0: channel index
+	int idx = %<cindex>;
+	%if %<chasextindex>
+	    idx = idx < 1 ? 1 : (GPSCHANNEL < idx ? GPSCHANNEL : idx);
+	%endif
+	%<sig0> = idx;
+
+	// Port 1: channel data
+	const struct tRecChannel *ch = &gnav->Receiver.Channel[idx];
+	%<sig1>.PRN                  = ch->PRN;
+	%<sig1>.PseudoRange          = ch->psr;
+	%<sig1>.RangeRate            = ch->rr;
+	%<sig1>.elev                 = ch->elev;
+	%<sig1>.azim                 = ch->azim;
+	%<sig1>.geometricRange       = ch->dist;
+	%<sig1>.SatelliteClockOffset = ch->dtsv;
+	%<sig1>.ephError             = ch->ephErr;
+	%<sig1>.ionoError            = ch->ionoErr;
+	%<sig1>.tropoError           = ch->tropoErr;
+    }
+%endfunction
+

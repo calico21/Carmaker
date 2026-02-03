@@ -1,0 +1,131 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_road" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %<LibAddToCommonIncludes("<Road.h>")>
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Environment.h>")>
+    %<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %assign _name            = block.SFcnParamSettings[0]._Name
+    %assign name             = block.SFcnParamSettings[0].Name
+    %assign evalmode         = block.SFcnParamSettings[0].EvalMode
+    %assign usepath          = CAST("Boolean", block.SFcnParamSettings[0].UsePath)
+    %assign withcurve        = CAST("Boolean", block.SFcnParamSettings[0].WithCurve)
+    %assign considerbumps    = CAST("Boolean", block.SFcnParamSettings[0].ConsiderBumps)
+    %assign abortwhenoffroad = CAST("Boolean", block.SFcnParamSettings[0].AbortWhenOffRoad)
+    {
+	tSfunRoadEvalParams *rep = calloc(1, sizeof(*rep));
+	rep->Name = "%<name>"; // %<_name>
+	rep->AbortWhenOffRoad = %<abortwhenoffroad>;
+	rep->EvalMode = %<evalmode>;
+	rep->re = CM_Sfun_RoadEvalNewByObjId(Env.Road, Env.Route.ObjId,
+				      rep->Name, %<usepath>, %<withcurve>, %<considerbumps>);
+	%<LibBlockPWork(REP, "", "", 0)> = rep;
+
+	rep->re_bak = rep->re;
+	rep->UsePath = %<usepath>;
+	rep->Env = &Env;
+	Env_Observers_Add(CM_Sfun_RoadEvalObserver, rep);
+    }
+%endfunction
+
+
+%function Terminate (block, system) Output
+    {
+	tSfunRoadEvalParams *rep = %<LibBlockPWork(REP, "", "", 0)>;
+	Env_Observers_Delete(CM_Sfun_RoadEvalObserver, rep);
+	RoadDeleteRoadEval(rep->re_bak);
+	free(rep);
+    }
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign evalmode = block.SFcnParamSettings[0].EvalMode
+    {
+	tSfunRoadEvalParams *rep = %<LibBlockPWork(REP, "", "", 0)>;
+
+      %if evalmode == 0
+	tRoadGeoIn     GeoIn;
+	tRoadGeoOut    GeoOut;
+
+	GeoIn.xyz[0] = %<LibBlockInputSignal(1, "", "", 0)>;
+	GeoIn.xyz[1] = %<LibBlockInputSignal(1, "", "", 1)>;
+	GeoIn.xyz[2] = %<LibBlockInputSignal(1, "", "", 2)>;
+
+	if (rep->Inactive && SimCore.State!=SCState_Idle)
+	    rep->Inactive = 0;
+	if (CM_Sfun_RoadGeoEval(rep, &GeoIn, &GeoOut, AppStartInfo.ModelCheck) != 0) {
+	    if (SCState_Start<=SimCore.State && SimCore.State<SCState_End) {
+		SimCore_State_Set(SCState_End);
+	    } else if (SimCore.State == SCState_Idle) {
+		rep->Inactive = 1;
+	    }
+	}
+
+	%<LibBlockOutputSignal(0, "", "",  0)> = GeoOut.xyz[0];
+	%<LibBlockOutputSignal(0, "", "",  1)> = GeoOut.xyz[1];
+	%<LibBlockOutputSignal(0, "", "",  2)> = GeoOut.xyz[2];
+	%<LibBlockOutputSignal(0, "", "",  3)> = GeoOut.nuv[0];
+	%<LibBlockOutputSignal(0, "", "",  4)> = GeoOut.nuv[1];
+	%<LibBlockOutputSignal(0, "", "",  5)> = GeoOut.nuv[2];
+	%<LibBlockOutputSignal(0, "", "",  6)> = GeoOut.onRoad;
+	%<LibBlockOutputSignal(0, "", "",  7)> = GeoOut.onJunction;
+	%<LibBlockOutputSignal(0, "", "",  8)> = GeoOut.fric;
+      %else
+	tRoadRouteIn     RouteIn;
+	tRoadRouteOutExt RouteOut;
+
+	RouteIn.st[0] = %<LibBlockInputSignal(0, "", "", 0)>;
+	RouteIn.st[1] = %<LibBlockInputSignal(0, "", "", 1)>;
+
+	RouteIn.xyz[0]  = %<LibBlockInputSignal(1, "", "", 0)>;
+	RouteIn.xyz[1]  = %<LibBlockInputSignal(1, "", "", 1)>;
+	RouteIn.xyz[2]  = %<LibBlockInputSignal(1, "", "", 2)>;
+
+	if (rep->Inactive && SimCore.State!=SCState_Idle)
+	    rep->Inactive = 0;
+	if (CM_Sfun_RoadRouteEval(rep, &RouteIn, &RouteOut, AppStartInfo.ModelCheck) != 0) {
+	    if (SCState_Start<=SimCore.State && SimCore.State<SCState_End) {
+		SimCore_State_Set(SCState_End);
+	    } else if (SimCore.State == SCState_Idle) {
+		rep->Inactive = 1;
+	    }
+	}
+
+	%<LibBlockOutputSignal(1, "", "",  0)> = RouteOut.xyz[0];
+	%<LibBlockOutputSignal(1, "", "",  1)> = RouteOut.xyz[1];
+	%<LibBlockOutputSignal(1, "", "",  2)> = RouteOut.xyz[2];
+	%<LibBlockOutputSignal(1, "", "",  3)> = RouteOut.nuv[0];
+	%<LibBlockOutputSignal(1, "", "",  4)> = RouteOut.nuv[1];
+	%<LibBlockOutputSignal(1, "", "",  5)> = RouteOut.nuv[2];
+	%<LibBlockOutputSignal(1, "", "",  6)> = RouteOut.suv[0];
+	%<LibBlockOutputSignal(1, "", "",  7)> = RouteOut.suv[1];
+	%<LibBlockOutputSignal(1, "", "",  8)> = RouteOut.suv[2];
+	%<LibBlockOutputSignal(1, "", "",  9)> = RouteOut.tuv[0];
+	%<LibBlockOutputSignal(1, "", "", 10)> = RouteOut.tuv[1];
+	%<LibBlockOutputSignal(1, "", "", 11)> = RouteOut.tuv[2];
+	%<LibBlockOutputSignal(1, "", "", 12)> = RouteOut.st[0];
+	%<LibBlockOutputSignal(1, "", "", 13)> = RouteOut.st[1];
+	%<LibBlockOutputSignal(1, "", "", 14)> = RouteOut.curveXY;
+	%<LibBlockOutputSignal(1, "", "", 15)> = RouteOut.width[0];
+	%<LibBlockOutputSignal(1, "", "", 16)> = RouteOut.width[1];
+	%<LibBlockOutputSignal(1, "", "", 17)> = RouteOut.onRoad;
+	%<LibBlockOutputSignal(1, "", "", 18)> = RouteOut.grade;
+	%<LibBlockOutputSignal(1, "", "", 19)> = RouteOut.slope;
+	%<LibBlockOutputSignal(1, "", "", 20)> = RouteOut.curveZ;
+	%<LibBlockOutputSignal(1, "", "", 21)> = RouteOut.fric;
+      %endif
+    }
+%endfunction

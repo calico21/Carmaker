@@ -1,0 +1,90 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_GNav" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_GNav.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sdata  = LibBlockPWork(SData, "", "", 0)
+	%<sdata>  = (tGNavSensor *) GNavSensor_Get();
+    %else
+	%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	%<shandle> = MdlItems_Add(MdlItem_GNavSensor, "", MdlIdx_Default);
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    {
+	%if CM_IsCarMakerTarget
+	    %assign sdata  = LibBlockPWork(SData, "", "", 0)
+
+	    const tGNavSensor *gnav = %<sdata>;
+	%else
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+
+	    const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+	    const tGNavSensor *gnav = ms->Item;
+	%endif
+
+	const struct tReceiver *rcv = &gnav->Receiver;
+
+	%assign sig = LibBlockOutputSignal(0, "", "", 0)
+
+	%<sig>.SatNoOverElevMask            = rcv->NoVisibleSat;
+	%<sig>.SatNoDirectView              = rcv->NoVisibleSatDirect;
+
+	%<sig>.Position.ECEF_x              = rcv->UserPosEcefTsa[0];
+	%<sig>.Position.ECEF_y              = rcv->UserPosEcefTsa[1];
+	%<sig>.Position.ECEF_z              = rcv->UserPosEcefTsa[2];
+	%<sig>.Position.ECEF_fromPsr_x      = rcv->UserPosEcefTsa_fromPsr[0];
+	%<sig>.Position.ECEF_fromPsr_y      = rcv->UserPosEcefTsa_fromPsr[1];
+	%<sig>.Position.ECEF_fromPsr_z      = rcv->UserPosEcefTsa_fromPsr[2];
+	%<sig>.Position.ECEF_Delta_x        = rcv->Delta_UserPosEcefTsa[0];
+	%<sig>.Position.ECEF_Delta_y        = rcv->Delta_UserPosEcefTsa[1];
+	%<sig>.Position.ECEF_Delta_z        = rcv->Delta_UserPosEcefTsa[2];
+	%<sig>.Position.ECEFVel_x           = rcv->UserVelEcefTsa[0];
+	%<sig>.Position.ECEFVel_y           = rcv->UserVelEcefTsa[1];
+	%<sig>.Position.ECEFVel_z           = rcv->UserVelEcefTsa[2];
+
+	%<sig>.Position.LLH_Lat             = rcv->UserPosLlhTsa[0];
+	%<sig>.Position.LLH_Long            = rcv->UserPosLlhTsa[1];
+	%<sig>.Position.LLH_H               = rcv->UserPosLlhTsa[2];
+	%<sig>.Position.LLH_fromPsr_Lat     = rcv->UserPosLlhTsa_fromPsr[0];
+	%<sig>.Position.LLH_fromPsr_Long    = rcv->UserPosLlhTsa_fromPsr[1];
+	%<sig>.Position.LLH_fromPsr_H       = rcv->UserPosLlhTsa_fromPsr[2];
+	%<sig>.Position.LLH_Delta_Lat       = rcv->Delta_UserPosLlhTsa[0];
+	%<sig>.Position.LLH_Delta_Long      = rcv->Delta_UserPosLlhTsa[1];
+	%<sig>.Position.LLH_Delta_H         = rcv->Delta_UserPosLlhTsa[2];
+
+	%<sig>.Time.GPSWeek                 = rcv->Time_GpsWeek;
+	%<sig>.Time.secsOfWeek              = rcv->Time_secsOfWeek;
+	%<sig>.Time.yday                    = rcv->Time_yday;
+	%<sig>.Time.ClockError              = rcv->RecClockError;
+	%<sig>.Time.ClockError_fromPsr      = rcv->RecClockError_fromPsr;
+	%<sig>.Time.ClockError_Delta        = rcv->Delta_RecClockError;
+
+	%<sig>.PDOP                         = rcv->PDOP;
+	%<sig>.TDOP                         = rcv->TDOP;
+	%<sig>.GDOP                         = rcv->GDOP;
+	%<sig>.HDOP                         = rcv->HDOP;
+	%<sig>.VDOP                         = rcv->VDOP;
+	%<sig>.XDOP                         = rcv->XDOP;
+	%<sig>.YDOP                         = rcv->YDOP;
+	%<sig>.XYDOP                        = rcv->XYDOP;
+    }
+%endfunction
+

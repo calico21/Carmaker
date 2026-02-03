@@ -1,0 +1,122 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_tire" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %<LibAddToCommonIncludes("<Log.h>")>
+    %<LibAddToCommonIncludes("<Vehicle.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Tire.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %assign tirepos = block.SFcnParamSettings[0].TirePos
+    %assign tireid = CAST("Number", block.SFcnParamSettings[0].TireId)
+#ifndef TIRE_%<tirepos>
+#   define TIRE_%<tirepos>
+    %if CM_IsCarMakerTarget
+	if (VhclModel_Tire_Check(%<tireid>, 0) == 0) {
+	    %<LibBlockPWork(Tire, "", "", 0)> = VhclModel_Tire_GetHandle(%<tireid>);
+	} else {
+	    %<LibBlockPWork(Tire, "", "", 0)> = NULL;
+	}
+    %else
+	%<LibBlockPWork(TireIF, "", "", 0)> = NULL;
+    %endif
+#else
+#   error Tire %<tirepos>: Only one tire block per position permitted
+#endif
+%endfunction
+
+
+%function Terminate (block, system) Output
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	{
+	    tTireIF *IF = %<LibBlockPWork(TireIF, "", "", 0)>;
+	    if (IF != NULL)
+		free(IF);
+	}
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %if CM_IsCarMakerTarget
+	{
+	    tTire *tire = %<LibBlockPWork(Tire, "", "", 0)>;
+	    if (tire != NULL) {
+		tTireIF *IF = &tire->IF;
+
+		IF->Frc_W[2]     = %<LibBlockInputSignal (0, "", "", 0)>;
+		IF->P_v0_W[0]    = %<LibBlockInputSignal (1, "", "", 0)>;
+		IF->P_v0_W[1]    = %<LibBlockInputSignal (2, "", "", 0)>;
+		IF->P_v0_W[2]    = 0;
+		IF->Rim_rotv     = %<LibBlockInputSignal (3, "", "", 0)>;
+		IF->Rim_turnv    = %<LibBlockInputSignal (4, "", "", 0)>;
+		IF->InclinAngle  = %<LibBlockInputSignal (5, "", "", 0)>;
+		IF->muRoad       = %<LibBlockInputSignal (6, "", "", 0)>;
+
+		VhclModel_Tire_Calc(SimCore.DeltaT, tire);
+
+		%<LibBlockOutputSignal(0, "", "",  0)> = IF->Slp;
+		%<LibBlockOutputSignal(0, "", "",  1)> = IF->Alpha;
+		%<LibBlockOutputSignal(0, "", "",  2)> = IF->TurnSlp;
+		%<LibBlockOutputSignal(0, "", "",  3)> = IF->rBelt_eff;
+		%<LibBlockOutputSignal(0, "", "",  4)> = IF->vBelt;
+		%<LibBlockOutputSignal(0, "", "",  5)> = IF->Frc_W[0];
+		%<LibBlockOutputSignal(0, "", "",  6)> = IF->Frc_W[1];
+		%<LibBlockOutputSignal(0, "", "",  7)> = IF->Frc_W[2];
+		%<LibBlockOutputSignal(0, "", "",  8)> = IF->Trq_W[0];
+		%<LibBlockOutputSignal(0, "", "",  9)> = IF->Trq_W[1];
+		%<LibBlockOutputSignal(0, "", "", 10)> = IF->Trq_W[2];
+	    }
+	}
+    %else
+	{
+	    %assign tireid = CAST("Number", block.SFcnParamSettings[0].TireId)
+	    if (MdlItemIndex != 0) {
+		tTireIF *IF = %<LibBlockPWork(TireIF, "", "", 0)>;
+		if (IF == NULL) {
+		    %% Initialization once and as late as possible after program startup.
+		    IF = CM_Sfun_TireGetIF(%<tireid>);
+		    %<LibBlockPWork(TireIF, "", "", 0)> = IF;
+		}
+		IF->Frc_W[2]     = %<LibBlockInputSignal (0, "", "", 0)>;
+		IF->P_v0_W[0]    = %<LibBlockInputSignal (1, "", "", 0)>;
+		IF->P_v0_W[1]    = %<LibBlockInputSignal (2, "", "", 0)>;
+		IF->P_v0_W[2]    = 0;
+		IF->Rim_rotv     = %<LibBlockInputSignal (3, "", "", 0)>;
+		IF->Rim_turnv    = %<LibBlockInputSignal (4, "", "", 0)>;
+		IF->InclinAngle  = %<LibBlockInputSignal (5, "", "", 0)>;
+		IF->muRoad       = %<LibBlockInputSignal (6, "", "", 0)>;
+
+		CM_Sfun_TireCalc(%<tireid>);
+	    }
+	    {
+		const tTireIF *IF;
+		if (MdlItemIndex == 0) {
+		    IF = MdlZero.TireIF;
+		} else {
+		    IF = %<LibBlockPWork(TireIF, "", "", 0)>;
+		}
+		%<LibBlockOutputSignal(0, "", "",  0)> = IF->Slp;
+		%<LibBlockOutputSignal(0, "", "",  1)> = IF->Alpha;
+		%<LibBlockOutputSignal(0, "", "",  2)> = IF->TurnSlp;
+		%<LibBlockOutputSignal(0, "", "",  3)> = IF->rBelt_eff;
+		%<LibBlockOutputSignal(0, "", "",  4)> = IF->vBelt;
+		%<LibBlockOutputSignal(0, "", "",  5)> = IF->Frc_W[0];
+		%<LibBlockOutputSignal(0, "", "",  6)> = IF->Frc_W[1];
+		%<LibBlockOutputSignal(0, "", "",  7)> = IF->Frc_W[2];
+		%<LibBlockOutputSignal(0, "", "",  8)> = IF->Trq_W[0];
+		%<LibBlockOutputSignal(0, "", "",  9)> = IF->Trq_W[1];
+		%<LibBlockOutputSignal(0, "", "", 10)> = IF->Trq_W[2];
+	    }
+	}
+    %endif
+%endfunction

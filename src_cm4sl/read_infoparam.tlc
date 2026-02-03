@@ -1,0 +1,108 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "read_infoparam" "C"
+
+%include "cm_rtwlib.tlc"
+%include "cm_rma.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %<LibAddToCommonIncludes("<InfoUtils.h>")>
+    %<LibAddToCommonIncludes("<InfoParam.h>")>
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%<LibAddToCommonIncludes("<RemoteModelAccess.h>")>
+    %endif
+%endfunction
+
+
+%function BlockInstanceSetup(block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%% This comment allows indirect calls to LibSystemOutputCustomCode()
+	%% by RMA_InitUpdates().
+	%<RMA_InitUpdates(system)>
+    %endif
+%endfunction
+
+
+%function Start (block, system) Output
+    %assign param    = LibBlockPWork(InfoParam, "", "", 0)
+    %assign _key     = block.SFcnParamSettings[0]._Key
+    %assign key      = block.SFcnParamSettings[0].Key
+    %assign fileid   = block.SFcnParamSettings[0].FileId
+    %if ISEQUAL("%<fileid>","Testrun")
+        %assign fileid = "TestRun"
+    %endif
+    %assign nout     = CAST("Number", block.SFcnParamSettings[0].nOutputs)
+    %assign defcount = CAST("Number", block.SFcnParamSettings[0].DefCount)
+
+    %if defcount != 0
+	%assign pdefault = LibBlockParameterAddr(DefValue, "", "", 0)
+	%<param> = InfoParam_Create(InfoParam_Str2FileId ("%<fileid>"), "%<key>", %<nout>, %<pdefault>, %<defcount>); // %<_key>
+    %else
+	%<param> = InfoParam_Create(InfoParam_Str2FileId ("%<fileid>"), "%<key>", %<nout>, NULL, %<defcount>); // %<_key>
+    %endif
+
+    %if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+	InfoParam_Read(%<param>, 0);
+    %else
+	InfoParam_Register(%<param>);
+    %endif
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%assign rmaitem = LibBlockPWork(RMAc_UpdateItem, "", "", 0)
+	%assign idx = RMA_Param_GetIndex("%<fileid>_%<key>")
+	%assign defval = ""
+	%if defcount == 1
+	    %assign defval = LibBlockParameter(DefValue, "", "", 0)
+	%endif
+	%<RMA_AddToParam(fileid, key, nout, defcount, defval, idx)>
+	%if defcount > 1
+	    %assign defstr = ""
+	    %foreach idx = nout
+		%if idx == 0
+		    %assign defstr = "%<LibBlockParameterValue(DefValue, idx)>"
+		%else
+		    %assign defstr = "%<defstr> %<LibBlockParameterValue(DefValue, idx)>"
+		%endif
+	    %endforeach
+	    %<RMA_AddParamDefVal(idx, defstr)>
+	%endif
+	%<rmaitem> = RMAc_AddToUpdateList(RMAc_Param, %<param>, %<idx>, 0);
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%<RMA_OutputEnter(system)>
+    %endif
+    %assign param = LibBlockPWork(InfoParam, "", "", 0)
+    %assign nout  = CAST("Number",  block.SFcnParamSettings[0].nOutputs)
+    %assign muxed = CAST("Boolean", block.SFcnParamSettings[0].Muxed)
+    {
+	const double *vec = InfoParam_GetVec(%<param>, NULL);
+	%if muxed
+	    %foreach si = LibBlockOutputSignalWidth(0)
+		%<LibBlockOutputSignal(0, "", "", si)> = *vec++;
+	    %endforeach
+	%else
+	    %foreach pi = NumDataOutputPorts
+		%<LibBlockOutputSignal(pi, "", "", 0)> = *vec++;
+	    %endforeach
+	%endif
+    }
+%endfunction
+
+
+%function Terminate (block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%assign rmaitem = LibBlockPWork(RMAc_UpdateItem, "", "", 0)
+	RMAc_ReleaseItem(%<rmaitem>);
+    %endif
+    %if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+	%assign param = LibBlockPWork(InfoParam, "", "", 0)
+	InfoParam_Destroy(%<param>);
+    %endif
+%endfunction

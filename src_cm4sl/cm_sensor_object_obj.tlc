@@ -1,0 +1,166 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_object_obj" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Traffic.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_Object.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+	%<sisfirststep> = 1;
+    %else
+	%assign shasextindex = block.SFcnParamSettings[0].SHasExtIndex != 0
+	%if !%<shasextindex>
+	    %assign _sname = block.SFcnParamSettings[0]._SName
+	    %assign sname  = block.SFcnParamSettings[0].SName
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_ObjectSensor, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    {
+	%assign shasextindex = block.SFcnParamSettings[0].SHasExtIndex != 0
+	%assign spickobserved = block.SFcnParamSettings[0].SPickObserved != 0
+	%assign osindex = LibBlockIWork(OSIndex, "", "", 0)
+
+	int osindex, obindex;
+	const tObjectSensor    *os;
+	const tObjectSensorObj *ob;
+
+	%if CM_IsCarMakerTarget
+	    static tObjectSensor ZeroSensor = { .relvTargetObjId = -1 };
+	    static tObjectSensorObj ZeroObject = { .ObjId = -1 };
+
+	    %if %<shasextindex>
+		osindex = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (os = ObjectSensor_GetByIndex(osindex)) == NULL) {
+		    os = &ZeroSensor;
+		    osindex = -1;
+		}
+	    %else
+		%assign _sname = block.SFcnParamSettings[0]._SName
+		%assign sname  = block.SFcnParamSettings[0].SName
+		%assign salphaindex = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor      = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<osindex> = %<salphaindex>;
+		    %else
+			%<osindex> = ObjectSensor_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = ObjectSensor_GetByIndex(%<osindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<osindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		osindex = %<osindex>;
+		os = (const tObjectSensor *)%<ssensor>;
+	    %endif
+	%else
+	    %if %<shasextindex>
+		osindex = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (os = ObjectSensor_GetByIndex(osindex)) == NULL) {
+		    os = MdlZero.ObjectSensor;
+		    osindex = -1;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		os = ms->Item;
+		osindex = ms->Index;
+	    %endif
+	%endif
+
+	obindex = %<LibBlockInputSignal(1, "", "", 0)>;
+	if (obindex == 99999) {
+	    obindex = os->relvTargetObjId;
+	} else {
+	    %if %<spickobserved>
+		if (0<=obindex && obindex<os->nObsvObjects) {
+		    obindex = os->ObsvObjects[obindex];
+		} else {
+		    obindex = -1;
+		}
+	    %endif
+	}
+	ob = ObjectSensor_GetObjectByObjId(osindex, obindex);
+	if (ob == NULL) {
+	    %if CM_IsCarMakerTarget
+		ob = &ZeroObject;
+	    %else
+		ob = MdlZero.ObjectSensorObj;
+	    %endif
+	    obindex = -1;
+	}
+
+	%<LibBlockOutputSignal(0, "", "", 0)> = obindex;
+
+	%<LibBlockOutputSignal(1, "", "", 0)> = Traffic_ObjId2TrfId(ob->ObjId);
+	%<LibBlockOutputSignal(1, "", "", 1)> = ob->w;
+	%<LibBlockOutputSignal(1, "", "", 2)> = ob->h;
+	%<LibBlockOutputSignal(1, "", "", 3)> = ob->l;
+	%<LibBlockOutputSignal(1, "", "", 4)> = ob->zOff;
+	%<LibBlockOutputSignal(1, "", "", 5)> = ob->ObjId;
+
+	%<LibBlockOutputSignal(2, "", "", 0)> = ob->obsv;
+	%<LibBlockOutputSignal(2, "", "", 1)> = ob->dtct;
+
+	%<LibBlockOutputSignal(3, "", "", 0)> = ob->RefPnt.ds[0];
+	%<LibBlockOutputSignal(3, "", "", 1)> = ob->RefPnt.ds[1];
+	%<LibBlockOutputSignal(3, "", "", 2)> = ob->RefPnt.ds[2];
+	%<LibBlockOutputSignal(3, "", "", 3)> = ob->RefPnt.ds_p;
+	%<LibBlockOutputSignal(3, "", "", 4)> = ob->RefPnt.dv[0];
+	%<LibBlockOutputSignal(3, "", "", 5)> = ob->RefPnt.dv[1];
+	%<LibBlockOutputSignal(3, "", "", 6)> = ob->RefPnt.dv[2];
+	%<LibBlockOutputSignal(3, "", "", 7)> = ob->RefPnt.dv_p;
+	%<LibBlockOutputSignal(3, "", "", 8)> = ob->RefPnt.alpha_p;
+	%<LibBlockOutputSignal(3, "", "", 9)> = ob->RefPnt.theta_p;
+	%<LibBlockOutputSignal(3, "", "",10)> = ob->RefPnt.r_zyx[0];
+	%<LibBlockOutputSignal(3, "", "",11)> = ob->RefPnt.r_zyx[1];
+	%<LibBlockOutputSignal(3, "", "",12)> = ob->RefPnt.r_zyx[2];
+
+	%<LibBlockOutputSignal(4, "", "", 0)> = ob->NearPnt.ds[0];
+	%<LibBlockOutputSignal(4, "", "", 1)> = ob->NearPnt.ds[1];
+	%<LibBlockOutputSignal(4, "", "", 2)> = ob->NearPnt.ds[2];
+	%<LibBlockOutputSignal(4, "", "", 3)> = ob->NearPnt.ds_p;
+	%<LibBlockOutputSignal(4, "", "", 4)> = ob->NearPnt.dv[0];
+	%<LibBlockOutputSignal(4, "", "", 5)> = ob->NearPnt.dv[1];
+	%<LibBlockOutputSignal(4, "", "", 6)> = ob->NearPnt.dv[2];
+	%<LibBlockOutputSignal(4, "", "", 7)> = ob->NearPnt.dv_p;
+	%<LibBlockOutputSignal(4, "", "", 8)> = ob->NearPnt.alpha_p;
+	%<LibBlockOutputSignal(4, "", "", 9)> = ob->NearPnt.theta_p;
+	%<LibBlockOutputSignal(4, "", "",10)> = ob->NearPnt.r_zyx[0];
+	%<LibBlockOutputSignal(4, "", "",11)> = ob->NearPnt.r_zyx[1];
+	%<LibBlockOutputSignal(4, "", "",12)> = ob->NearPnt.r_zyx[2];
+
+	%<LibBlockOutputSignal(5, "", "", 0)> = ob->incangle[0];
+	%<LibBlockOutputSignal(5, "", "", 1)> = ob->incangle[1];
+	%<LibBlockOutputSignal(5, "", "", 2)> = ob->ImgArea_NearP;
+	%<LibBlockOutputSignal(5, "", "", 3)> = ob->ImgArea_LeftP;
+	%<LibBlockOutputSignal(5, "", "", 4)> = ob->ImgArea_RightP;
+    }
+%endfunction
+

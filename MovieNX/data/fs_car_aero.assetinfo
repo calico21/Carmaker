@@ -1,0 +1,60 @@
+#INFOFILE1.1 (UTF-8) - Do not remove this line!
+FileClass.New = 13.0
+FileIdent = MovieNX-AssetInfo 1.0
+FileCreator = MovieNX
+
+General.NodeHierarchy = Car
+General.Bbox = -0.549756 5.494421 -1.376566 1.260250 -0.032313 2.000000
+General.ObjectClass = Car
+
+DriverPivot.Pos = 1.7 0.4 2
+DriverPivot.Rot = 0 0 0
+
+# Vehicle
+Asset.MainBody.FName = fs_car/aero.gltf
+Asset.MainBody.ObjectClass = Car
+Asset.MainBody.Frame = Fr1A2B
+Asset.MainBody.Pos = 0.45 0.00 0.07
+
+# WheelCarrier Frames
+Frame.Fr2FL.Pos = 5.24 1.2 0.28 
+Frame.Fr2FR.Pos = 5.24 -1.2 0.28
+Frame.FrWheelFR.Rot = 0 0 0
+Frame.Fr2RL.Pos = 1.3 1.2 0.25
+Frame.Fr2RR.Pos = 1.3 -1.2 0.25 
+Frame.FrWheelRR.Rot = 0 0 0
+
+# Wheels
+Asset.WheelFL.FName = fs_car/wheel.gltf
+Asset.WheelFL.Frame = FrWheelFL
+Asset.WheelFL.Pos = 0 0.0 0
+Asset.WheelFR.FName = fs_car/wheel.gltf
+Asset.WheelFR.Frame = FrWheelFR
+Asset.WheelFR.Pos = 0 0.0 0
+Asset.WheelRL.FName = fs_car/wheel.gltf
+Asset.WheelRL.Frame = FrWheelRL
+Asset.WheelRL.Pos = 0 0.0 0
+Asset.WheelRR.FName = fs_car/wheel.gltf
+Asset.WheelRR.Frame = FrWheelRR
+Asset.WheelRR.Pos = 0 0.0 0
+
+# LightSignals
+LightSignal.LowBeam.ProjectedLights:
+    headlight_left
+    headlight_right
+LightSignal.LowBeam.EmissiveSurfaces:
+    Front_lights
+LightSignal.HighBeam.ProjectedLights:
+    headlight_left
+    headlight_right
+LightSignal.HighBeam.EmissiveSurfaces:
+    Front_lights
+LightSignal.IndicatorL.EmissiveSurfaces:
+    indicator_lights
+LightSignal.IndicatorR.EmissiveSurfaces:
+    indicator_lights
+LightSignal.Brake.ProjectedLights:
+    brakelight_left
+    brakelight_right
+LightSignal.Brake.EmissiveSurfaces:
+    brake_lights

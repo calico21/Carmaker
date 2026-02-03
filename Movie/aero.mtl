@@ -1,0 +1,54 @@
+newmtl Material.014
+ Ns 850
+ Ka 0.5 0.5 0.5 
+ Kd 1 1 1
+ Ks 0.76 0.76 0.76
+ Km 0.15 0.15 0.15 0.2
+ map_Kd V2_Main Body_BaseColor.png
+ MatID metal_painted
+
+newmtl Material.015
+Ka 0.30 0.30 0.35  
+Kd 0.58 0.58 0.59
+Ks 0.6 0.6 0.6   
+Ns 150  
+MatID metal
+
+newmtl Material.016
+Ns 600  
+Ka 0.4 0.4 0.4
+Kd 0.8 0.8 0.8
+Ks 0.8 0.8 0.8 
+MatID metal
+
+newmtl Material.017
+Ns 20
+Ka 0.1 0.1 0.1
+Kd 0.11 0.11 0.11
+Ks 0.06 0.06 0.06
+MatID plastic
+
+newmtl Material.018
+Ns 20
+Ka 0.1 0.1 0.1
+Kd 0.11 0.11 0.11
+Ks 0.06 0.06 0.06
+MatID plastic
+
+newmtl Material.019
+ Ns 850
+ Ka 0.5 0.5 0.5 
+ Kd 1 1 1
+ Ks 0.76 0.76 0.76
+ Km 0.15 0.15 0.15 0.2
+ map_Kd V2_Secondary Body_BaseColor.png
+ MatID metal_painted
+
+newmtl Material.020
+ Ns 850
+ Ka 0.5 0.5 0.5 
+ Kd 1 1 1
+ Ks 0.76 0.76 0.76
+ Km 0.15 0.15 0.15 0.2
+ map_Kd V2_Secondary Body_BaseColor.png
+ MatID metal_painted

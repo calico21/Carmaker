@@ -1,0 +1,128 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_Line_line" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_Line.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+
+	%if !%<shasextindex>
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_LineSensor, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign shasextindex = block.SFcnParamSettings[0].SHasExtIndex != 0
+    %assign sside = CAST("Number", block.SFcnParamSettings[0].SSide)
+    {
+	const tLineSensor *ls;
+	const tLineSensor_Line *ls_l;
+	const tLine *l;
+	int l_idx;
+
+	%if CM_IsCarMakerTarget
+	    static tLineSensor ZeroSensor = { { { 0 } } };
+	    static tLine ZeroLine = { 0 };
+
+	    %if %<shasextindex>
+		int ls_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (ls = LineSensor_GetByIndex(ls_idx)) == NULL) {
+		    ls = &ZeroSensor;
+		}
+	    %else
+		%assign _sname          = block.SFcnParamSettings[0]._SName
+		%assign sname           = block.SFcnParamSettings[0].SName
+		%assign salphaindex     = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sindex          = LibBlockIWork(SIndex, "", "", 0)
+		%assign sisfirststep    = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor         = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<sindex> = %<salphaindex>;
+		    %else
+			%<sindex> = LineSensor_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = LineSensor_GetByIndex(%<sindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<sindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		ls = (const tLineSensor *)%<ssensor>;
+	    %endif
+	%else
+	    %if %<shasextindex>
+		int ls_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (ls = LineSensor_GetByIndex(ls_idx)) == NULL) {
+		    ls = MdlZero.LineSensor;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		ls = ms->Item;
+	    %endif
+	%endif
+
+	l_idx = %<LibBlockInputSignal(1, "", "", 0)>;
+	%if %<sside> == 1
+	  ls_l = &ls->LLines;
+	%else
+	  ls_l = &ls->RLines;
+	%endif
+	if (0 <= l_idx && l_idx < ls_l->nLine) {
+	    l = &ls_l->L[l_idx];
+	} else {
+	    %if CM_IsCarMakerTarget
+		l = &ZeroLine;
+	    %else
+		l = MdlZero.LineSensorLine;
+	    %endif
+	    l_idx = -1;
+	}
+
+	%assign sig0 = LibBlockOutputSignal(0, "", "", 0)
+	%assign sig1 = LibBlockOutputSignal(1, "", "", 0)
+
+	// Port 0: LineSensor index
+	%<sig0> = l_idx;
+
+	// Port 1: LineSensor data
+	%<sig1>.Id         = l->id;
+	%<sig1>.Type       = l->type;
+	%<sig1>.ColorCode  = l->colorCode;
+	%<sig1>.Width      = l->lineWidth;
+	%<sig1>.Height     = l->lineHeight;
+	%<sig1>.nP         = l->nP;
+	memcpy(%<sig1>.P_0, l->P_0, sizeof(l->P_0));
+	memcpy(%<sig1>.ds,  l->ds,  sizeof(l->ds));
+    }
+%endfunction
+

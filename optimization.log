@@ -783,3 +783,795 @@ ValueError: X has 12 features, but GaussianProcessRegressor is expecting 4 featu
 |  99   | [0m COMPLETE [0m |  56.481s   | K:44/73k ARB:6/34k DampF:~2744                     |
 ----------------------------------------------------------------------------------------
 ✅ Optimization Complete.
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_12-17-15
+📂 Output: Output\Campaign_2026-02-03_12-17-15
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+Simulation Output missing.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+Simulation Output missing.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2...
+Simulation Output missing.
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 3...
+Simulation Output missing.
+|   3   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 4...
+Simulation Output missing.
+|   4   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 5...
+Simulation Output missing.
+|   5   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 6...
+Simulation Output missing.
+|   6   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 7...
+Simulation Output missing.
+|   7   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 8...
+Simulation Output missing.
+|   8   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 9...
+Simulation Output missing.
+|   9   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 10...
+Simulation Output missing.
+|  10   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 11...
+Simulation Output missing.
+|  11   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 12...
+Simulation Output missing.
+|  12   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 13...
+Simulation Output missing.
+|  13   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 14...
+CM.exe exited with code 3221225786
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_12-25-53
+📂 Output: Output\Campaign_2026-02-03_12-25-53
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Output missing. Checked: C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\eracing\Skidpad_Master.erg...
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Output missing. Checked: C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\eracing\Skidpad_Master.erg...
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2...
+❌ Output missing. Checked: C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\eracing\Skidpad_Master.erg...
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 3...
+❌ Output missing. Checked: C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\eracing\Skidpad_Master.erg...
+|   3   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 4...
+❌ Output missing. Checked: C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\eracing\Skidpad_Master.erg...
+|   4   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 5...
+❌ Output missing. Checked: C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\eracing\Skidpad_Master.erg...
+|   5   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 6...
+❌ Output missing. Checked: C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\eracing\Skidpad_Master.erg...
+|   6   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 7...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_12-27-24
+🧠 Surrogate Warm Start: Loaded 7 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_12-27-24
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ SIM FAILED - CARMAKER LOG BELOW:
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ SIM FAILED - CARMAKER LOG BELOW:
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2...
+❌ SIM FAILED - CARMAKER LOG BELOW:
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 3...
+❌ SIM FAILED - CARMAKER LOG BELOW:
+|   3   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 4...
+❌ SIM FAILED - CARMAKER LOG BELOW:
+|   4   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 5...
+❌ SIM FAILED - CARMAKER LOG BELOW:
+|   5   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 6...
+❌ SIM FAILED - CARMAKER LOG BELOW:
+|   6   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 7...
+❌ SIM FAILED - CARMAKER LOG BELOW:
+|   7   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 8...
+❌ SIM FAILED - CARMAKER LOG BELOW:
+|   8   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_12-31-56
+🧠 Surrogate Warm Start: Loaded 16 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_12-31-56
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ SIM FAILED - LOG:
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ SIM FAILED - LOG:
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_12-39-57
+🧠 Surrogate Warm Start: Loaded 18 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_12-39-57
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Output missing. CM Output Log:
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Output missing. CM Output Log:
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_12-40-29
+🧠 Surrogate Warm Start: Loaded 19 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_12-40-29
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+❌ Output missing. CM Output Log:
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_12-42-50
+🧠 Surrogate Warm Start: Loaded 20 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_12-42-50
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+Simulation Timed Out
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1...
+❌ Output missing. CM Output Log:
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_12-45-15
+🧠 Surrogate Warm Start: Loaded 21 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_12-45-15
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_12-48-30
+🧠 Surrogate Warm Start: Loaded 21 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_12-48-30
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0 (Window will open)...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_12-54-16
+🧠 Surrogate Warm Start: Loaded 21 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_12-54-16
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_12-56-22
+🧠 Surrogate Warm Start: Loaded 21 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_12-56-22
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_13-00-06
+🧠 Surrogate Warm Start: Loaded 21 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_13-00-06
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_13-05-35
+🧠 Surrogate Warm Start: Loaded 21 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_13-05-35
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_13-09-51
+🧠 Surrogate Warm Start: Loaded 21 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_13-09-51
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_13-14-31
+🧠 Surrogate Warm Start: Loaded 21 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_13-14-31
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0 (Window will close in 45s)...
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_13-17-32
+🧠 Surrogate Warm Start: Loaded 21 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_13-17-32
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0 (Max 60s)...
+❌ No .erg file found.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1 (Max 60s)...
+❌ No .erg file found.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2 (Max 60s)...
+❌ No .erg file found.
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 3 (Max 60s)...
+❌ No .erg file found.
+|   3   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 4 (Max 60s)...
+❌ No .erg file found.
+|   4   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 5 (Max 60s)...
+❌ No .erg file found.
+|   5   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 6 (Max 60s)...
+❌ No .erg file found.
+|   6   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 7 (Max 60s)...
+❌ No .erg file found.
+|   7   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 8 (Max 60s)...
+❌ No .erg file found.
+|   8   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 9 (Max 60s)...
+❌ No .erg file found.
+|   9   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 10 (Max 60s)...
+❌ No .erg file found.
+|  10   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 11 (Max 60s)...
+❌ No .erg file found.
+|  11   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_13-17-53
+🧠 Surrogate Warm Start: Loaded 33 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_13-17-53
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0 (Max 60s)...
+❌ No .erg file found.
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1 (Max 60s)...
+❌ No .erg file found.
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2 (Max 60s)...
+❌ No .erg file found.
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 3 (Max 60s)...
+❌ No .erg file found.
+|   3   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 4 (Max 60s)...
+❌ No .erg file found.
+|   4   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 5 (Max 60s)...
+❌ No .erg file found.
+|   5   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 6 (Max 60s)...
+❌ No .erg file found.
+|   6   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 7 (Max 60s)...
+❌ No .erg file found.
+|   7   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 8 (Max 60s)...
+❌ No .erg file found.
+|   8   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 9 (Max 60s)...
+❌ No .erg file found.
+|   9   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_13-19-11
+🧠 Surrogate Warm Start: Loaded 42 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_13-19-11
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0 (Max 50s)...
+❌ No .erg found. Contents of C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput:
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\config.info
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121719.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121722.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121724.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121737.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121739.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121741.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121743.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121745.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121747.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122555.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122557.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122559.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122601.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122603.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122606.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122608.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122736.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122738.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122740.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122742.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122839.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123016.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123035.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123158.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123200.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123432.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123447.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123520.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123927.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_124101.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130024.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130550.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131003.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131444.log
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1 (Max 50s)...
+❌ No .erg found. Contents of C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput:
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\config.info
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121719.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121722.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121724.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121737.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121739.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121741.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121743.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121745.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121747.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122555.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122557.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122559.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122601.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122603.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122606.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122608.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122736.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122738.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122740.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122742.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122839.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123016.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123035.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123158.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123200.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123432.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123447.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123520.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123927.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_124101.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130024.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130550.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131003.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131444.log
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2 (Max 50s)...
+❌ No .erg found. Contents of C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput:
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\config.info
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121719.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121722.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121724.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121737.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121739.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121741.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121743.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121745.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121747.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122555.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122557.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122559.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122601.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122603.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122606.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122608.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122736.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122738.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122740.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122742.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122839.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123016.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123035.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123158.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123200.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123432.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123447.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123520.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123927.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_124101.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130024.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130550.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131003.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131444.log
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 3 (Max 50s)...
+❌ No .erg found. Contents of C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput:
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\config.info
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121719.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121722.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121724.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121737.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121739.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121741.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121743.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121745.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121747.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122555.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122557.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122559.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122601.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122603.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122606.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122608.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122736.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122738.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122740.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122742.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122839.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123016.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123035.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123158.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123200.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123432.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123447.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123520.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123927.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_124101.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130024.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130550.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131003.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131444.log
+|   3   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 4 (Max 50s)...
+❌ No .erg found. Contents of C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput:
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\config.info
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121719.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121722.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121724.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121737.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121739.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121741.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121743.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121745.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121747.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122555.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122557.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122559.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122601.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122603.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122606.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122608.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122736.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122738.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122740.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122742.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122839.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123016.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123035.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123158.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123200.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123432.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123447.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123520.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123927.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_124101.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130024.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130550.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131003.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131444.log
+|   4   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 5 (Max 50s)...
+❌ No .erg found. Contents of C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput:
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\config.info
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121719.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121722.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121724.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121737.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121739.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121741.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121743.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121745.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121747.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122555.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122557.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122559.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122601.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122603.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122606.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122608.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122736.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122738.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122740.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122742.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122839.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123016.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123035.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123158.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123200.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123432.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123447.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123520.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123927.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_124101.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130024.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130550.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131003.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131444.log
+|   5   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 6 (Max 50s)...
+❌ No .erg found. Contents of C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput:
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\config.info
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121719.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121722.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121724.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121737.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121739.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121741.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121743.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121745.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121747.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122555.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122557.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122559.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122601.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122603.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122606.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122608.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122736.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122738.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122740.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122742.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122839.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123016.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123035.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123158.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123200.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123432.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123447.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123520.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123927.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_124101.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130024.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130550.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131003.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131444.log
+|   6   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+📂 Created Campaign Folder: Output\Campaign_2026-02-03_13-19-41
+🧠 Surrogate Warm Start: Loaded 48 prior simulations.
+📂 Output: Output\Campaign_2026-02-03_13-19-41
+----------------------------------------------------------------------------------------
+| TRIAL |   STATUS   |  LAP TIME  |                    SETUP NOTES                     |
+----------------------------------------------------------------------------------------
+   -> Launching Sim Trial 0 (Max 50s)...
+❌ No .erg found. Contents of C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput:
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\config.info
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121719.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121722.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121724.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121737.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121739.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121741.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121743.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121745.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121747.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122555.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122557.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122559.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122601.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122603.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122606.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122608.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122736.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122738.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122740.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122742.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122839.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123016.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123035.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123158.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123200.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123432.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123447.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123520.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123927.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_124101.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130024.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130550.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131003.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131444.log
+|   0   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 1 (Max 50s)...
+❌ No .erg found. Contents of C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput:
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\config.info
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121719.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121722.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121724.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121737.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121739.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121741.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121743.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121745.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121747.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122555.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122557.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122559.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122601.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122603.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122606.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122608.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122736.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122738.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122740.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122742.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122839.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123016.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123035.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123158.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123200.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123432.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123447.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123520.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123927.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_124101.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130024.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130550.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131003.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131444.log
+|   1   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |
+   -> Launching Sim Trial 2 (Max 50s)...
+❌ No .erg found. Contents of C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput:
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\config.info
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121719.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121722.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121724.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121737.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121739.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121741.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121743.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121745.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_121747.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122555.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122557.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122559.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122601.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122603.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122606.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122608.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122726.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122728.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122730.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122732.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122734.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122736.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122738.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122740.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122742.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_122839.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123016.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123035.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123158.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123200.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123432.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123447.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123520.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_123927.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_124101.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130024.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_130550.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131003.log
+   - C:\Users\eracing\Desktop\CAR_MAKER\FS_race\SimOutput\u2000873\Log\u2000873_20260203_131444.log
+|   2   | [91m  CRASH   [0m |   999.0s   | Sim Failed                                         |

@@ -1,0 +1,84 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "read_dict" "C"
+
+%include "cm_rtwlib.tlc"
+%include "cm_rma.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %<LibAddToCommonIncludes("<TextUtils.h>")>
+    %<LibAddToCommonIncludes("<DataDict.h>")>
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%<LibAddToCommonIncludes("<RemoteModelAccess.h>")>
+    %endif
+%endfunction
+
+
+%function BlockInstanceSetup(block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%% This comment allows indirect calls to LibSystemOutputCustomCode()
+	%% by RMA_InitUpdates().
+	%<RMA_InitUpdates(system)>
+    %endif
+%endfunction
+
+
+%function Start (block, system) Output
+    %assign _names = FEVAL("strrep", block.SFcnParamSettings[0]._Names, "$", ::CompiledModel.Name)
+    %assign names  = FEVAL("strrep", block.SFcnParamSettings[0].Names,  "$", ::CompiledModel.Name)
+    {
+	char **namevec = CM_Names2StrVec("%<names>", NULL); // %<_names>
+	%assign uaqnames = FEVAL("split", "%<names>", ",")
+	%foreach si = LibBlockOutputSignalWidth(0)
+	    %if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+		%<LibBlockIWork(Checked, "", "", si)> = 0;
+		%<LibBlockPWork(Entry, "", "", si)> = (void *)DDictGetEntryOrFake(namevec[%<si>]);
+	    %else
+		%assign entry = LibBlockPWork(Entry, "", "", si)
+		%<entry> = (void *)MdlQuants_Request(namevec[%<si>]);
+		%if CM_IsDsRtTarget && !CM_IsMakerModel
+		    %assign rmaitem = LibBlockPWork(RMAc_UpdateItem, "", "", si)
+		    %assign idx = RMA_DDict_GetIndex(uaqnames[si])
+		    %<rmaitem> = RMAc_AddToUpdateList(RMAc_UAQ, %<entry>, %<idx>, RMAc_UAQ_Read);
+		    %<RMA_AddToRead(uaqnames[si], idx)>
+		%endif
+	    %endif
+	%endforeach
+	CM_FreeStrVec(namevec);
+    }
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%<RMA_OutputEnter(system)>
+    %endif
+    {
+	tDDictEntry *e;
+	%foreach si = LibBlockOutputSignalWidth(0)
+	    e = (tDDictEntry *)%<LibBlockPWork(Entry, "", "", si)>;
+	    %if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+		%assign checked = LibBlockIWork(Checked, "", "", si)
+		if (!%<checked>) {
+		    %<checked> = 1;
+		    DDictErrorUponFakedEntry(e, "Model '%<::CompiledModel.Name>'");
+		}
+	    %endif
+	    %<LibBlockOutputSignal(0, "", "", si)> = e->GetFunc(e->Var);
+	%endforeach
+    }
+%endfunction
+
+
+%function Terminate (block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%foreach si = LibBlockOutputSignalWidth(0)
+	    %assign rmaitem = LibBlockPWork(RMAc_UpdateItem, "", "", si)
+	    RMAc_ReleaseItem(%<rmaitem>);
+	%endforeach
+    %endif
+%endfunction

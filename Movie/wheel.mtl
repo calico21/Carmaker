@@ -1,0 +1,20 @@
+newmtl Material.003
+Ns 600  
+Ka 0.4 0.4 0.4
+Kd 0.8 0.8 0.8
+Ks 0.8 0.8 0.8 
+MatID metal
+
+newmtl Material.005
+Ns 850
+Ka 0.1 0.1 0.1 
+Kd 0.2 0.2 0.2
+Ks 0.76 0.76 0.76 
+MatID metal_painted
+
+newmtl Material.013
+Ns 60 
+Ka 0.1 0.1 0.1
+Kd 0.2 0.2 0.2 
+Ks 0.08 0.08 0.08
+MatID rubber

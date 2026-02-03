@@ -1,0 +1,118 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "dva_dict" "C"
+
+%include "cm_rtwlib.tlc"
+%include "cm_rma.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %<LibAddToCommonIncludes("<DataDict.h>")>
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%<LibAddToCommonIncludes("<RemoteModelAccess.h>")>
+    %else
+	%<LibAddToCommonIncludes("<DirectVarAccess.h>")>
+    %endif
+%endfunction
+
+
+%function DefineDictVar(block, system) Output
+    %assign _name      = FEVAL("strrep", block.SFcnParamSettings[0]._Name, "$", ::CompiledModel.Name)
+    %assign name       = FEVAL("strrep", block.SFcnParamSettings[0].Name,  "$", ::CompiledModel.Name)
+    %assign unit       = block.SFcnParamSettings[0].Unit
+    %assign type       = block.SFcnParamSettings[0].Type
+    %assign ismono     = block.SFcnParamSettings[0].IsMono != 0
+    %assign nstates    = block.SFcnParamSettings[0].nStates
+    %assign firststate = block.SFcnParamSettings[0].FirstState
+    %assign place      = "Private"
+    %assign initvalue  = 0.0
+
+    %if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+	%<LibSourceFileCustomCode("{ \"%<name>\", \"%<unit>\", \"%<type>\", %<ismono>, %<nstates>, %<firststate>, \"%<place>\", %<initvalue>, 0.0 }, // %<_name>\n", "dictdefs")>
+    %else
+	%<LibBlockPWork(Entry, "", "", 0)> = (void *)MdlQuants_Define("%<name>", "%<unit>", "%<type>", "%<place>", %<ismono>, %<nstates>, %<firststate>, %<initvalue>); // %<_name>
+    %endif
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%assign rmaitem = LibBlockPWork(RMAc_UpdateItem, "", "", 0)
+	%assign idx = RMA_DDict_GetIndex(name)
+	%<RMA_AddToDDict(name, unit, type, place, ismono, nstates, firststate, initvalue, idx)>
+	%<rmaitem> = RMAc_AddToUpdateList(RMAc_UAQ, %<LibBlockPWork(Entry, "", "", 0)>, %<idx>, RMAc_UAQ_DVA);
+    %endif
+%endfunction
+
+
+%function BlockInstanceSetup(block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%% This comment allows indirect calls to LibSystemOutputCustomCode()
+	%% by RMA_InitUpdates().
+	%<RMA_InitUpdates(system)>
+    %endif
+    %if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+	%<DefineDictVar(block, system)>
+    %endif
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<DefineDictVar(block, system)>
+    %endif
+
+    %if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+	%assign name = FEVAL("strrep", block.SFcnParamSettings[0].Name, "$", ::CompiledModel.Name)
+	{
+	    %<LibBlockIWork(Checked, "", "", 0)> = 0;
+	    %<LibBlockPWork(Entry, "", "", 0)> = (void *)DDictGetEntryOrFake("%<name>");
+	}
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%<RMA_OutputEnter(system)>
+    %endif
+    {
+	tDDictEntry *e;
+	real_T value;
+
+	e = (tDDictEntry *)%<LibBlockPWork(Entry, "", "", 0)>;
+	%if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+	    %assign checked = LibBlockIWork(Checked, "", "", 0)
+	    if (!%<checked>) {
+		%<checked> = 1;
+		DDictErrorUponFakedEntry(e, "Model '%<::CompiledModel.Name>'");
+	    }
+	%endif
+
+	value = %<LibBlockInputSignal (0, "", "", 0)>;
+	if (e->DVAPlace == DVA_Private) {
+	    %if CM_IsDsRtTarget && !CM_IsMakerModel
+		value = RMAc_HandleWrite(%<LibBlockPWork(RMAc_UpdateItem, "", "", 0)>, value);
+	    %else
+		value = DVA_HandlePrivateWrite(e, value);
+	    %endif
+	} else {
+	    e->SetFunc(value, e->Var);
+	}
+	%<LibBlockOutputSignal (0, "", "", 0)> = value;
+    }
+%endfunction
+
+
+%function Terminate (block, system) Output
+    %if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+	{
+	    tDDictEntry *e = (tDDictEntry *)%<LibBlockPWork(Entry, "", "", 0)>;
+	    if (e->DVAPlace==DVA_Private && e->Job!=NULL)
+		DVA_ReleaseJob(e->Job);
+	}
+    %endif
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%assign rmaitem = LibBlockPWork(RMAc_UpdateItem, "", "", 0)
+	RMAc_ReleaseItem(%<rmaitem>);
+    %endif
+%endfunction

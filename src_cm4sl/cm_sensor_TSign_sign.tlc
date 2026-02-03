@@ -1,0 +1,124 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_TSign_sign" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_TSign.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+
+	%if !%<shasextindex>
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_TSignSensor, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign shasextindex  = block.SFcnParamSettings[0].SHasExtIndex != 0
+    {
+	const tTSignSensor *ts;
+	const tSign *sign;
+	int sign_idx;
+
+	%if CM_IsCarMakerTarget
+	    static tTSignSensor ZeroSensor = { { { 0 } } };
+	    static tSign ZeroSign = { 0 };
+
+	    %if %<shasextindex>
+		int ts_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (ts = TSignSensor_GetByIndex(ts_idx)) == NULL) {
+		    ts = &ZeroSensor;
+		}
+	    %else
+		%assign _sname          = block.SFcnParamSettings[0]._SName
+		%assign sname           = block.SFcnParamSettings[0].SName
+		%assign salphaindex     = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sindex          = LibBlockIWork(SIndex, "", "", 0)
+		%assign sisfirststep    = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor         = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<sindex> = %<salphaindex>;
+		    %else
+			%<sindex> = TSignSensor_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = TSignSensor_GetByIndex(%<sindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<sindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		ts = (const tTSignSensor *)%<ssensor>;
+	    %endif
+	%else
+	    %if %<shasextindex>
+		int ts_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (ts = TSignSensor_GetByIndex(ts_idx)) == NULL) {
+		    ts = MdlZero.TSignSensor;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		ts = ms->Item;
+	    %endif
+	%endif
+
+	sign_idx = %<LibBlockInputSignal(1, "", "", 0)>;
+	if (0 <= sign_idx && sign_idx < ts->nSign)
+		sign = &ts->Sign[sign_idx];
+	else {
+	    %if CM_IsCarMakerTarget
+		sign = &ZeroSign;
+	    %else
+		sign = MdlZero.TSign;
+	    %endif
+	    sign_idx = -1;
+	}
+
+	%assign sig0 = LibBlockOutputSignal(0, "", "", 0)
+	%assign sig1 = LibBlockOutputSignal(1, "", "", 0)
+	// Port 0: Traffic sign index
+	%<sig0> = sign_idx;
+
+        // Port 1: Traffic sign data
+	%<sig1>.ds             = sign->ds_p;
+	%<sig1>.ds_x           = sign->ds[0];
+	%<sig1>.ds_y           = sign->ds[1];
+	%<sig1>.ds_z           = sign->ds[2];
+	%<sig1>.Main_val0      = sign->main.val[0];
+	%<sig1>.Main_val1      = sign->main.val[1];
+	%<sig1>.ObjId          = sign->objId;
+	%<sig1>.Main_signId    = sign->main.signId;
+	%<sig1>.suppl_0_signId = sign->suppl[0].signId;
+	%<sig1>.suppl_1_signId = sign->suppl[1].signId;
+	%<sig1>.facing         = sign->facing;
+	%<sig1>.height         = sign->height;
+	%<sig1>.detectability  = sign->detectability;
+    }
+%endfunction

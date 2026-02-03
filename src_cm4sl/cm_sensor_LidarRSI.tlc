@@ -1,0 +1,139 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_LidarRSI" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Log.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_LidarRSI.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+
+	%if !%<shasextindex>
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_LidarRSI, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+    %endif
+    %assign serrorraised = LibBlockIWork(SErrorRaised, "", "", 0)
+    %<serrorraised> = 0;
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign shasextindex    = block.SFcnParamSettings[0].SHasExtIndex != 0
+    %assign smaxnscanpoints = CAST("Number", block.SFcnParamSettings[0].SMaxNScanPoints)
+    %assign spath           = block.SFcnParamSettings[0].SPath
+    {
+	static const char spath[] = "%<spath>";
+	static int last_nScanPoints=0;
+	int max_nScanPoints=%<smaxnscanpoints>;
+	const tLidarRSI *ls;
+	int ls_idx, n;
+
+	%if CM_IsCarMakerTarget
+	    static tLidarRSI ZeroSensor = { 0 };
+
+	    %if %<shasextindex>
+		ls_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (ls = LidarRSI_GetByIndex(ls_idx)) == NULL) {
+		    ls = &ZeroSensor;
+		    ls_idx = -1;
+		}
+	    %else
+		%assign _sname          = block.SFcnParamSettings[0]._SName
+		%assign sname           = block.SFcnParamSettings[0].SName
+		%assign salphaindex     = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sindex          = LibBlockIWork(SIndex, "", "", 0)
+		%assign sisfirststep    = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor         = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<sindex> = %<salphaindex>;
+		    %else
+			%<sindex> = LidarRSI_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = LidarRSI_GetByIndex(%<sindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<sindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		ls_idx = %<sindex>;
+		ls = (const tLidarRSI *)%<ssensor>;
+	    %endif
+	%else
+	    %if %<shasextindex>
+		ls_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (ls = LidarRSI_GetByIndex(ls_idx)) == NULL) {
+		    ls = MdlZero.LidarRSI;
+		    ls_idx = -1;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		ls = ms->Item;
+		ls_idx = ms->Index;
+	    %endif
+	%endif
+
+	%assign serrorraised = LibBlockIWork(SErrorRaised, "", "", 0)
+	if (ls->nScanPoints <= max_nScanPoints) {
+	    n = ls->nScanPoints;
+	} else {
+	    n = max_nScanPoints;
+	    if (!%<serrorraised>) {
+		LogErrF(EC_Sim, "The number of scan points %d exceeds the configured maximum of %d for block '%s'.",
+		ls->nScanPoints, max_nScanPoints, spath);
+		%<serrorraised> = 1;
+	    }
+	}
+
+	%assign sig0 = LibBlockOutputSignal(0, "", "", 0)
+	%assign sig1 = LibBlockOutputSignal(1, "", "", 0)
+
+	// Port 0: LidarRSI index
+	%<sig0> = ls_idx;
+
+	// Port 1: LidarRSI data
+	%<sig1>.ScanNumber = ls->ScanNumber;
+	%<sig1>.ScanTime = ls->ScanTime;
+	%<sig1>.nScanPoints = ls->nScanPoints;
+	%<sig1>.tx_ext = ls->t_ext[0];
+	%<sig1>.ty_ext = ls->t_ext[1];
+	%<sig1>.tz_ext = ls->t_ext[2];
+	%<sig1>.rx_ext = ls->rot_zyx_ext[0];
+	%<sig1>.ry_ext = ls->rot_zyx_ext[1];
+	%<sig1>.rz_ext = ls->rot_zyx_ext[2];
+	memcpy(%<sig1>.ScanPoint, ls->ScanPoint, n * sizeof(*ls->ScanPoint));
+	if (n < last_nScanPoints) {
+	    // reset expired scan points to zero
+	    memset(&%<sig1>.ScanPoint[n], 0,
+		(last_nScanPoints - n) * sizeof(*ls->ScanPoint));
+	}
+	last_nScanPoints = n;
+    }
+%endfunction
+

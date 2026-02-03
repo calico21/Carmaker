@@ -1,0 +1,243 @@
+%% SYSTLC: CarMaker Plug-in Model Target \
+%%    TMF: CarMaker_unix-win64.tmf MAKE: make_rtw EXTMODE: no_ext_comm
+%%
+%selectfile NULL_FILE
+
+%assign MatFileLogging = 0
+%assign TargetType     = "RT"
+%assign Language       = "C"
+%assign GenRTModel     = 1
+
+%if ExtMode
+  %assign msg = "External Mode is not supported in the CarMaker target."
+  %exit %<msg>
+%endif
+
+%if GenerateASAP2
+  %assign msg = "ASAP2 is not supported in the CarMaker target."
+  %exit %<msg>
+%endif
+
+%if ISEQUAL(CompiledModel.NumSystems, 1)
+  %assign CodeFormat     = "RealTimeMalloc"
+%endif
+
+%if FEVAL("verLessThan", "matlab", "9.0")
+  %assign ::GRTInterface = CompiledModel.ConfigSet.GRTInterface
+%else
+  %assign ::GRTInterface = 0
+%endif
+
+%if ISEQUAL(CompiledModel.ModelReferenceTargetType, "NONE") && ...
+    ISEQUAL(CompiledModel.ConfigSet.MultiInstanceERTCode,0)
+  %assign msg = "\"Code interface packaging\" must be set to \"Reusable function\" in the \"Code Generation > Interface\" section of the Model Configuration Parameters menu."
+  %exit %<msg>
+%endif
+
+%if ISEQUAL(GRTInterface, 0)
+  %assign CombineOutputUpdateFcns = 1
+%else
+  %if (ISEQUAL(CompiledModel.ModelReferenceTargetType, "RTW") || ...
+       ISEQUAL(CompiledModel.ModelReferenceTargetType, "SIM")) && ...
+      !ISEQUAL(CompiledModel.NumSystems, 1)
+    %assign msg = "Classic call interface is not supported for referenced models in the CarMaker target."
+    %exit %<msg>
+  %endif
+%endif
+
+%assign IsCarMakerEnv  = 1
+%addincludepath "./tlc_c"
+
+%include "codegenentry.tlc"
+
+
+/%
+  BEGIN_RTW_OPTIONS
+
+  roi = 1;	% rtwoptions index
+  rtwoptions(roi).prompt        = 'CarMaker';
+  rtwoptions(roi).type          = 'Category';
+  rtwoptions(roi).enable        = 'on';
+  rtwoptions(roi).default       = -1; % set later, see below
+  rtwoptions(roi).popupstrings  = '';
+  rtwoptions(roi).tlcvariable   = '';
+  rtwoptions(roi).tooltip       = '';
+  rtwoptions(roi).callback      = '';
+  rtwoptions(roi).opencallback  = '';
+  rtwoptions(roi).closecallback = '';
+  rtwoptions(roi).makevariable  = '';
+
+  roi = roi + 1;
+  rtwoptions(roi).prompt         = 'Matlab include path';
+  rtwoptions(roi).type           = 'Edit';
+  rtwoptions(roi).default        = '';
+  rtwoptions(roi).tlcvariable    = 'HilMatIncPath';
+  rtwoptions(roi).makevariable   = 'CM_MATINCPATH';
+  rtwoptions(roi).modelReferenceParameterCheck = 'off';
+  rtwoptions(roi).tooltip        = ...
+    ['The top-level directory of the Matlab include files.', sprintf('\n'), ...
+    'Leave empty for the default (Matlab root directory), or specify the', sprintf('\n'), ...
+    'path to a local copy of the include files, e.g. ../../include/R2012a .'];
+
+  roi = roi + 1;
+  rtwoptions(roi).prompt         = 'CarMaker project source directory';
+  rtwoptions(roi).type           = 'Edit';
+  rtwoptions(roi).default        = '..';
+  rtwoptions(roi).tlcvariable    = 'HilProjDir';
+  rtwoptions(roi).makevariable   = 'CM_SRCDIR';
+  rtwoptions(roi).modelReferenceParameterCheck = 'off';
+  rtwoptions(roi).tooltip        = ...
+    ['The src directory where the CarMaker executable is compiled,', sprintf('\n'), ...
+     'relative to where the RTW-generated model C code resides.'];
+
+  roi = roi + 1;
+  rtwoptions(roi).prompt         = 'Hook up model into project source code';
+  rtwoptions(roi).type           = 'Checkbox';
+  rtwoptions(roi).default        = 'off';
+  rtwoptions(roi).tlcvariable    = 'HilProjHookup';
+  rtwoptions(roi).makevariable   = 'CM_PROJHOOKUP';
+  rtwoptions(roi).modelReferenceParameterCheck = 'off';
+  rtwoptions(roi).tooltip        = ...
+    ['If enabled, the project source code will be automatically', sprintf('\n'), ...
+     'modified to include statements connecting the model with the', sprintf('\n'), ...
+     'simulation program. The project source code (Makefile, User.c, etc.)', sprintf('\n'), ...
+     'must reside in the project source directory specified above.'];
+
+  roi = roi + 1;
+  rtwoptions(roi).prompt         = 'Automatic ''make'' in the project source directory';
+  rtwoptions(roi).type           = 'Checkbox';
+  rtwoptions(roi).default        = 'on';
+  rtwoptions(roi).tlcvariable    = 'HilProjMake';
+  rtwoptions(roi).makevariable   = 'CM_PROJMAKE';
+  rtwoptions(roi).modelReferenceParameterCheck = 'off';
+  rtwoptions(roi).tooltip        = ...
+    ['If enabled, invokes a subsequent ''make'' in the project source', sprintf('\n'), ...
+     'directory after building this model. Normally this will rebuild', sprintf('\n'), ...
+     'the simulation program with an updated model library.'];
+
+  roi = roi + 1;
+  rtwoptions(roi).prompt         = 'Main Simulink model (CarMaker/HIL-ds1006 and RTI1006 target only)';
+  rtwoptions(roi).type           = 'Edit';
+  rtwoptions(roi).default        = '';
+  rtwoptions(roi).tlcvariable    = 'HilMainModel';
+  rtwoptions(roi).makevariable   = 'CM_MAINMODEL';
+  rtwoptions(roi).modelReferenceParameterCheck = 'off';
+  rtwoptions(roi).tooltip        = ...
+    ['The name of the main Simulink model into which the current', sprintf('\n'), ...
+     'model is hooked. Required only with CarMaker/HIL-ds1006 for', sprintf('\n'), ...
+     'integration of the current model and the subsequent automatic', sprintf('\n'), ...
+     '''make''.'];
+
+  roi = roi + 1;
+  rtwoptions(roi).prompt         = 'Additional symbol exports';
+  rtwoptions(roi).type           = 'Edit';
+  rtwoptions(roi).default        = '';
+  rtwoptions(roi).tlcvariable    = 'HilSymbols';
+  rtwoptions(roi).makevariable   = 'CM_SYMBOLS';
+  rtwoptions(roi).modelReferenceParameterCheck = 'off';
+  rtwoptions(roi).tooltip        = ...
+    ['Comma-separated of list of additional linker symbols to be kept as ''exported''', sprintf('\n'), ...
+     'in the generated library. An asterisk ''*'' may be appended to a symbol, so that', sprintf('\n'), ...
+     'it stands for all symbols starting with this character sequence.', sprintf('\n'), ...
+     'Symbols starting with the model name and all symbols of the model wrapper', sprintf('\n'), ...
+     'module are automatically exported, which is sufficient for most cases.', sprintf('\n'), ...
+     'However, you may have implemented e.g. additional functions to be exported', sprintf('\n'), ...
+     'but not matching this standard naming scheme, so you need to list them here.'];
+
+  roi = roi + 1;
+  rtwoptions(roi).prompt         = 'Additional CFLAGS';
+  rtwoptions(roi).type           = 'Edit';
+  rtwoptions(roi).default        = '';
+  rtwoptions(roi).tlcvariable    = 'HilUsrCFlags';
+  rtwoptions(roi).makevariable   = 'CM_USRCFLAGS';
+  rtwoptions(roi).modelReferenceParameterCheck = 'off';
+  rtwoptions(roi).tooltip        = ...
+     ['Additional compiler flags for compiling the model code.', sprintf('\n'), ...
+      'Please note that the flags will not be used for compiling', sprintf('\n'), ...
+      ' other files, e.g. those in the project source directory.'];
+
+  roi = roi + 1;
+  rtwoptions(roi).prompt         = 'Verbose ''make''';
+  rtwoptions(roi).type           = 'Checkbox';
+  rtwoptions(roi).default        = 'off';
+  rtwoptions(roi).tlcvariable    = 'HilVerboseMake';
+  rtwoptions(roi).makevariable   = 'CM_VERBOSEMAKE';
+  rtwoptions(roi).modelReferenceParameterCheck = 'off';
+  rtwoptions(roi).tooltip        = ...
+     ['Enable verbose output when compiling the model code.', sprintf('\n'), ...
+      'This is mostly useful for debugging the ''make'' process.'];
+
+  roi = roi + 1;
+  rtwoptions(roi).prompt         = 'CarMaker Vehicle type';
+  rtwoptions(roi).type           = 'Popup';
+  rtwoptions(roi).default        = 'Car';
+  rtwoptions(roi).popupstrings   = 'Car|Motorcycle|Truck';
+  rtwoptions(roi).tlcvariable    = 'HilVehicleType';
+  rtwoptions(roi).makevariable   = 'CM_VEHICLECLASS';
+  rtwoptions(roi).modelReferenceParameterCheck = 'off';
+  rtwoptions(roi).tooltip        = ...
+    ['Vehicle type of the plugin model.'];
+
+  roi = roi + 1;
+  rtwoptions(roi).prompt         = 'CarMaker model wrapper type';
+  rtwoptions(roi).type           = 'Popup';
+  rtwoptions(roi).default        = 'Plain';
+  rtwoptions(roi).popupstrings   = 'Aero|Brake|Environment|HydBrakeSystem|HydBrakeControl|AirBrakeSystem|AirBrakeControl|PowerTrain|PowerTrainXWD|PTBattery|PTBatteryCU|PTClutch|PTControl|PTControlOSM|PTDriveLine|PTDriveLineXWD|PTEngine|PTEngineCU|PTGearBox|PTGenCoupling|PTMotor|PTMotorCU|PTPowerSupply|PTTransmCU|Steering|SuspExtFrcs|SuspEF_Spring|SuspEF_Damper|SuspEF_Buffer|SuspEF_Stabi|Susp_FrcSystem|Susp_SpringSystem|Susp_Spring|Susp_ParasiticEffects|Susp_DamperSystem|Susp_Damper|Susp_TopMount|Susp_BufferSystem|Susp_Buffer|Susp_StabiSystem|Susp_Stabi|SuspControl|SuspKnC|TireCPI|TireCPMod|TireSTI|UserDriver|Vehicle_Car|VehicleControl|VhclOperator|SelectorCtrlMapping|Plain|Generic|PTUniversalMC|PTInverter';
+  rtwoptions(roi).tlcvariable    = 'HilWrapperType';
+  rtwoptions(roi).makevariable   = 'CM_MODELCLASS';
+  rtwoptions(roi).modelReferenceParameterCheck = 'off';
+  rtwoptions(roi).tooltip        = ...
+    ['Plain C module with exported functions,', sprintf('\n'), ...
+    'or CarMaker subsystem module with exported registration function.'];
+
+  roi = roi + 1;
+  rtwoptions(roi).prompt         = 'CarMaker model description';
+  rtwoptions(roi).type           = 'Edit';
+  rtwoptions(roi).default        = '';
+  rtwoptions(roi).tlcvariable    = 'HilDescription';
+  rtwoptions(roi).makevariable   = 'CM_DESCRIPTION';
+  rtwoptions(roi).modelReferenceParameterCheck = 'off';
+  rtwoptions(roi).tooltip        = ...
+    ['Concise model description, that will be displayed', sprintf('\n'), ...
+     'to the user when he or she is selecting a model.', sprintf('\n'), ...
+     'Please note: This does NOT apply to the Plain wrapper', sprintf('\n'), ...
+     'types; you may leave the description empty in this case.'];
+
+  roi = roi + 1;
+  rtwoptions(roi).prompt         = 'Model parameter file identification number';
+  rtwoptions(roi).type           = 'Edit';
+  rtwoptions(roi).default        = '1';
+  rtwoptions(roi).tlcvariable    = 'HilParamId';
+  rtwoptions(roi).makevariable   = 'CM_PARAMID';
+  rtwoptions(roi).modelReferenceParameterCheck = 'off';
+  rtwoptions(roi).tooltip        = ...
+    ['Model parameter file identification number that is matched', sprintf('\n'), ...
+     'against the FileIdent entry of a model parameter file. If the', sprintf('\n'), ...
+     'numbers do not match, the file will be rejected and an error', sprintf('\n'), ...
+     'message will be issued. This ensures, that only parameter files', sprintf('\n'), ...
+     'are used, whose content can be understood by the current model.', sprintf('\n'), ...
+     'Valid id values start at 1.', sprintf('\n'), ...
+     'Please note: This does NOT apply to the Plain wrapper types.'];
+
+  % Override the default setting for model name prefixing because
+  % the generated code is typically used in multiple models.
+  roi = roi + 1;
+  rtwoptions(roi).default       = 'on';
+  rtwoptions(roi).tlcvariable   = 'PrefixModelToSubsysFcnNames';
+
+  % number of items under this category excluding the first one
+  rtwoptions(1).default = roi-1;
+
+  %----------------------------------------%
+  % Configure RTW code generation settings %
+  %----------------------------------------%
+
+  rtwgensettings.DerivedFrom      = 'grt.tlc';
+  rtwgensettings.Version          = '1';
+  rtwgensettings.ActivateCallback = ['CarMaker_Activate(hDlg, hSrc)'];
+  rtwgensettings.BuildDirSuffix   = '_CarMaker_rtw';
+  rtwgensettings.SelectCallback   = ['CarMaker_Select(hDlg,hSrc)'];
+
+  END_RTW_OPTIONS
+ %/
+

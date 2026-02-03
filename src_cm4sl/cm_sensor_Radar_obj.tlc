@@ -1,0 +1,150 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_Radar_obj" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_Radar.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+
+	%if !%<shasextindex>
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_RadarSensor, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign shasextindex  = block.SFcnParamSettings[0].SHasExtIndex != 0
+    %assign spickobserved = block.SFcnParamSettings[0].SPickObserved != 0
+    {
+	const tRadarSensor *rs;
+	const tOutQuants *ro;
+	int ro_idx, tmp_idx;
+
+	%if CM_IsCarMakerTarget
+	    static tRadarSensor ZeroSensor = { 0 };
+	    static tOutQuantsGlob ZeroGlobalInf = { .RelvTgt = -1 };
+	    static tOutQuants ZeroObject = { .ObjId = -1 };
+	    ZeroSensor.GlobalInf = &ZeroGlobalInf;
+
+	    %if %<shasextindex>
+		int rs_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (rs = RadarSensor_GetByIndex(rs_idx)) == NULL) {
+		    rs = &ZeroSensor;
+		}
+	    %else
+		%assign _sname          = block.SFcnParamSettings[0]._SName
+		%assign sname           = block.SFcnParamSettings[0].SName
+		%assign salphaindex     = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sindex          = LibBlockIWork(SIndex, "", "", 0)
+		%assign sisfirststep    = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor         = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<sindex> = %<salphaindex>;
+		    %else
+			%<sindex> = RadarSensor_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = RadarSensor_GetByIndex(%<sindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<sindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		rs = (const tRadarSensor *)%<ssensor>;
+	    %endif
+	%else
+	    %if %<shasextindex>
+		int rs_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (rs = RadarSensor_GetByIndex(rs_idx)) == NULL) {
+		    rs = MdlZero.RadarSensor;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		rs = ms->Item;
+	    %endif
+	%endif
+
+	ro_idx = -1;
+	%if CM_IsCarMakerTarget
+	    ro = &ZeroObject;
+	%else
+	    ro = MdlZero.RadarSensorObj;
+	%endif
+	tmp_idx = %<LibBlockInputSignal(1, "", "", 0)>;
+	%if %<spickobserved>
+	    if(0 <= tmp_idx && tmp_idx < rs->ObjListSize &&
+	       rs->ObjList[tmp_idx].ObjId != -1) {
+		ro = &rs->ObjList[tmp_idx];
+		ro_idx = tmp_idx;
+	    }
+	%else
+	    int i;
+	    for (i=0; i < rs->ObjListSize; i++) {
+		if (rs->ObjList[i].ObjId == tmp_idx && tmp_idx != -1) {
+		    ro = &rs->ObjList[i];
+		    ro_idx = ro->ObjId;
+		    break;
+		}
+	    }
+	%endif
+
+	%assign sig0 = LibBlockOutputSignal(0, "", "", 0)
+	%assign sig1 = LibBlockOutputSignal(1, "", "", 0)
+
+	// Port 0: Object index
+	%<sig0> = ro_idx;
+
+	// Port 1: Object data
+	%<sig1>.ObjId          = ro->ObjId;
+	%<sig1>.LeftInGroup    = ro->LeftInGroup;
+	%<sig1>.MeasStat       = ro->MeasStat;
+	%<sig1>.Dist           = ro->Dist;
+	%<sig1>.DistX          = ro->DistX;
+	%<sig1>.DistY          = ro->DistY;
+	%<sig1>.DistZ          = ro->DistZ;
+	%<sig1>.RelCourseAngle = ro->RelCourseAngle;
+	%<sig1>.Vrel           = ro->Vrel;
+	%<sig1>.VrelX          = ro->VrelX;
+	%<sig1>.VrelY          = ro->VrelY;
+	%<sig1>.ArelX          = ro->ArelX;
+	%<sig1>.Length         = ro->Length;
+	%<sig1>.Width          = ro->Width;
+	%<sig1>.LengthClass    = ro->LengthClass;
+	%<sig1>.WidthClass     = ro->WidthClass;
+	%<sig1>.RCS            = ro->RCS;
+	%<sig1>.SignalStrength = ro->SignalStrength;
+	%<sig1>.SNR            = ro->SNR;
+	%<sig1>.ProbDetect     = ro->ProbDetect;
+	%<sig1>.DynProp        = ro->DynProp;
+	%<sig1>.ProbExist      = ro->ProbExist;
+	%<sig1>.ProbObst       = ro->ProbObst;
+    }
+%endfunction

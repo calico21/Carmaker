@@ -1,0 +1,112 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_Radar" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_Radar.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+
+	%if !%<shasextindex>
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_RadarSensor, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign shasextindex    = block.SFcnParamSettings[0].SHasExtIndex != 0
+    {
+	const tRadarSensor *rs;
+	int rs_idx;
+
+	%if CM_IsCarMakerTarget
+	    static tRadarSensor ZeroSensor = { 0 };
+	    static tOutQuantsGlob ZeroGlobalInf = { .RelvTgt = -1 };
+	    ZeroSensor.GlobalInf = &ZeroGlobalInf;
+
+	    %if %<shasextindex>
+		rs_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (rs = RadarSensor_GetByIndex(rs_idx)) == NULL) {
+		    rs = &ZeroSensor;
+		    rs_idx = -1;
+		}
+	    %else
+		%assign _sname          = block.SFcnParamSettings[0]._SName
+		%assign sname           = block.SFcnParamSettings[0].SName
+		%assign salphaindex     = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sindex          = LibBlockIWork(SIndex, "", "", 0)
+		%assign sisfirststep    = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor         = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<sindex> = %<salphaindex>;
+		    %else
+			%<sindex> = RadarSensor_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = RadarSensor_GetByIndex(%<sindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<sindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		rs_idx = %<sindex>;
+		rs = (const tRadarSensor *)%<ssensor>;
+	    %endif
+	%else
+	    %if %<shasextindex>
+		rs_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (rs = RadarSensor_GetByIndex(rs_idx)) == NULL) {
+		    rs = MdlZero.RadarSensor;
+		    rs_idx = -1;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		rs = ms->Item;
+		rs_idx = ms->Index;
+	    %endif
+	%endif
+
+	%assign sig0 = LibBlockOutputSignal(0, "", "", 0)
+	%assign sig1 = LibBlockOutputSignal(1, "", "", 0)
+
+	// Port 0: RadarSensor index
+	%<sig0> = rs_idx;
+
+	// Port 1: RadarSensor general data
+	%<sig1>.RolCount          = rs->GlobalInf[0].RolCount;
+	%<sig1>.nObj              = rs->GlobalInf[0].nObj;
+	%<sig1>.RelvTgt           = rs->GlobalInf[0].RelvTgt;
+	%<sig1>.nLanesL           = rs->GlobalInf[0].nLanesL;
+	%<sig1>.nLanesR           = rs->GlobalInf[0].nLanesR;
+	%<sig1>.DistToLeftBorder  = rs->GlobalInf[0].DistToLeftBorder;
+	%<sig1>.DistToRightBorder = rs->GlobalInf[0].DistToRightBorder;
+	%<sig1>.TransmitPower     = rs->TransmitPower;
+    }
+%endfunction

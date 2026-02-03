@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nodes version="2.18.0.1">
+	<node type="NodeDummy" id="1104173754" name="noaero">
+		<transform>1 0 0 0.0 0 1 0 0.0 0 0 1 0.0 0 0 0 1.0</transform>
+		<node type="ObjectMeshStatic" id="1951640273" name="Cube.013">
+			<streaming_mode_vram>0</streaming_mode_vram>
+			<streaming_mode_ram>0</streaming_mode_ram>
+			<mesh_name>guid://3a7cd24dcce3cee6600a28fed045e77f117c714f</mesh_name>
+			<surface name="Material" material="cef051736207df0bee8ecf3ce9614f38506301e5"/>
+			<surface name="Material.002" material="792c3585c7f8cb176c322428c3500a128ecd0332"/>
+			<surface name="Material.004" material="c34613612a4e901984578162f02506d10881c703"/>
+			<transform>-1.11482763249e-07 -0.373908162117 -1.6344045956e-08 0.0 0.119543910027 -6.49894675856e-08 5.22542795841e-09 0.0 -5.22543047352e-09 -5.22542938726e-09 0.119543917477 0.0 -0.0216551418048 -0.0057473341279 -0.0639852809438 1.0</transform>
+		</node>
+	</node>
+</nodes>

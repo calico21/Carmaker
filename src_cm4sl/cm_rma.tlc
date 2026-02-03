@@ -1,0 +1,324 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+
+%if !EXISTS("_CM_RMALIB_")
+%assign _CM_RMALIB_ = 1
+
+%assign ::CM_IsCarMakerModel    = TLC_FALSE
+%assign ::CM_IsTruckMakerModel  = TLC_FALSE
+%assign ::CM_IsMCycleMakerModel = TLC_FALSE
+%assign ::CM_IsMakerModel       = TLC_FALSE
+
+
+%% Function: CompiledModelContainsSFunction ====================================
+%% Abstract:
+%%  This function checks if the compiled model contains a specific S-Function.
+%%  Returns:
+%%      1 if the model contains an S-Function with the given name
+%%      0 otherwise
+%%
+%function CompiledModelContainsSFunction(name)
+    %if NumSFunctionNameCounts == 1
+	%if ISEQUAL(SFunctionNameCount.Name, name)
+	    %return TCL_TRUE
+	%endif
+    %else
+	%foreach idx = NumSFunctionNameCounts
+	    %if ISEQUAL(SFunctionNameCount[idx].Name, name)
+		%return TLC_TRUE
+	    %endif
+	%endforeach
+    %endif
+    %return TLC_FALSE
+%endfunction %% CompiledModelContainsSFunction
+
+
+%% Function: RMA_InitInfoFile ==================================================
+%% Abstract:
+%%  This function creates the <model>_rma.info file with:
+%%  - defined and used external data dictionary quantities
+%%  - model parameters obtained from CarMaker model
+%%  If the file already exists (previous build), it will be reset and
+%%  overwritten.
+%%  Returns:
+%%      0 on success
+%%     -1 on error
+%%
+%function RMA_InitInfoFile(fname)
+    %assign vers = FEVAL("rmainfinit", "%<fname>", "%<CompiledModel.Name>")
+    %if vers < 0
+	%return -1
+    %endif
+    %assign ::CM_RMA_InfoName = fname
+    %openfile ::CM_RMA_DDict, "w"
+    %closefile ::CM_RMA_DDict
+    %openfile ::CM_RMA_Read, "w"
+    %closefile ::CM_RMA_Read
+    %openfile ::CM_RMA_Write, "w"
+    %closefile ::CM_RMA_Write
+    %openfile ::CM_RMA_Param, "w"
+    %closefile ::CM_RMA_Param
+    %return vers
+%endfunction
+
+
+%% Function: RMA_DDict_GetIndex ================================================
+%% Abstract:
+%%  This function returns a unique index for each data dictionary variable.
+%%  Returns:
+%%    >=0 unique index based on the variable name
+%%
+%function RMA_DDict_GetIndex(uaqname)
+    %if !EXISTS(::CompiledModel.RMA_UAQ_Counter)
+	%addtorecord CompiledModel RMA_UAQ_Counter 0
+    %endif
+    %assign idx = ::CompiledModel.RMA_UAQ_Counter
+    %if !EXISTS(::CompiledModel.RMA_UAQ)
+	%addtorecord ::CompiledModel RMA_UAQ { }
+    %endif
+    %if ISFIELD(::CompiledModel.RMA_UAQ, "%<uaqname>")
+	%return GETFIELD(::CompiledModel.RMA_UAQ, "%<uaqname>")
+    %else
+	%if !SETFIELD(::CompiledModel.RMA_UAQ, "%<uaqname>", idx)
+	    %warning Failed to assign ID to UAQ %<uaqname>
+	%endif
+    %endif
+    %assign ::CompiledModel.RMA_UAQ_Counter = idx + 1
+    %return idx
+%endfunction
+
+
+%% Function: RMA_Param_GetIndex ================================================
+%% Abstract:
+%%  This function returns a unique index for each parameter.
+%%  Returns:
+%%    >=0 unique index based on the parameters name
+%%
+%function RMA_Param_GetIndex(parname)
+    %if !EXISTS(::CompiledModel.RMA_Param_Counter)
+	%addtorecord CompiledModel RMA_Param_Counter 0
+    %endif
+    %assign idx = ::CompiledModel.RMA_Param_Counter
+    %if !EXISTS(::CompiledModel.RMA_Param)
+	%addtorecord ::CompiledModel RMA_Param { }
+    %endif
+    %if ISFIELD(::CompiledModel.RMA_Param, "%<parname>")
+	%return GETFIELD(::CompiledModel.RMA_Param, "%<parname>")
+    %else
+	%if !SETFIELD(::CompiledModel.RMA_Param, "%<parname>", idx)
+	    %warning Failed to assign ID to Param %<parname>
+	%endif
+    %endif
+    %assign ::CompiledModel.RMA_Param_Counter = idx + 1
+    %return idx
+%endfunction
+
+
+%% Function: RMA_SizeOf ========================================================
+%% Abstract:
+%%  This function returns the size of a UAQ data type.
+%%
+%function RMA_SizeOf(type)
+    %assign size = 8
+
+    %switch type
+    %case "Char"
+    %case "UChar"
+	%assign size = 1
+	%break
+    %case "Short"
+    %case "UShort"
+	%assign size = 2
+	%break
+    %case "Float"
+    %case "Long"
+    %case "ULong"
+    %case "Int"
+    %case "UInt"
+	%assign size = 4
+	%break
+    %case "Double"
+    %case "Double4"
+    %case "LLong"
+    %case "ULLong"
+	%assign size = 8
+    %default
+	%break
+    %endswitch
+
+    %return size
+%endfunction
+
+
+%% Function: RMA_AddToDDict ====================================================
+%% Abstract:
+%%  This function adds an additional UAQ to the <model>_rma.info file.
+%%
+%function RMA_AddToDDict(name, unit, type, place, ismono, nstates, firststate, ...
+                       initvalue, idx) void
+    %assign size = RMA_SizeOf(type)
+    %% Fix empty unit entry field.
+    %if ISEMPTY(unit)
+	%assign unit = "-"
+    %endif
+    %% Force DVA place "Private", if not "None"
+    %if !ISEQUAL(place, "None")
+	%assign place = "Private"
+    %endif
+    %openfile ::CM_RMA_DDict, "a"
+%<idx> %<size> %<name> "%<unit>" %<type> %<place> %<ismono> %<nstates> %<firststate> %<initvalue>
+    %closefile ::CM_RMA_DDict
+    %if FEVAL("rmainfsettxt", "%<CM_RMA_InfoName>", "DDict", "%<CM_RMA_DDict>") != 0
+	%error "Failed to add UAQs to %<CM_RMA_InfoName>"
+    %endif
+%endfunction
+
+
+%% Function: RMA_AddToRead =====================================================
+%% Abstract:
+%%  This function adds an additional Read access to the <model>_rma.info file.
+%%
+%function RMA_AddToRead(name, idx) void
+    %openfile ::CM_RMA_Read, "a"
+%<idx> %<name>
+    %closefile ::CM_RMA_Read
+    %if FEVAL("rmainfsettxt", "%<CM_RMA_InfoName>", "Read", "%<CM_RMA_Read>") != 0
+	%error "Failed to add Read Dict to %<CM_RMA_InfoName>"
+    %endif
+%endfunction
+
+
+%% Function: RMA_AddToWrite ====================================================
+%% Abstract:
+%%  This function adds an additional Write access to the <model>_rma.info file.
+%%
+%function RMA_AddToWrite(name, idx) void
+    %openfile ::CM_RMA_Write, "a"
+%<idx> %<name>
+    %closefile ::CM_RMA_Write
+    %if FEVAL("rmainfsettxt", "%<CM_RMA_InfoName>", "Write", "%<CM_RMA_Write>") != 0
+	%error "Failed to add Write Dict to %<CM_RMA_InfoName>"
+    %endif
+%endfunction
+
+
+%% Function: RMA_AddToParam =====================================================
+%% Abstract:
+%%  This function adds an additional Parameter to the <model>_rma.info file.
+%%
+%function RMA_AddToParam(location, name, noutputs, defcount, defval, idx) void
+    %openfile ::CM_RMA_Param, "a"
+    %if defcount == 1
+%<idx> %<location> %<name> %<noutputs> %<defcount> %<defval>
+    %else
+%<idx> %<location> %<name> %<noutputs> %<defcount>
+    %endif
+    %closefile ::CM_RMA_Param
+    %if FEVAL("rmainfsettxt", "%<CM_RMA_InfoName>", "Param", "%<CM_RMA_Param>") != 0
+	%error "Failed to add Params to %<CM_RMA_InfoName>"
+    %endif
+%endfunction
+
+
+%% Function: RMA_AddParamDefVal ================================================
+%% Abstract:
+%%  This function adds a default value of an additional Parameter to the
+%%  <model>_rma.info file.
+%%
+%function RMA_AddParamDefVal(idx, defval) void
+    %if FEVAL("rmainfsetstr", "%<CM_RMA_InfoName>", "Param.%<idx>.Default", "%<defval>") != 0
+	%error "Failed to add parameter default value to %<CM_RMA_InfoName>"
+    %endif
+%endfunction
+
+
+%% Function: RMA_InitUpdates ===================================================
+%% Abstract:
+%%  This function registers update code for Remote Model Access.
+%%
+%function RMA_InitUpdates(system) void
+    %% Read Input for RMA Update Items
+    %if !EXISTS("CompiledModel.RMA_InputCode")
+	%openfile tmp
+	RMAc_In();
+	%closefile tmp
+	%addtorecord CompiledModel RMA_InputCode "%<tmp>"
+    %endif
+    %% Output RMA Update Items
+    %if !EXISTS("CompiledModel.RMA_OutputCode")
+	%openfile tmp
+	RMAc_Out();
+	%closefile tmp
+	%addtorecord CompiledModel RMA_OutputCode "%<tmp>"
+	%<LibSystemOutputCustomCode(system, CompiledModel.RMA_OutputCode, "trailer")>
+    %endif
+%endfunction
+
+
+%% Function: RMA_OutputEnter ===================================================
+%% Abstract:
+%%  This function writes update code for Remote Model Access.
+%%
+%function RMA_OutputEnter(system) Output
+    %% Read Input for RMA Update Items
+    %if EXISTS("CompiledModel.RMA_InputCode")
+	%if !EXISTS("CompiledModel.RMA_InputCodeWritten")
+	    %addtorecord CompiledModel RMA_InputCodeWritten 1
+	    %<CompiledModel.RMA_InputCode>
+	%endif
+    %endif
+%endfunction
+
+
+%% Check, if model contains CM_Sfun, TM_Sfun or MM_Sfun (*MMaker main model)
+%assign ::CM_IsCarMakerModel    = CompiledModelContainsSFunction("CM_Sfun")
+%assign ::CM_IsTruckMakerModel  = CompiledModelContainsSFunction("TM_Sfun")
+%assign ::CM_IsMCycleMakerModel = CompiledModelContainsSFunction("MM_Sfun")
+%if ::CM_IsCarMakerModel || ::CM_IsTruckMakerModel || ::CM_IsMCycleMakerModel
+    %assign ::CM_IsMakerModel = TLC_TRUE
+%endif
+
+%if CM_IsDsRtTarget && !CM_IsMakerModel
+    %% Set global variables
+    %if !EXISTS("CompiledModel.RMA_Globals")
+	%openfile tmp
+	const char RMA_ModelName[] = "%<CompiledModel.Name>";
+	%closefile tmp
+	%addtorecord CompiledModel RMA_Globals "%<tmp>"
+	%<LibSetSourceFileSection(LibGetModelDotCFile(), "UserTop", CompiledModel.RMA_Globals)>
+    %endif
+    %% Init RMA client data structures
+    %if !EXISTS("CompiledModel.RMA_InitCode")
+	%openfile tmp
+	RMAc_Init(RMA_InfoVersion);
+	%closefile tmp
+	%addtorecord CompiledModel RMA_InitCode "%<tmp>"
+	%<LibMdlRegCustomCode(CompiledModel.RMA_InitCode, "header")>
+    %endif
+    %% Cleanup RMA client data structures
+    %if !EXISTS("CompiledModel.RMA_ExitCode")
+	%openfile tmp
+	RMAc_Cleanup();
+	%closefile tmp
+	%addtorecord CompiledModel RMA_ExitCode "%<tmp>"
+	%<LibMdlTerminateCustomCode(CompiledModel.RMA_ExitCode, "trailer")>
+    %endif
+    %% Prepare Info file for UAQs and parameters
+    %if !EXISTS("CompiledModel.RMA_InfoVersion")
+	%assign mpath = FEVAL("get_param", "%<CompiledModel.Name>", "FileName")
+	%assign mdldir = FEVAL("fileparts", "%<mpath>")
+	%assign vers = RMA_InitInfoFile("%<mdldir>/%<CompiledModel.Name>_rma.info")
+	%if vers < 0
+	    %exit "Failed to create %<CompiledModel.Name>_rma.info"
+	%endif
+	%addtorecord CompiledModel RMA_InfoVersion "%<vers>"
+	%openfile tmp
+	const unsigned RMA_InfoVersion = %<CompiledModel.RMA_InfoVersion>;
+	%closefile tmp
+	%<LibSetSourceFileSection(LibGetModelDotCFile(), "UserTop", "%<tmp>")>
+    %endif
+%endif
+
+%endif %% _CM_RMALIB_

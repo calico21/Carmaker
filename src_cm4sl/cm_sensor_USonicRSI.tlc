@@ -1,0 +1,173 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_USonicRSI" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %assign sdistmode = CAST("Number", block.SFcnParamSettings[0].SDistMode)
+
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Log.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_USonicRSI.h>")>
+    %<LibAddToCommonIncludes("<stdlib.h>")>
+    %if %<sdistmode> == 2 %% i.e. DistMode_Range
+	%<LibAddToCommonIncludes("<Environment.h>")>
+    %endif
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+
+	%if !%<shasextindex>
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_USonicRSI, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+    %endif
+    %assign smaxndetects   = CAST("Number", block.SFcnParamSettings[0].SMaxNDetects)
+    %assign slastndetects = LibBlockPWork(SLastNDetects, "", "", 0)
+    %assign serrorraised  = LibBlockIWork(SErrorRaised, "", "", 0)
+    %<slastndetects> = calloc(%<smaxndetects>, sizeof(int));
+    %<serrorraised>  = 0;
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign shasextindex   = block.SFcnParamSettings[0].SHasExtIndex != 0
+    %assign sdistmode      = CAST("Number", block.SFcnParamSettings[0].SDistMode)
+    %assign smaxndetects   = CAST("Number", block.SFcnParamSettings[0].SMaxNDetects)
+    %assign smaxnreceivers = CAST("Number", block.SFcnParamSettings[0].SMaxNReceivers)
+    %assign spath          = block.SFcnParamSettings[0].SPath
+    {
+	%assign slastndetects = LibBlockPWork(SLastNDetects, "", "", 0)
+	%assign serrorraised  = LibBlockIWork(SErrorRaised, "", "", 0)
+	static const char spath[] = "%<spath>";
+	int *last_nDetects=(int*)%<slastndetects>;
+	int max_nDetects=%<smaxndetects>;
+	int max_nReceivers=%<smaxnreceivers>;
+	const tUSonicRSI *us;
+	int us_idx, i, ne, nr;
+
+	%if CM_IsCarMakerTarget
+	    static tUSonicRSI ZeroSensor = { 0 };
+
+	    %if %<shasextindex>
+		us_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (us = USonicRSI_GetByIndex(us_idx)) == NULL) {
+		    us = &ZeroSensor;
+		    us_idx = -1;
+		}
+	    %else
+		%assign _sname          = block.SFcnParamSettings[0]._SName
+		%assign sname           = block.SFcnParamSettings[0].SName
+		%assign salphaindex     = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sindex          = LibBlockIWork(SIndex, "", "", 0)
+		%assign sisfirststep    = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor         = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<sindex> = %<salphaindex>;
+		    %else
+			%<sindex> = USonicRSI_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = USonicRSI_GetByIndex(%<sindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<sindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		us_idx = %<sindex>;
+		us = (const tUSonicRSI *)%<ssensor>;
+	    %endif
+	%else
+	    %if %<shasextindex>
+		us_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (us = USonicRSI_GetByIndex(us_idx)) == NULL) {
+		    us = MdlZero.USonicRSI;
+		    us_idx = -1;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		us = ms->Item;
+		us_idx = ms->Index;
+	    %endif
+	%endif
+
+
+	%assign sig0 = LibBlockOutputSignal(0, "", "", 0)
+	%assign sig1 = LibBlockOutputSignal(1, "", "", 0)
+
+	// Port 0: USonicRSI index
+	%<sig0> = us_idx;
+
+	nr = (us_idx == -1) ? 0 : USonicRSICount;
+	if (nr > max_nReceivers) {
+	    if (!%<serrorraised>) {
+		LogErrF(EC_Sim, "The number of receivers %d exceeds the configured maximum of %d for block '%s'.",
+		USonicRSICount, max_nReceivers, spath);
+		%<serrorraised> = 1;
+	    }
+	    nr = max_nReceivers;
+	}
+
+	// Port 1: USonicRSI data
+	%<sig1>.TimeFired = us->TimeFired;
+	%<sig1>.nReceivers = USonicRSICount;
+	for (i=0; i<nr; i++) {
+	    ne = us->ReceiverUSonic[i].nDetections;
+	    if (ne > max_nDetects) {
+		if (!%<serrorraised>) {
+		    LogErrF(EC_Sim, "The number of detections %d exceeds the configured maximum of %d for block '%s'.",
+		    ne, max_nDetects, spath);
+		    %<serrorraised> = 1;
+		}
+		ne = max_nDetects;
+	    }
+
+	    %<sig1>.Receiver[i].nDetections = us->ReceiverUSonic[i].nDetections;
+	    memcpy(%<sig1>.Receiver[i].Detection,
+		   us->ReceiverUSonic[i].DetPoints,
+		   ne * sizeof(*us->ReceiverUSonic[i].DetPoints));
+
+	    %if %<sdistmode> == 2 %% i.e. DistMode_Range
+		int j;
+		for (j=0; j<ne; j++)
+		    %<sig1>.Receiver[i].Detection[j].Range = us->ReceiverUSonic[i].DetPoints[j].TimeOfFlight * Env.SpeedOfSound;
+	    %endif
+
+	    if (ne < last_nDetects[i]) {
+		// reset expired detections to zero
+		memset(&%<sig1>.Receiver[i].Detection[ne], 0,
+		       (last_nDetects[i] - ne) * sizeof(*us->ReceiverUSonic[i].DetPoints));
+	    }
+	    last_nDetects[i] = ne;
+	}
+    }
+%endfunction
+
+
+%function Terminate (block, system) Output
+    %assign slastndetects = LibBlockPWork(SLastNDetects, "", "", 0)
+    free(%<slastndetects>);
+%endfunction
+

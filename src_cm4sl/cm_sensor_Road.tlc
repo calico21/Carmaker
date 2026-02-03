@@ -1,0 +1,144 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_Road" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_Road.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+
+	%if !%<shasextindex>
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_RoadSensor, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign shasextindex    = block.SFcnParamSettings[0].SHasExtIndex != 0
+    {
+	const tRoadSensor *rs;
+	int rs_idx;
+
+	%if CM_IsCarMakerTarget
+	    static tRoadSensor ZeroSensor;
+
+	    %if %<shasextindex>
+		rs_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (rs = RoadSensor_GetByIndex(rs_idx)) == NULL) {
+		    rs = &ZeroSensor;
+		    rs_idx = -1;
+		}
+	    %else
+		%assign _sname          = block.SFcnParamSettings[0]._SName
+		%assign sname           = block.SFcnParamSettings[0].SName
+		%assign salphaindex     = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sindex          = LibBlockIWork(SIndex, "", "", 0)
+		%assign sisfirststep    = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor         = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<sindex> = %<salphaindex>;
+		    %else
+			%<sindex> = RoadSensor_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = RoadSensor_GetByIndex(%<sindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<sindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		rs_idx = %<sindex>;
+		rs = (const tRoadSensor *)%<ssensor>;
+	    %endif
+	%else
+	    %if %<shasextindex>
+		rs_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (rs = RoadSensor_GetByIndex(rs_idx)) == NULL) {
+		    rs = MdlZero.RoadSensor;
+		    rs_idx = -1;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		rs = ms->Item;
+		rs_idx = ms->Index;
+	    %endif
+	%endif
+
+	%assign sig0 = LibBlockOutputSignal(0, "", "", 0)
+	%assign sig1 = LibBlockOutputSignal(1, "", "", 0)
+
+	// Port 0: RoadSensor index
+	%<sig0> = rs_idx;
+
+	// Port 1: RoadSensor general data
+        %<sig1>.Lane.Act.isRight      = rs->Act.isRight;
+        %<sig1>.Lane.OnLeft.isRight   = rs->OnLeft.isRight;
+        %<sig1>.Lane.OnRight.isRight  = rs->OnRight.isRight;
+        %<sig1>.Lane.Act.LaneId       = rs->Act.LaneId;
+        %<sig1>.Lane.OnLeft.LaneId    = rs->OnLeft.LaneId;
+        %<sig1>.Lane.OnRight.LaneId   = rs->OnRight.LaneId;
+        %<sig1>.Lane.Act.tMidLane     = rs->Act.tMidLane;
+        %<sig1>.Lane.OnLeft.tMidLane  = rs->OnLeft.tMidLane;
+        %<sig1>.Lane.OnRight.tMidLane = rs->OnRight.tMidLane;
+        %<sig1>.Lane.Act.Type         = rs->Act.Type;
+        %<sig1>.Lane.OnLeft.Type      = rs->OnLeft.Type;
+        %<sig1>.Lane.OnRight.Type     = rs->OnRight.Type;
+        %<sig1>.Lane.Act.Width        = rs->Act.Width;
+        %<sig1>.Lane.OnLeft.Width     = rs->OnLeft.Width;
+        %<sig1>.Lane.OnRight.Width    = rs->OnRight.Width;
+        %<sig1>.Lane.nLeft            = rs->Lanes.nLanesL;
+        %<sig1>.Lane.nRight           = rs->Lanes.nLanesR;
+        %<sig1>.onRoad                = rs->onRoad;
+        %<sig1>.PreviewDist           = rs->PreviewDist;
+        memcpy(%<sig1>.RMarker_Attrib, rs->MarkerAttrib, sizeof(rs->MarkerAttrib));
+        %<sig1>.Path.CurveXY          = rs->Path.CurveXY;
+        %<sig1>.Route.CurveXY         = rs->Route.CurveXY;
+        %<sig1>.Path.DevAng           = rs->Path.Deviation.Ang;
+        %<sig1>.Route.DevAng          = rs->Route.Deviation.Ang;
+        %<sig1>.Path.DevDist          = rs->Path.Deviation.Dist;
+        %<sig1>.Route.DevDist         = rs->Route.Deviation.Dist;
+        %<sig1>.Path.LatSlope         = rs->Path.LatSlope;
+        %<sig1>.Route.LatSlope        = rs->Route.LatSlope;
+        %<sig1>.Path.LongSlope        = rs->Path.LongSlope;
+        %<sig1>.Route.LongSlope       = rs->Route.LongSlope;
+        %<sig1>.Path.tx               = rs->Path.P_0[0];
+        %<sig1>.Path.ty               = rs->Path.P_0[1];
+        %<sig1>.Path.tz               = rs->Path.P_0[2];
+        %<sig1>.Route.tx              = rs->Route.P_0[0];
+        %<sig1>.Route.ty              = rs->Route.P_0[1];
+        %<sig1>.Route.tz              = rs->Route.P_0[2];
+        %<sig1>.tx                    = rs->P_0[0];
+        %<sig1>.ty                    = rs->P_0[1];
+        %<sig1>.tz                    = rs->P_0[2];
+        %<sig1>.Z_0_x                 = rs->Z_0[0];
+        %<sig1>.Z_0_y                 = rs->Z_0[1];
+        %<sig1>.Z_0_z                 = rs->Z_0[2];
+    }
+%endfunction

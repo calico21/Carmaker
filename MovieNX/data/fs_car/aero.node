@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nodes version="2.18.0.1">
+	<node type="NodeDummy" id="2018326741" name="aero">
+		<transform>1 0 0 0.0 0 1 0 0.0 0 0 1 0.0 0 0 0 1.0</transform>
+		<node type="ObjectMeshStatic" id="701281328" name="Cube.013">
+			<streaming_mode_vram>0</streaming_mode_vram>
+			<streaming_mode_ram>0</streaming_mode_ram>
+			<mesh_name>guid://ee7bd7f9e2e04d0c22ef025aa769c6d4c7c05e5b</mesh_name>
+			<surface name="Material" material="c2b5eabd0b27e495b36ed0007dc1b2334cbc80ca"/>
+			<surface name="Material.002" material="71684919cd531edb8a8aaffa46a67631a825d07b"/>
+			<surface name="Material.004" material="33cdfb5b60e01ad35eb21606cd5bad21b2071c80"/>
+			<transform>-1.11482763249e-07 -0.373908162117 -1.6344045956e-08 0.0 0.119543910027 -6.49894675856e-08 5.22542795841e-09 0.0 -5.22543047352e-09 -5.22542938726e-09 0.119543917477 0.0 -0.0216551418048 -0.0057473341279 -0.0639852809438 1.0</transform>
+		</node>
+		<node type="ObjectMeshStatic" id="72301007" name="Cube.005">
+			<streaming_mode_vram>0</streaming_mode_vram>
+			<streaming_mode_ram>0</streaming_mode_ram>
+			<mesh_name>guid://608fd13ba97be2dd871cd2667a31ea2cb5666fe0</mesh_name>
+			<surface name="Material.010" material="a6993cd7ddf77cc14c014730109687ae578d8d69"/>
+			<surface name="Material.001" material="c8bb22091bcd3f6bc3170adc2b64c0d268a75f06"/>
+			<surface name="Material.003" material="3066fda585929fe4f4287bb688fd4c0477a38167"/>
+			<surface name="Material.012" material="19d35647db0539b664e6c00250c08e5c26644ddc"/>
+			<transform>-1.11482763249e-07 -0.373908162117 -1.6344045956e-08 0.0 0.119543910027 -6.49894675856e-08 5.22542795841e-09 0.0 -5.22543047352e-09 -5.22542938726e-09 0.119543917477 0.0 -0.0216551418048 -0.0057473341279 -0.0639852809438 1.0</transform>
+		</node>
+	</node>
+</nodes>

@@ -1,0 +1,41 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "adasrp_recv" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %<LibAddToCommonIncludes("<ADASRP.h>")>
+
+    %openfile tmp
+    typedef struct {
+	unsigned int	MsgId;
+	unsigned char	Data[8];
+	unsigned short	DLC;
+    } tADASRPCANMsg;
+
+    static tADASRPCANMsg ADASRP_ZeroCANMsg = { 0 };
+    %closefile tmp
+    %<LibSetSourceFileSection(LibGetModelDotCFile(), "UserTop", tmp)>
+%endfunction
+
+
+%function Outputs (block, system) Output
+    {
+	tADASRPCANMsg msg;
+	int status = ADASRP_RecvCANMsg(&msg.MsgId, msg.Data, &msg.DLC);
+	tADASRPCANMsg *m = status>0 ? &msg : &ADASRP_ZeroCANMsg;
+
+	%<LibBlockOutputSignal(0, "", "", 0)> = status > 0;
+	%<LibBlockOutputSignal(1, "", "", 0)> = m->MsgId;
+	%<LibBlockOutputSignal(2, "", "", 0)> = m->DLC;
+	%foreach si = 8
+	    %<LibBlockOutputSignal(3, "", "", si)> = m->Data[%<si>];
+	%endforeach
+    }
+%endfunction
+

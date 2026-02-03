@@ -1,0 +1,33 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+
+%assign ::CM_IsCarMakerTarget = TLC_FALSE
+%assign ::CM_IsRTMakerTarget  = TLC_FALSE
+%assign ::CM_IsRtiTarget      = TLC_FALSE
+%assign ::CM_IsDsRtTarget     = TLC_FALSE
+
+%if     ::CompiledModel.ConfigSet.SystemTargetFile == "CarMaker.tlc"
+    %assign ::CM_IsCarMakerTarget = TLC_TRUE
+
+%elseif ::CompiledModel.ConfigSet.SystemTargetFile == "CarMaker64.tlc"
+    %assign ::CM_IsCarMakerTarget = TLC_TRUE
+
+%elseif ::CompiledModel.ConfigSet.SystemTargetFile == "RTMaker.tlc"
+    %assign ::CM_IsRTMakerTarget  = TLC_TRUE
+
+%elseif ::CompiledModel.ConfigSet.SystemTargetFile == "RTMaker64.tlc"
+    %assign ::CM_IsRTMakerTarget  = TLC_TRUE
+
+%elseif SPRINTF("%3.3s", ::CompiledModel.ConfigSet.SystemTargetFile) == "rti"
+    %assign ::CM_IsRtiTarget      = TLC_TRUE
+
+%elseif ::CompiledModel.ConfigSet.SystemTargetFile == "dsrt.tlc"
+    %assign ::CM_IsDsRtTarget     = TLC_TRUE
+
+%else
+    %error Chosen target not supported by CarMaker/RealtimeMaker
+    %exit Chosen target not supported by CarMaker/RealtimeMaker
+%endif
+

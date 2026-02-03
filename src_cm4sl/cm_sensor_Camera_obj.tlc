@@ -1,0 +1,142 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_Camera_obj" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_Camera.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+
+	%if !%<shasextindex>
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_CameraSensor, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign shasextindex  = block.SFcnParamSettings[0].SHasExtIndex != 0
+    {
+	const tCameraSensor *cs;
+	const tCamObject *obj;
+	int obj_idx, max_nObj, cs_idx;
+
+	%if CM_IsCarMakerTarget
+	    static tCameraSensor ZeroSensor = { 0 };
+	    static tCamObject ZeroCamObject = { 0 };
+
+	    #if defined CM_HIL && !defined XENO64
+	    cs_idx = -1;
+	    cs = &ZeroSensor;
+	    #else
+	    %if %<shasextindex>
+		cs_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (cs = CameraSensor_GetByIndex(cs_idx)) == NULL) {
+		    cs = &ZeroSensor;
+		    cs_idx = -1;
+		}
+	    %else
+		%assign _sname          = block.SFcnParamSettings[0]._SName
+		%assign sname           = block.SFcnParamSettings[0].SName
+		%assign salphaindex     = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sindex          = LibBlockIWork(SIndex, "", "", 0)
+		%assign sisfirststep    = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor         = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<sindex> = %<salphaindex>;
+		    %else
+			%<sindex> = CameraSensor_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = CameraSensor_GetByIndex(%<sindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<sindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		cs_idx = %<sindex>;
+		cs = (const tCameraSensor *)%<ssensor>;
+	    %endif
+	    #endif
+	%else
+	    #if defined CM_HIL && !defined XENO64
+		cs_idx = -1;
+		cs = MdlZero.CameraSensor;
+	    #else
+	    %if %<shasextindex>
+		cs_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		
+		if (SimCore.State != SCState_Simulate ||
+		    (cs = CameraSensor_GetByIndex(cs_idx)) == NULL) {
+		    cs = MdlZero.CameraSensor;
+		    cs_idx = -1;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		cs = ms->Item;
+		cs_idx = ms->Index;
+	    %endif
+	    #endif
+	%endif
+
+	max_nObj = CameraSensor_GetMaxObjectsForIndex(cs_idx);
+	obj_idx = %<LibBlockInputSignal(1, "", "", 0)>;
+	if (0 <= obj_idx && obj_idx < max_nObj && cs->Obj[obj_idx].ObjID != -1) {
+	    obj = &cs->Obj[obj_idx];
+	} else {
+	    %if CM_IsCarMakerTarget
+		obj = &ZeroCamObject;
+	    %else
+		obj = MdlZero.CamObject;
+	    %endif
+	    obj_idx = -1;
+	}
+
+	%assign sig0 = LibBlockOutputSignal(0, "", "", 0)
+	%assign sig1 = LibBlockOutputSignal(1, "", "", 0)
+
+	// Port 0: Object index
+	%<sig0> = obj_idx;
+
+	// Port 1: Object data
+	%<sig1>.ObjID          = obj->ObjID;
+	%<sig1>.Type           = obj->Type;
+	%<sig1>.nVisPixels     = obj->nVisPixels;
+	%<sig1>.Confidence     = obj->Confidence;
+	%<sig1>.MBR_BL_X       = obj->MBR[0][0];
+	%<sig1>.MBR_BL_Y       = obj->MBR[0][1];
+	%<sig1>.MBR_BL_Z       = obj->MBR[0][2];
+	%<sig1>.MBR_TR_X       = obj->MBR[1][0];
+	%<sig1>.MBR_TR_Y       = obj->MBR[1][1];
+	%<sig1>.MBR_TR_Z       = obj->MBR[1][2];
+	%<sig1>.Facing         = obj->Facing;
+	%<sig1>.LightState     = obj->LightState;
+	%<sig1>.SignMain_Val0  = obj->SignMainVal[0];
+	%<sig1>.SignMain_Val1  = obj->SignMainVal[1];
+    }
+%endfunction

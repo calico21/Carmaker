@@ -1,0 +1,111 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_object" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_Object.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+
+	%if !%<shasextindex>
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_ObjectSensor, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign shasextindex = block.SFcnParamSettings[0].SHasExtIndex != 0
+    {
+	const tObjectSensor *os;
+	int sindex;
+
+	%if CM_IsCarMakerTarget
+	    static tObjectSensor ZeroSensor = { .relvTargetObjId = -1 };
+
+	    %if %<shasextindex>
+		sindex = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (os = ObjectSensor_GetByIndex(sindex)) == NULL) {
+		    os = &ZeroSensor;
+		    sindex = -1;
+		}
+	    %else
+		%assign _sname       = block.SFcnParamSettings[0]._SName
+		%assign sname        = block.SFcnParamSettings[0].SName
+		%assign salphaindex  = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sindex       = LibBlockIWork(SIndex, "", "", 0)
+		%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor      = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<sindex> = %<salphaindex>;
+		    %else
+			%<sindex> = ObjectSensor_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = ObjectSensor_GetByIndex(%<sindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<sindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		sindex = %<sindex>;
+		os = (const tObjectSensor *)%<ssensor>;
+	    %endif
+	%else
+	    %if %<shasextindex>
+		sindex = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (os = ObjectSensor_GetByIndex(sindex)) == NULL) {
+		    os = MdlZero.ObjectSensor;
+		    sindex = -1;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		os = ms->Item;
+		sindex = ms->Index;
+	    %endif
+	%endif
+
+	%<LibBlockOutputSignal(0, "", "", 0)> = sindex;
+
+	%<LibBlockOutputSignal(1, "", "", 0)> = os->trtype;
+	%<LibBlockOutputSignal(1, "", "", 1)> = os->Range;
+	%<LibBlockOutputSignal(1, "", "", 2)> = os->FoV[0];
+	%<LibBlockOutputSignal(1, "", "", 3)> = os->FoV[1];
+	%<LibBlockOutputSignal(1, "", "", 4)> = os->rot_zyx[0];
+	%<LibBlockOutputSignal(1, "", "", 5)> = os->rot_zyx[1];
+	%<LibBlockOutputSignal(1, "", "", 6)> = os->rot_zyx[2];
+	%<LibBlockOutputSignal(1, "", "", 7)> = os->DrvLaneCurv;
+
+	%<LibBlockOutputSignal(2, "", "", 0)> = os->nObsvObjects;
+
+	%<LibBlockOutputSignal(3, "", "", 0)> = os->Targ_Dtct;
+	%<LibBlockOutputSignal(3, "", "", 1)> = os->relvTargetObjId;
+    }
+%endfunction
+

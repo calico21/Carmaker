@@ -1,0 +1,110 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_TSign" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_TSign.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+
+	%if !%<shasextindex>
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_TSignSensor, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign shasextindex    = block.SFcnParamSettings[0].SHasExtIndex != 0
+    {
+	const tTSignSensor *ts;
+	int ts_idx;
+
+	%if CM_IsCarMakerTarget
+	    static tTSignSensor ZeroSensor = { { { 0 } } };
+
+	    %if %<shasextindex>
+		ts_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (ts = TSignSensor_GetByIndex(ts_idx)) == NULL) {
+		    ts = &ZeroSensor;
+		    ts_idx = -1;
+		}
+	    %else
+		%assign _sname          = block.SFcnParamSettings[0]._SName
+		%assign sname           = block.SFcnParamSettings[0].SName
+		%assign salphaindex     = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sindex          = LibBlockIWork(SIndex, "", "", 0)
+		%assign sisfirststep    = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor         = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<sindex> = %<salphaindex>;
+		    %else
+			%<sindex> = TSignSensor_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = TSignSensor_GetByIndex(%<sindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<sindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		ts_idx = %<sindex>;
+		ts = (const tTSignSensor *)%<ssensor>;
+	    %endif
+	%else
+	    %if %<shasextindex>
+		ts_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (ts = TSignSensor_GetByIndex(ts_idx)) == NULL) {
+		    ts = MdlZero.TSignSensor;
+		    ts_idx = -1;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		ts = ms->Item;
+		ts_idx = ms->Index;
+	    %endif
+	%endif
+
+	%assign sig0 = LibBlockOutputSignal(0, "", "", 0)
+	%assign sig1 = LibBlockOutputSignal(1, "", "", 0)
+
+	// Port 0: TSignSensor index
+	%<sig0> = ts_idx;
+
+	// Port 1: TSignSensor general data
+        %<sig1>.nSign           = ts->nSign;
+	%<sig1>.tx_ext          = ts->t_ext[0];
+	%<sig1>.ty_ext          = ts->t_ext[1];
+	%<sig1>.tz_ext          = ts->t_ext[2];
+	%<sig1>.rx_ext       	= ts->rot_zyx_ext[0];
+	%<sig1>.ry_ext       	= ts->rot_zyx_ext[1];
+	%<sig1>.rz_ext       	= ts->rot_zyx_ext[2];
+	%<sig1>.TimeStamp       = ts->TimeStamp;
+    }
+%endfunction

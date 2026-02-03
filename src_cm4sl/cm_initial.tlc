@@ -1,0 +1,31 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_initial" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %<LibAddToCommonIncludes("<Vehicle.h>")>
+%endfunction
+
+
+%function Outputs (block, system) Output
+    {
+	%<LibBlockOutputSignal(0, "", "",  0)> = Vehicle.Cfg.Fr1_Pos[0];
+	%<LibBlockOutputSignal(0, "", "",  1)> = Vehicle.Cfg.Fr1_Pos[1];
+	%<LibBlockOutputSignal(0, "", "",  2)> = Vehicle.Cfg.Fr1_Pos[2];
+	%<LibBlockOutputSignal(0, "", "",  3)> = Vehicle.Cfg.Roll;
+	%<LibBlockOutputSignal(0, "", "",  4)> = Vehicle.Cfg.Yaw;
+	%<LibBlockOutputSignal(0, "", "",  5)> = Vehicle.Cfg.Pitch;
+	%<LibBlockOutputSignal(0, "", "",  6)> = Vehicle.Cfg.Engine_rotv;
+	%<LibBlockOutputSignal(0, "", "",  7)> = Vehicle.Cfg.GearBox_rotv_out;
+	%<LibBlockOutputSignal(0, "", "",  8)> = SimCore.Trailer.nTrailers;
+	%foreach si = LibBlockOutputSignalWidth(0) - 9
+	    %<LibBlockOutputSignal(0, "", "",   si + 9 )> = Vehicle.Cfg.Whl_rotv[%<si>];
+	%endforeach
+    }
+%endfunction

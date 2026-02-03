@@ -1,0 +1,56 @@
+#INFOFILE1.1 (UTF-8) - Do not remove this line!
+FileIdent = IPGRoad 14.0
+FileCreator = roadutil 14.1.1
+LibVersion = 14.1.1
+Country = DEU GBR
+nLinks = 1
+nJunctions = 0
+nObjects = 43
+nRoutes = 1
+RoadNetworkLength = 80000
+BBox = -10 80010 -20010 20010 -11 11
+Route.0.Length = 80000
+GCSProjection.Method = FlatEarth
+GCSProjection.RefPoint.LLE = 52.0783102 -1.0113865 0
+GCSProjection.RefPoint.XYZ = 0 0 0
+RST.Unit = kmh
+RST = 50 100 130 30 70 30 0 -1
+Movie = 0.2 1 0.01 1.5 1.5 1 1
+Visualization.SamplingParams = 0.2 1 0.01
+Visualization.RoadsideWidth = 1.5 1.5
+Visualization.RoadsideSlope = 1 1
+Visualization.MovieNX.RenderMask = 4095
+PathMode = -1
+Terrain.Param = 50 25 300 100 0.75 0
+Link.0.ID = 0
+Link.0.Node0 = 0 0 0 0
+Link.0.Node1 = 80000 0 0 0
+Link.0.RST = Undefined
+Link.0.RL.ID = 1
+Link.0.Seg.0.ID = 5
+Link.0.Seg.0.Type = Straight
+Link.0.Seg.0.Param = 80000 0 0 0 0 0 0 0
+Link.0.LaneSection.0.ID = 8
+Link.0.LaneSection.0.Start = 0
+Link.0.LaneSection.0.LaneL.0.ID = 9
+Link.0.LaneSection.0.LaneL.0 = 0 10000 10000 0 0 0 0
+Link.0.LaneSection.0.LaneL.0.ARP = 10 11 12 13 14 15
+Link.0.LaneSection.0.LaneL.1.ID = 17
+Link.0.LaneSection.0.LaneL.1 = 0 10000 10000 5 0 0 0
+Link.0.LaneSection.0.LaneR.0.ID = 18
+Link.0.LaneSection.0.LaneR.0 = 0 10000 10000 0 0 0 0
+Link.0.LaneSection.0.LaneR.0.ARP = 19 20 21 22 23 24
+Link.0.LaneSection.0.LaneR.1.ID = 26
+Link.0.LaneSection.0.LaneR.1 = 0 10000 10000 5 0 0 0
+LanePath.0 = 16 9 2 10 0.1 0.1 -1 -1
+LanePath.1 = 25 18 2 10 0.1 0.1 -1 -1
+UserPath.0 = 36 0 1 -1 -1 1 -1 -1
+UserPath.0.Nodes:
+	37 0 0 0 0 0
+	38 0 0 1 0 0
+Route.0.ID = 39
+Route.0.Name = Route_0
+Route.0.DrvPath.ID = 40
+Route.0.DrvPath:
+	36
+MaxUsedObjId = 40

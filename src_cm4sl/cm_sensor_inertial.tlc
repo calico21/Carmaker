@@ -1,0 +1,117 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_inertial" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_Inertial.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	%<shandle> = MdlItems_Add(MdlItem_InertialSensor, "%<sname>", MdlIdx_Default); // %<_sname>
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    {
+	const tBdySensor *sensor;
+	int sensor_idx;
+
+	%if CM_IsCarMakerTarget
+	    static tBdySensor ZeroSensor = { { 0 } };
+
+	    %assign _sname       = block.SFcnParamSettings[0]._SName
+	    %assign sname        = block.SFcnParamSettings[0].SName
+	    %assign salphaindex  = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+	    %assign sindex       = LibBlockIWork(SIndex, "", "", 0)
+	    %assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+	    %assign ssensor      = LibBlockPWork(SData, "", "", 0)
+	    if (%<sisfirststep>) {
+		%if %<salphaindex> >= 0
+		    %<sindex> = %<salphaindex>;
+		%else
+		    %<sindex> = InertialSensor_FindIndexForName("%<sname>"); // %<_sname>
+		%endif
+		%<ssensor> = InertialSensor_GetByIndex(%<sindex>);
+		if (%<ssensor> == NULL) {
+		    %<ssensor> = &ZeroSensor;
+		    %<sindex> = -1;
+		}
+		%<sisfirststep> = 0;
+	    }
+	    sensor_idx = %<sindex>;
+	    sensor = (const tBdySensor *)%<ssensor>;
+	%else
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+	    sensor = ms->Item;
+	    sensor_idx = ms->Index;
+	%endif
+
+	%<LibBlockOutputSignal(0, "", "", 0)> = sensor_idx;
+
+	%<LibBlockOutputSignal(1, "", "",  0)> = sensor->SignalMask;
+	%<LibBlockOutputSignal(1, "", "",  1)> = sensor->Fr!=NULL ? sensor->Fr->MntFrame : 0;
+
+	%<LibBlockOutputSignal(1, "", "",  2)> = sensor->Pos_B[0];
+	%<LibBlockOutputSignal(1, "", "",  3)> = sensor->Pos_B[1];
+	%<LibBlockOutputSignal(1, "", "",  4)> = sensor->Pos_B[2];
+	%<LibBlockOutputSignal(1, "", "",  5)> = sensor->Pos_0[0];
+	%<LibBlockOutputSignal(1, "", "",  6)> = sensor->Pos_0[1];
+	%<LibBlockOutputSignal(1, "", "",  7)> = sensor->Pos_0[2];
+
+	%<LibBlockOutputSignal(1, "", "",  8)> = sensor->Vel_B[0];
+	%<LibBlockOutputSignal(1, "", "",  9)> = sensor->Vel_B[1];
+	%<LibBlockOutputSignal(1, "", "", 10)> = sensor->Vel_B[2];
+	%<LibBlockOutputSignal(1, "", "", 11)> = sensor->Vel_0[0];
+	%<LibBlockOutputSignal(1, "", "", 12)> = sensor->Vel_0[1];
+	%<LibBlockOutputSignal(1, "", "", 13)> = sensor->Vel_0[2];
+
+	%<LibBlockOutputSignal(1, "", "", 14)> = sensor->Acc_B[0];
+	%<LibBlockOutputSignal(1, "", "", 15)> = sensor->Acc_B[1];
+	%<LibBlockOutputSignal(1, "", "", 16)> = sensor->Acc_B[2];
+	%<LibBlockOutputSignal(1, "", "", 17)> = sensor->Acc_0[0];
+	%<LibBlockOutputSignal(1, "", "", 18)> = sensor->Acc_0[1];
+	%<LibBlockOutputSignal(1, "", "", 19)> = sensor->Acc_0[2];
+
+	%<LibBlockOutputSignal(1, "", "", 20)> = sensor->Omega_B[0];
+	%<LibBlockOutputSignal(1, "", "", 21)> = sensor->Omega_B[1];
+	%<LibBlockOutputSignal(1, "", "", 22)> = sensor->Omega_B[2];
+	%<LibBlockOutputSignal(1, "", "", 23)> = sensor->Omega_0[0];
+	%<LibBlockOutputSignal(1, "", "", 24)> = sensor->Omega_0[1];
+	%<LibBlockOutputSignal(1, "", "", 25)> = sensor->Omega_0[2];
+
+	%<LibBlockOutputSignal(1, "", "", 26)> = sensor->Alpha_B[0];
+	%<LibBlockOutputSignal(1, "", "", 27)> = sensor->Alpha_B[1];
+	%<LibBlockOutputSignal(1, "", "", 28)> = sensor->Alpha_B[2];
+	%<LibBlockOutputSignal(1, "", "", 29)> = sensor->Alpha_0[0];
+	%<LibBlockOutputSignal(1, "", "", 30)> = sensor->Alpha_0[1];
+	%<LibBlockOutputSignal(1, "", "", 31)> = sensor->Alpha_0[2];
+
+	%<LibBlockOutputSignal(1, "", "", 32)> = sensor->OBO_B[0];
+	%<LibBlockOutputSignal(1, "", "", 33)> = sensor->OBO_B[1];
+	%<LibBlockOutputSignal(1, "", "", 34)> = sensor->OBO_B[2];
+	%<LibBlockOutputSignal(1, "", "", 35)> = sensor->OBO_0[0];
+	%<LibBlockOutputSignal(1, "", "", 36)> = sensor->OBO_0[1];
+	%<LibBlockOutputSignal(1, "", "", 37)> = sensor->OBO_0[2];
+    }
+%endfunction
+

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nodes version="2.18.0.1">
+	<node type="NodeDummy" id="597949168" name="wheel">
+		<transform>1 0 0 0.0 0 1 0 0.0 0 0 1 0.0 0 0 0 1.0</transform>
+		<node type="ObjectMeshStatic" id="1663979919" name="Cube.059">
+			<streaming_mode_vram>0</streaming_mode_vram>
+			<streaming_mode_ram>0</streaming_mode_ram>
+			<mesh_name>guid://e38c28dfbc0f73769733d158f60434c05e8b85b1</mesh_name>
+			<surface name="Material.002" material="b674c32955c70e426f846e4af66d7afcfb2f070b"/>
+			<surface name="Material.004" material="7e1d9deb944b1ba72b05675644fb875161957e50"/>
+			<surface name="Material.013" material="979a8e671c1b5a357a6e5b006faf8204298e9b79"/>
+			<transform>1.16671586037 2.91167575619e-22 -4.45845442448e-15 0.0 1.05879118407e-22 1.16671586037 1.01997543988e-07 0.0 4.45845442448e-15 -1.01997543988e-07 1.16671586037 0.0 0 0 0 1.0</transform>
+		</node>
+	</node>
+</nodes>

@@ -1,0 +1,33 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "adasrp_send" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %<LibAddToCommonIncludes("<ADASRP.h>")>
+%endfunction
+
+
+%function Outputs (block, system) Output
+    {
+	struct {
+	    unsigned long  MsgId;
+	    unsigned char  Data[8];
+	    unsigned short DLC;
+	} msg;
+
+	msg.MsgId = %<LibBlockInputSignal(0, "", "", 0)>;
+	msg.DLC = %<LibBlockInputSignal(1, "", "", 0)>;
+	%foreach si = 8
+	    msg.Data[%<si>] = %<LibBlockInputSignal(2, "", "", si)>;
+	%endforeach
+
+	ADASRP_SendCANMsg(msg.MsgId, msg.Data, msg.DLC);
+    }
+%endfunction
+

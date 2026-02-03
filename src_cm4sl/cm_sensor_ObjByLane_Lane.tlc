@@ -1,0 +1,124 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_ObjByLane_Lane" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_ObjectByLane.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+
+	%if !%<shasextindex>
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_ObjectByLaneSensor, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign shasextindex = block.SFcnParamSettings[0].SHasExtIndex != 0
+    %assign lanescope = CAST("Number", block.SFcnParamSettings[0].LaneScope)
+    {
+	const tObjByLane *os;
+	const tOBL_Lane *lane;
+	int l_idx;
+
+	%if CM_IsCarMakerTarget
+	    static tObjByLane ZeroSensor = { 0 };
+	    static tOBL_Lane ZeroLane = { 0 };
+
+	    %if %<shasextindex>
+		int os_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (os = ObjByLane_GetByIndex(os_idx)) == NULL) {
+		    os = &ZeroSensor;
+		}
+	    %else
+		%assign _sname          = block.SFcnParamSettings[0]._SName
+		%assign sname           = block.SFcnParamSettings[0].SName
+		%assign salphaindex     = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sindex          = LibBlockIWork(SIndex, "", "", 0)
+		%assign sisfirststep    = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor         = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<sindex> = %<salphaindex>;
+		    %else
+			%<sindex> = ObjByLane_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = ObjByLane_GetByIndex(%<sindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<sindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		os = (const tObjByLane *)%<ssensor>;
+	    %endif
+	%else
+	    %if %<shasextindex>
+		int os_idx = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (os = ObjByLane_GetByIndex(os_idx)) == NULL) {
+		    os = MdlZero.ObjByLaneSensor;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		os = ms->Item;
+	    %endif
+	%endif
+
+	l_idx = %<LibBlockInputSignal(1, "", "", 0)>;
+	if (0 <= l_idx && l_idx < os->nLanes[%<lanescope>]) {
+	    lane = &os->Lane[%<lanescope>][l_idx];
+	} else {
+	    %if CM_IsCarMakerTarget
+		lane = &ZeroLane;
+	    %else
+		lane = MdlZero.ObjByLaneLane;
+	    %endif
+	    l_idx = -1;
+	}
+
+	%assign sig0 = LibBlockOutputSignal(0, "", "", 0)
+	%assign sig1 = LibBlockOutputSignal(1, "", "", 0)
+
+	// Port 0: LineSensor index
+	%<sig0> = l_idx;
+
+	// Port 1: LineSensor data
+	%<sig1>.ObjID       = lane->ObjID;
+	%<sig1>.Type        = lane->Type;
+	%<sig1>.DrvOn  	    = lane->DrvOn;
+	%<sig1>.LengthRear  = lane->LengthRear;
+	%<sig1>.LengthFront = lane->LengthFront;
+	%<sig1>.Width       = lane->Width;
+	%<sig1>.tPathOff    = lane->tPathOff;
+	%<sig1>.InDrvDir    = lane->InDrvDir;
+	%<sig1>.nObjF       = lane->nObjF;
+	%<sig1>.nObjR       = lane->nObjR;
+    }
+%endfunction
+

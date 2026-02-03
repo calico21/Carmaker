@@ -1,0 +1,116 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "write_dict" "C"
+
+%include "cm_rtwlib.tlc"
+%include "cm_rma.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %<LibAddToCommonIncludes("<TextUtils.h>")>
+    %<LibAddToCommonIncludes("<DataDict.h>")>
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%<LibAddToCommonIncludes("<RemoteModelAccess.h>")>
+    %else
+	%<LibAddToCommonIncludes("<DirectVarAccess.h>")>
+    %endif
+%endfunction
+
+
+%function BlockInstanceSetup(block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%% This comment allows indirect calls to LibSystemOutputCustomCode()
+	%% by RMA_InitUpdates().
+	%<RMA_InitUpdates(system)>
+    %endif
+%endfunction
+
+
+%function Start (block, system) Output
+    %if NumDataInputPorts == 1
+	%assign pi = 0
+    %else
+	%assign pi = 1
+    %endif
+    %assign _names = FEVAL("strrep", block.SFcnParamSettings[0]._Names, "$", ::CompiledModel.Name)
+    %assign names  = FEVAL("strrep", block.SFcnParamSettings[0].Names,  "$", ::CompiledModel.Name)
+    {
+	char **namevec = CM_Names2StrVec("%<names>", NULL); // %<_names>
+	%assign uaqnames = FEVAL("split", "%<names>", ",")
+	%foreach si = LibBlockInputSignalWidth(pi)
+	    %if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+		%<LibBlockIWork(Checked, "", "", si)> = 0;
+		%<LibBlockPWork(Entry, "", "", si)> = (void *)DDictGetEntryOrFake(namevec[%<si>]);
+	    %else
+		%assign entry = LibBlockPWork(Entry, "", "", si)
+		%<entry> = (void *)MdlQuants_Request(namevec[%<si>]);
+		%if CM_IsDsRtTarget && !CM_IsMakerModel
+		    %assign rmaitem = LibBlockPWork(RMAc_UpdateItem, "", "", si)
+		    %assign idx = RMA_DDict_GetIndex(uaqnames[si])
+		    %<rmaitem> = RMAc_AddToUpdateList(RMAc_UAQ, %<entry>, %<idx>, RMAc_UAQ_Write);
+		    %<RMA_AddToWrite(uaqnames[si], idx)>
+		%endif
+	    %endif
+	%endforeach
+	CM_FreeStrVec(namevec);
+    }
+%endfunction
+
+
+%function write_dict (block, system) Output
+    %if NumDataInputPorts == 1
+	%assign pi = 0
+    %else
+	%assign pi = 1
+    %endif
+    %assign passthrough = block.SFcnParamSettings[0].PassThrough != 0
+    {
+	tDDictEntry *e;
+	real_T value;
+	%foreach si = LibBlockInputSignalWidth(pi)
+	    e = (tDDictEntry *)%<LibBlockPWork(Entry, "", "", si)>;
+	    %if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+		%assign checked = LibBlockIWork(Checked, "", "", si)
+		if (!%<checked>) {
+		    %<checked> = 1;
+		    DDictErrorUponFakedEntry(e, "Model '%<::CompiledModel.Name>'");
+		}
+	    %endif
+	    value = %<LibBlockInputSignal (pi, "", "", si)>;
+	    %if CM_IsDsRtTarget && !CM_IsMakerModel
+		e->SetFunc(value, e->Var);
+	    %else
+		DVA_PokeSL(e, value);
+	    %endif
+	    %if passthrough
+		%<LibBlockOutputSignal(0, "", "", si)> = value;
+	    %endif
+	%endforeach
+    }
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%<RMA_OutputEnter(system)>
+    %endif
+    %<write_dict(block, system)>
+%endfunction
+
+
+%function Terminate (block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%if NumDataInputPorts == 1
+	    %assign pi = 0
+	%else
+	    %assign pi = 1
+	%endif
+	%foreach si = LibBlockInputSignalWidth(pi)
+	    %assign rmaitem = LibBlockPWork(RMAc_UpdateItem, "", "", si)
+	    RMAc_ReleaseItem(%<rmaitem>);
+	%endforeach
+    %endif
+%endfunction

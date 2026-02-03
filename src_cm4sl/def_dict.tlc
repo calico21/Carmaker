@@ -1,0 +1,78 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "def_dict" "C"
+
+%include "cm_rtwlib.tlc"
+%include "cm_rma.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %<LibAddToCommonIncludes("<DataDict.h>")>
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%<LibAddToCommonIncludes("<RemoteModelAccess.h>")>
+    %endif
+%endfunction
+
+
+%function DefineDictVar(block, system) Output
+    %assign _name      = FEVAL("strrep", block.SFcnParamSettings[0]._Name, "$", ::CompiledModel.Name)
+    %assign name       = FEVAL("strrep", block.SFcnParamSettings[0].Name,  "$", ::CompiledModel.Name)
+    %assign unit       = block.SFcnParamSettings[0].Unit
+    %assign type       = block.SFcnParamSettings[0].Type
+    %assign place      = block.SFcnParamSettings[0].Place
+    %assign ismono     = block.SFcnParamSettings[0].IsMono != 0
+    %assign nstates    = block.SFcnParamSettings[0].nStates
+    %assign firststate = block.SFcnParamSettings[0].FirstState
+    %assign initvalue  = block.SFcnParamSettings[0].InitValue
+
+    %if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+	%<LibSourceFileCustomCode("{ \"%<name>\", \"%<unit>\", \"%<type>\", %<ismono>, %<nstates>, %<firststate>, \"%<place>\", %<initvalue>, 0.0 }, // %<_name>\n", "dictdefs")>
+    %else
+    {
+	tDDictEntry *entry = (tDDictEntry *)MdlQuants_Define("%<name>", "%<unit>", "%<type>", "%<place>", %<ismono>, %<nstates>, %<firststate>, %<initvalue>); // %<_name>
+	%if CM_IsDsRtTarget && !CM_IsMakerModel
+	    %assign rmaitem = LibBlockPWork(RMAc_UpdateItem, "", "", 0)
+	    %assign idx = RMA_DDict_GetIndex(name)
+	    %<RMA_AddToDDict(name, unit, type, place, ismono, nstates, firststate, initvalue, idx)>
+	    %<rmaitem> = RMAc_AddToUpdateList(RMAc_UAQ, entry, %<idx>, 0);
+	%endif
+    }
+    %endif
+%endfunction
+
+
+%function BlockInstanceSetup(block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%% This comment allows indirect calls to LibSystemOutputCustomCode()
+	%% by RMA_InitUpdates().
+	%<RMA_InitUpdates(system)>
+    %endif
+    %if CM_IsCarMakerTarget || CM_IsRTMakerTarget
+	%<DefineDictVar(block, system)>
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%<RMA_OutputEnter(system)>
+    %endif
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<DefineDictVar(block, system)>
+    %endif
+%endfunction
+
+
+%function Terminate (block, system) Output
+    %if CM_IsDsRtTarget && !CM_IsMakerModel
+	%assign rmaitem = LibBlockPWork(RMAc_UpdateItem, "", "", 0)
+	RMAc_ReleaseItem(%<rmaitem>);
+    %endif
+%endfunction

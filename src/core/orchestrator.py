@@ -19,7 +19,7 @@ class Orchestrator:
         self.resources = ResourceManager()
         self.storage_url = self.resources.get_db_path()
         self.cm_interface = CarMakerInterface()
-        self.param_manager = ParameterManager(template_path="templates/TestRuns/Master_Skidpad")
+        self.param_manager = ParameterManager(template_path="templates/FSE_AllWheelDrive")
         self.surrogate = SurrogateOracle(storage_path="data/suspension_knowledge.pkl")
         self.optimization_mode = "dynamics" 
         

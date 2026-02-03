@@ -1,0 +1,69 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_sangle" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_SAngle.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+	%<sisfirststep> = 1;
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	%<shandle> = MdlItems_Add(MdlItem_SAngleSensor, "%<sname>", MdlIdx_Default); // %<_sname>
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign _sname       = block.SFcnParamSettings[0]._SName
+	%assign sname        = block.SFcnParamSettings[0].SName
+	%assign salphaindex  = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+	%assign sindex       = LibBlockIWork(SIndex, "", "", 0)
+	%assign ssensor      = LibBlockPWork(SData, "", "", 0)
+
+	if (%<sisfirststep>) {
+	    %if %<salphaindex> >= 0
+		%<sindex> = %<salphaindex>;
+	    %else
+		%<sindex> = SAngleSensor_FindIndexForName("%<sname>"); // %<_sname>
+	    %endif
+	    %<ssensor> = SAngleSensor_GetByIndex(%<sindex>);
+	    if (%<ssensor> == NULL) {
+		static tSAngleSensor ZeroSensor = { .Angle = 0.0 };
+		%<ssensor> = &ZeroSensor;
+		%<sindex> = -1;
+	    }
+	    %<sisfirststep> = 0;
+	}
+
+	%<LibBlockOutputSignal(0, "", "", 0)> = %<sindex>;
+	%<LibBlockOutputSignal(1, "", "", 0)> = ((const tSAngleSensor *)%<ssensor>)->Angle;
+    %else
+	{
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+
+	    const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+	    const tSAngleSensor *sensor = ms->Item;
+	    %<LibBlockOutputSignal(0, "", "", 0)> = ms->Index;
+	    %<LibBlockOutputSignal(1, "", "", 0)> = sensor->Angle;
+	}
+    %endif
+%endfunction
+

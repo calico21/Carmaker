@@ -1,0 +1,88 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_bdyframe" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<Vehicle/MBSUtils.h>")>
+%endfunction
+
+
+%function BlockInstanceSetup(block, system) Output
+    %assign _frname  = block.SFcnParamSettings[0]._FrName
+    %assign frname   = block.SFcnParamSettings[0].FrName
+
+    %if CM_IsCarMakerTarget
+	%<LibSourceFileCustomCode("{ \"%<frname>\" },  // %<_frname>\n", "framedefs")>
+    %else
+    %endif
+%endfunction
+
+
+%function Start (block, system) Output
+    %assign _frname  = block.SFcnParamSettings[0]._FrName
+    %assign frname   = block.SFcnParamSettings[0].FrName
+    %assign frdata  = LibBlockPWork(FrData, "", "", 0)
+
+    %if CM_IsCarMakerTarget
+	%<frdata> = MdlBdyFrame_Lookup(%<::CompiledModel.Name>_BdyFrameDefines, "%<frname>"); // %<_frname>
+    %else
+	{
+	    static tBdyFrame fr;
+
+	    (void)MdlItems_AddPtr(MdlItem_BdyFrame, "%<frname>", MdlIdx_Default, &fr); // %<_frname>
+	    %<frdata> = &fr;
+	}
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    do {
+	tBdyFrame *fr = (tBdyFrame *)%<LibBlockPWork(FrData, "", "", 0)>;
+
+    %if CM_IsCarMakerTarget
+	if (fr == NULL) break;
+
+    %endif
+
+	fr->t_0[0] = %<LibBlockInputSignal (0, "", "", 0)>;
+	fr->t_0[1] = %<LibBlockInputSignal (0, "", "", 1)>;
+	fr->t_0[2] = %<LibBlockInputSignal (0, "", "", 2)>;
+
+	fr->v_0[0] = %<LibBlockInputSignal (1, "", "", 0)>;
+	fr->v_0[1] = %<LibBlockInputSignal (1, "", "", 1)>;
+	fr->v_0[2] = %<LibBlockInputSignal (1, "", "", 2)>;
+
+	fr->a_0[0] = %<LibBlockInputSignal (2, "", "", 0)>;
+	fr->a_0[1] = %<LibBlockInputSignal (2, "", "", 1)>;
+	fr->a_0[2] = %<LibBlockInputSignal (2, "", "", 2)>;
+
+	fr->omega_0[0] = %<LibBlockInputSignal (3, "", "", 0)>;
+	fr->omega_0[1] = %<LibBlockInputSignal (3, "", "", 1)>;
+	fr->omega_0[2] = %<LibBlockInputSignal (3, "", "", 2)>;
+
+	fr->alpha_0[0] = %<LibBlockInputSignal (4, "", "", 0)>;
+	fr->alpha_0[1] = %<LibBlockInputSignal (4, "", "", 1)>;
+	fr->alpha_0[2] = %<LibBlockInputSignal (4, "", "", 2)>;
+
+	fr->Tr2Fr0[0][0] = %<LibBlockInputSignal (5, "", "", 0)>;
+	fr->Tr2Fr0[0][1] = %<LibBlockInputSignal (5, "", "", 1)>;
+	fr->Tr2Fr0[0][2] = %<LibBlockInputSignal (5, "", "", 2)>;
+	fr->Tr2Fr0[1][0] = %<LibBlockInputSignal (5, "", "", 3)>;
+	fr->Tr2Fr0[1][1] = %<LibBlockInputSignal (5, "", "", 4)>;
+	fr->Tr2Fr0[1][2] = %<LibBlockInputSignal (5, "", "", 5)>;
+	fr->Tr2Fr0[2][0] = %<LibBlockInputSignal (5, "", "", 6)>;
+	fr->Tr2Fr0[2][1] = %<LibBlockInputSignal (5, "", "", 7)>;
+	fr->Tr2Fr0[2][2] = %<LibBlockInputSignal (5, "", "", 8)>;
+    } while (0);
+%endfunction
+

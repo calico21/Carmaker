@@ -1,0 +1,272 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_RadarRSI" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<stdlib.h>")>
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<Log.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_RadarRSI.h>")>
+%endfunction
+
+
+%function GetnVRx(block, system) Output
+    %assign souttype = CAST("Number", block.SFcnParamSettings[0].SOutType)
+
+    %if %<souttype> == 3	%% VRx
+    {
+	%assign snvrx       = LibBlockPWork(SnVRx, "", "", 0)
+	%assign sdetectsize = LibBlockPWork(SDetectSize, "", "", 0)
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+	%assign smaxnvrx     = CAST("Number", block.SFcnParamSettings[0].SMaxNVRx)
+	%assign serrorraised = LibBlockIWork(SErrorRaised, "", "", 0)
+
+	int n_sensors = (%<shasextindex>) ? RadarRSICount : 1;
+	int i=0, maxnVRx=0;
+	%<snvrx>       = realloc(%<snvrx>, (n_sensors + 1) * sizeof(int));
+	%<sdetectsize> = realloc(%<sdetectsize>, (n_sensors + 1) * sizeof(int));
+
+	// validate nVRx parameter
+	int *nVRx = %<snvrx>;
+	int *detect_size = %<sdetectsize>;
+	nVRx[n_sensors] = 0;
+	for (i=0; i<n_sensors; i++) {
+	    nVRx[i] = RadarRSI_GetnVRx(i);
+	    maxnVRx = (nVRx[i] > maxnVRx) ? nVRx[i] : maxnVRx;
+	}
+	if (maxnVRx != %<smaxnvrx> && RadarRSICount > 0) {
+	    if (!%<serrorraised>) {
+		LogErrF(EC_Sim, "The block parameter '(Maximum) number of virtual "
+			  "receivers' doesn't match the CarMaker sensor configuration. "
+			  "(%d != %d).", %<smaxnvrx>, maxnVRx);
+		%<serrorraised> = 1;
+	    }
+	    // prevent segmentation fault
+	    for (i=0; i<n_sensors; i++) {
+		if (nVRx[i] > %<smaxnvrx>)
+		    nVRx[i] = %<smaxnvrx>;
+	    }
+	}
+	detect_size[n_sensors] = 0;
+	for (i=0; i<n_sensors; i++) {
+	    detect_size[i] = (nVRx[i] * sizeof(tCompOut)) + sizeof(tDetVRx);
+	}
+	%assign smaxdetectsize = LibBlockIWork(SMaxDetectSize, "", "", 0)
+	%<smaxdetectsize> = (%<smaxnvrx> * sizeof(tCompOut)) + sizeof(tDetVRx);
+    }
+    %endif
+%endfunction
+
+
+%function CheckOutputType (block) Output
+    %assign sindex       = LibBlockIWork(SIndex, "", "", 0)
+    %assign souttype     = CAST("Number", block.SFcnParamSettings[0].SOutType)
+    %assign serrorraised = LibBlockIWork(SErrorRaised, "", "", 0)
+    %assign spath        = block.SFcnParamSettings[0].SPath
+    if (%<sindex> >= 0) {
+	tOutTypeRadarRSI OutputType = RadarRSI_GetOutputType(%<sindex>);
+	if ((OutputType == Cartesian && %<souttype> != 1) ||
+	    (OutputType == Spherical && %<souttype> != 2) ||
+	    (OutputType == VRx       && %<souttype> != 3)) {
+	    if (!%<serrorraised>) {
+		static const char spath[] = "%<spath>";
+		LogErrF(EC_Sim, "The parameter 'Output type' of block '%s' doesn't "
+				"match the configuration of sensor %d.", spath, %<sindex>);
+		%<serrorraised> = 1;
+	    }
+	}
+    }
+%endfunction
+
+
+%function Start (block, system) Output
+    %assign snvrx       = LibBlockPWork(SnVRx, "", "", 0)
+    %assign sdetectsize = LibBlockPWork(SDetectSize, "", "", 0)
+    %assign serrorraised = LibBlockIWork(SErrorRaised, "", "", 0)
+    %<snvrx>       = NULL;
+    %<sdetectsize> = NULL;
+    %<serrorraised> = 0;
+
+    %if CM_IsCarMakerTarget
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+	%<sisfirststep> = 1;
+	%<CheckOutputType(block)>
+	%<GetnVRx(block, system)>
+    %else
+	%assign _sname = block.SFcnParamSettings[0]._SName
+	%assign sname  = block.SFcnParamSettings[0].SName
+	%assign shasextindex = CAST("Boolean", block.SFcnParamSettings[0].SHasExtIndex)
+
+	%if !%<shasextindex>
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	    %<shandle> = MdlItems_Add(MdlItem_RadarRSI, "%<sname>", MdlIdx_Default); // %<_sname>
+	%endif
+	%<CheckOutputType(block)>
+	%<GetnVRx(block, system)>
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    %assign shasextindex    = block.SFcnParamSettings[0].SHasExtIndex != 0
+    %assign spath           = block.SFcnParamSettings[0].SPath
+    %assign souttype        = CAST("Number", block.SFcnParamSettings[0].SOutType)
+    %assign smaxndetections = CAST("Number", block.SFcnParamSettings[0].SMaxNDetections)
+    %assign sindex          = LibBlockIWork(SIndex, "", "", 0)
+    {
+	static const char spath[] = "%<spath>";
+	static int last_nDetections=%<smaxndetections>;
+	int max_nDetections=%<smaxndetections>;
+	const tRadarRSI *rs;
+	int n;
+
+	%if CM_IsCarMakerTarget
+	    static tRadarRSI ZeroSensor = { 0 };
+	    static tDetVRx *ZeroVRxDetections = NULL;
+	    ZeroSensor.DetVRx = &ZeroVRxDetections;
+
+	    %if %<shasextindex>
+		%<sindex> = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (rs = RadarRSI_GetByIndex(%<sindex>)) == NULL) {
+		    rs = &ZeroSensor;
+		    %<sindex> = -1;
+		}
+	    %else
+		%assign _sname          = block.SFcnParamSettings[0]._SName
+		%assign sname           = block.SFcnParamSettings[0].SName
+		%assign salphaindex     = CAST("Number", block.SFcnParamSettings[0].SAlphaIndex)
+		%assign sisfirststep    = LibBlockIWork(SIsFirstStep, "", "", 0)
+		%assign ssensor         = LibBlockPWork(SSensor, "", "", 0)
+
+		if (%<sisfirststep>) {
+		    %if %<salphaindex> >= 0
+			%<sindex> = %<salphaindex>;
+		    %else
+			%<sindex> = RadarRSI_FindIndexForName("%<sname>"); // %<_sname>
+		    %endif
+		    %<ssensor> = RadarRSI_GetByIndex(%<sindex>);
+		    if (%<ssensor> == NULL) {
+			%<ssensor> = &ZeroSensor;
+			%<sindex> = -1;
+		    }
+		    %<sisfirststep> = 0;
+		}
+		if (SimCore.State != SCState_Simulate) {
+		    rs = &ZeroSensor;
+		} else
+		    rs = (const tRadarRSI *)%<ssensor>;
+	    %endif
+	%else
+	    %if %<shasextindex>
+		%<sindex> = %<LibBlockInputSignal(0, "", "", 0)>;
+		if (SimCore.State != SCState_Simulate ||
+		    (rs = RadarRSI_GetByIndex(%<sindex>)) == NULL) {
+		    rs = MdlZero.RadarRSI;
+		    %<sindex> = -1;
+		}
+	    %else
+		%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+		const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+		rs = ms->Item;
+		%<sindex> = ms->Index;
+	    %endif
+	    if (SimCore.State == SCState_StartLastCycle) {
+		%<GetnVRx(block, system)>
+	    }
+	%endif
+
+	// check if output type matches the sensor configuration
+	%<CheckOutputType(block)>
+
+	%assign serrorraised = LibBlockIWork(SErrorRaised, "", "", 0)
+	if (rs->nDetections <= max_nDetections) {
+	    n = rs->nDetections;
+	} else {
+	    n = max_nDetections;
+	    if (!%<serrorraised>) {
+		LogErrF(EC_Sim, "The number of detections exceeds the configured maximum of %d for block '%s'.",
+		max_nDetections, spath);
+		%<serrorraised> = 1;
+	    }
+	}
+	if (%<serrorraised>) return;
+
+	%assign sig0 = LibBlockOutputSignal(0, "", "", 0)
+	%assign sig1 = LibBlockOutputSignal(1, "", "", 0)
+
+	// Port 0: RadarRSI index
+	%<sig0> = %<sindex>;
+
+	// Port 1: RadarRSI data
+	%if %<souttype> == 1 || %<souttype> == 2	%% Cartesian or Spherical
+	    %<sig1>.TimeFired    = rs->TimeFired;
+	    %<sig1>.nDetections  = rs->nDetections;
+	    memcpy(%<sig1>.Detection, rs->DetPoints, n * sizeof(*rs->DetPoints));
+	    if (n < last_nDetections) {
+		// reset expired detections to zero
+		memset(&%<sig1>.Detection[n], 0,
+		       (last_nDetections - n) * sizeof(*rs->DetPoints));
+	    }
+	    last_nDetections = n;
+	%else %% %<souttype> == 3	%% VRx
+	    %assign smaxdetectsize = LibBlockIWork(SMaxDetectSize, "", "", 0)
+	    %assign snvrx          = LibBlockPWork(SnVRx, "", "", 0)
+	    %assign sdetectsize    = LibBlockPWork(SDetectSize, "", "", 0)
+	    int *nVRx = %<snvrx>;
+	    int *detect_size = %<sdetectsize>;
+	    int max_detect_size = %<smaxdetectsize>;
+
+	    %<sig1>.TimeFired    = rs->TimeFired;
+	    %<sig1>.nDetections  = rs->nDetections;
+	    %if %<shasextindex>
+		%<sig1>.nVRx = (%<sindex> < 0) ? 0 : nVRx[%<sindex>];
+
+		// size of detection may vary between instances of RadarRSI
+		// therefore copy each detection separately
+		int i;
+		for (i=0; i<n; i++) {
+		    memcpy((void*)%<sig1>.Detection + (i * max_detect_size),
+			   (void*)rs->DetVRx[i], detect_size[%<sindex>]);
+		}
+	    %else
+		%<sig1>.nVRx = (%<sindex> < 0) ? 0 : nVRx[%<sindex>];
+
+		// block is associated to exactly one instance of RadarRSI
+		// therefore copy all detections at once
+		if (n > 0)
+		    memcpy(%<sig1>.Detection, rs->DetVRx[0], n * detect_size[0]);
+	    %endif
+
+	    if (n < last_nDetections) {
+		// reset expired detections to zero
+		memset((void*)%<sig1>.Detection + (n * max_detect_size),
+		       0,
+		       (last_nDetections - n) * max_detect_size);
+	    }
+	    last_nDetections = n;
+	%endif
+    }
+%endfunction
+
+
+%function Terminate (block, system) Output
+    %assign souttype = CAST("Number", block.SFcnParamSettings[0].SOutType)
+    %if %<souttype> == 3	%% VRx
+	%assign snvrx       = LibBlockPWork(SnVRx, "", "", 0)
+	%assign sdetectsize = LibBlockPWork(SDetectSize, "", "", 0)
+	if (%<snvrx> != NULL)
+	    free(%<snvrx>);
+	if (%<sdetectsize> != NULL)
+	    free(%<sdetectsize>);
+    %endif
+%endfunction

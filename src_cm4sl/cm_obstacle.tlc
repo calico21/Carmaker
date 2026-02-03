@@ -1,0 +1,137 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_obstacle" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %<LibAddToCommonIncludes("<Traffic.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign isfirststep = LibBlockIWork(IsFirstStep, "", "", 0)
+
+	%<isfirststep> = 1;
+    %else
+	%assign _name = block.SFcnParamSettings[0]._Name
+	%assign name  = block.SFcnParamSettings[0].Name
+	%assign hasextindex = CAST("Boolean", block.SFcnParamSettings[0].HasExtIndex)
+	%assign handle = LibBlockIWork(Handle, "", "", 0)
+
+	%if !%<hasextindex>
+	    %<handle> = MdlItems_Add(MdlItem_TrafficObj, "%<name>", MdlIdx_Default); // %<_name>
+	%endif
+    %endif
+%endfunction
+
+
+%function Outputs (block, system) Output
+    {
+	%assign hasextindex = block.SFcnParamSettings[0].HasExtIndex != 0
+	%assign useobjectid = CAST("Boolean", block.SFcnParamSettings[0].UseObjectId)
+
+	const tTrafficObj *obj;
+	int objindex;
+
+	%if CM_IsCarMakerTarget
+	    static tTrafficObj ZeroTrafficObj = { { 0 } };
+
+	    %if %<hasextindex>
+		objindex = %<LibBlockInputSignal(0, "", "", 0)>;
+		%if %<useobjectid>
+		    obj = Traffic_GetByObjId(objindex);
+		%else
+		    obj = Traffic_GetByTrfId(objindex);
+		%endif
+		if (obj == NULL) {
+		    objindex = -1;
+		    obj = &ZeroTrafficObj;
+		}
+	    %else
+		%assign _name       = block.SFcnParamSettings[0]._Name
+		%assign name        = block.SFcnParamSettings[0].Name
+		%assign alphaindex  = CAST("Number", block.SFcnParamSettings[0].AlphaIndex)
+		%assign objindex    = LibBlockIWork(ObjIndex, "", "", 0)
+		%assign isfirststep = LibBlockIWork(IsFirstStep, "", "", 0)
+		%assign obj         = LibBlockPWork(Obj, "", "", 0)
+
+		if (%<isfirststep>) {
+		    %if %<alphaindex> >= 0
+			%<objindex> = %<alphaindex>;
+		    %else
+			%<objindex> = Traffic_Object_Lookup("%<name>"); // %<_name>
+		    %endif
+		    %<obj> = Traffic_GetByTrfId(%<objindex>);
+		    if (%<obj> == NULL) {
+			%<objindex> = -1;
+			%<obj> = &ZeroTrafficObj;
+		    }
+		    %<isfirststep> = 0;
+		}
+		objindex = %<objindex>;
+		obj = (const tTrafficObj *)%<obj>;
+	    %endif
+	%else
+	    %if %<hasextindex>
+		objindex = %<LibBlockInputSignal(0, "", "", 0)>;
+		%if %<useobjectid>
+		    obj = Traffic_GetByObjId(objindex);
+		%else
+		    obj = Traffic_GetByTrfId(objindex);
+		%endif
+		if (obj == NULL) {
+		    objindex = -1;
+		    obj = MdlZero.TrafficObj;
+		}
+	    %else
+		%assign handle = LibBlockIWork(Handle, "", "", 0)
+		const struct tMdlItemRef *mo = &MdlItems.Entries[%<handle>].s[MdlItemIndex];
+		obj = mo->Item;
+		objindex = mo->Index;
+	    %endif
+	%endif
+
+	%<LibBlockOutputSignal(0, "", "", 0)> = objindex;
+
+	%<LibBlockOutputSignal(1, "", "",  0)> = obj->State;
+	%<LibBlockOutputSignal(1, "", "",  1)> = obj->DetectLevel;
+	%<LibBlockOutputSignal(1, "", "",  2)> = obj->sRoad;
+	%<LibBlockOutputSignal(1, "", "",  3)> = obj->tRoad;
+	%<LibBlockOutputSignal(1, "", "",  4)> = obj->LongVel;
+	%<LibBlockOutputSignal(1, "", "",  5)> = obj->LongAcc;
+	%<LibBlockOutputSignal(1, "", "",  6)> = obj->LatVel;
+	%<LibBlockOutputSignal(1, "", "",  7)> = obj->t_0[0];
+	%<LibBlockOutputSignal(1, "", "",  8)> = obj->t_0[1];
+	%<LibBlockOutputSignal(1, "", "",  9)> = obj->t_0[2];
+	%<LibBlockOutputSignal(1, "", "", 10)> = obj->r_zyx[0];
+	%<LibBlockOutputSignal(1, "", "", 11)> = obj->r_zyx[1];
+	%<LibBlockOutputSignal(1, "", "", 12)> = obj->r_zyx[2];
+	%<LibBlockOutputSignal(1, "", "", 13)> = obj->Tr2Fr0[0][0];
+	%<LibBlockOutputSignal(1, "", "", 14)> = obj->Tr2Fr0[0][1];
+	%<LibBlockOutputSignal(1, "", "", 15)> = obj->Tr2Fr0[0][2];
+	%<LibBlockOutputSignal(1, "", "", 16)> = obj->Tr2Fr0[1][0];
+	%<LibBlockOutputSignal(1, "", "", 17)> = obj->Tr2Fr0[1][1];
+	%<LibBlockOutputSignal(1, "", "", 18)> = obj->Tr2Fr0[1][2];
+	%<LibBlockOutputSignal(1, "", "", 19)> = obj->Tr2Fr0[2][0];
+	%<LibBlockOutputSignal(1, "", "", 20)> = obj->Tr2Fr0[2][1];
+	%<LibBlockOutputSignal(1, "", "", 21)> = obj->Tr2Fr0[2][2];
+	%<LibBlockOutputSignal(1, "", "", 22)> = obj->v_0[0];
+	%<LibBlockOutputSignal(1, "", "", 23)> = obj->v_0[1];
+	%<LibBlockOutputSignal(1, "", "", 24)> = obj->v_0[2];
+	%<LibBlockOutputSignal(1, "", "", 25)> = obj->a_0[0];
+	%<LibBlockOutputSignal(1, "", "", 26)> = obj->a_0[1];
+	%<LibBlockOutputSignal(1, "", "", 27)> = obj->a_0[2];
+	%<LibBlockOutputSignal(1, "", "", 28)> = obj->Cfg.Id;
+	%<LibBlockOutputSignal(1, "", "", 29)> = obj->Cfg.ObjId;
+    }
+%endfunction
+

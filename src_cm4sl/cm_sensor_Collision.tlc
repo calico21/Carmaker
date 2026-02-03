@@ -1,0 +1,97 @@
+%%
+%%  Copyright ©1998-2025 IPG Automotive GmbH. All rights reserved.
+%%  www.ipg-automotive.com
+%%
+%implements "cm_sensor_Collision" "C"
+
+%include "cm_rtwlib.tlc"
+
+
+%function BlockTypeSetup(block, system) void
+    %<LibAddToCommonIncludes("<Global.h>")>
+    %if CM_IsRtiTarget || CM_IsDsRtTarget
+	%<LibAddToCommonIncludes("<CM_Sfun_Utils.h>")>
+    %endif
+    %<LibAddToCommonIncludes("<SimCore.h>")>
+    %<LibAddToCommonIncludes("<Log.h>")>
+    %<LibAddToCommonIncludes("<Vehicle/Sensor_Collision.h>")>
+%endfunction
+
+
+%function Start (block, system) Output
+    %if CM_IsCarMakerTarget
+	%assign sdata  = LibBlockPWork(SData, "", "", 0)
+	%<sdata>  = (tCollisionSensor *) CollisionSensor_Get();
+    %else
+	%assign shandle = LibBlockIWork(SHandle, "", "", 0)
+	%<shandle> = MdlItems_Add(MdlItem_CollisionSensor, "", MdlIdx_Default);
+    %endif
+    %assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+    %<sisfirststep> = 1;
+%endfunction
+
+
+%function Outputs (block, system) Output
+    {
+	%if CM_IsCarMakerTarget
+	    %assign sdata  = LibBlockPWork(SData, "", "", 0)
+
+	    const tCollisionSensor *col = %<sdata>;
+	%else
+	    %assign shandle = LibBlockIWork(SHandle, "", "", 0)
+
+	    const struct tMdlItemRef *ms = &MdlItems.Entries[%<shandle>].s[MdlItemIndex];
+	    const tCollisionSensor *col = ms->Item;
+	%endif
+
+	%assign vhclclass = block.SFcnParamSettings[0].VehicleClass
+	%assign sisfirststep = LibBlockIWork(SIsFirstStep, "", "", 0)
+	if (%<sisfirststep>){
+	    if (!(SimCore.Vhcl.Class == %<vhclclass>)) {
+		LogErrF(EC_General, "Wrong vehicle class for Collision Sensor block!\n"
+		"Please change the vehicle class in the block parameters.\n");
+	    }
+	    %<sisfirststep> = 0;
+	}
+	%assign sig = LibBlockOutputSignal(0, "", "", 0)
+
+	%if vhclclass == 1
+	    %<sig>.Fr1_Count = col->Fr1.Count;
+	    %<sig>.Fr1_ObjId = col->Fr1.ObjId;
+	    %<sig>.WFL_Count = col->Wheel[0].Count;
+	    %<sig>.WFL_ObjId = col->Wheel[0].ObjId;
+	    %<sig>.WFR_Count = col->Wheel[1].Count;
+	    %<sig>.WFR_ObjId = col->Wheel[1].ObjId;
+	    %<sig>.WRL_Count = col->Wheel[2].Count;
+	    %<sig>.WRL_ObjId = col->Wheel[2].ObjId;
+	    %<sig>.WRR_Count = col->Wheel[3].Count;
+	    %<sig>.WRR_ObjId = col->Wheel[3].ObjId;
+	%elseif vhclclass == 2
+	    %<sig>.Fr1_Count = col->Fr1.Count;
+	    %<sig>.Fr1_ObjId = col->Fr1.ObjId;
+	    %<sig>.WF_Count  = col->Wheel[0].Count;
+	    %<sig>.WF_ObjId  = col->Wheel[0].ObjId;
+	    %<sig>.WR_Count  = col->Wheel[1].Count;
+	    %<sig>.WR_ObjId  = col->Wheel[1].ObjId;
+	%elseif vhclclass == 3
+	    %<sig>.Fr1_Count = col->Fr1.Count;
+	    %<sig>.Fr1_ObjId = col->Fr1.ObjId;
+	    %<sig>.WFL_Count = col->Wheel[0].Count;
+	    %<sig>.WFL_ObjId = col->Wheel[0].ObjId;
+	    %<sig>.WFR_Count = col->Wheel[1].Count;
+	    %<sig>.WFR_ObjId = col->Wheel[1].ObjId;
+	    %<sig>.WRL_Count = col->Wheel[2].Count;
+	    %<sig>.WRL_ObjId = col->Wheel[2].ObjId;
+	    %<sig>.WRR_Count = col->Wheel[3].Count;
+	    %<sig>.WRR_ObjId = col->Wheel[3].ObjId;
+	    %<sig>.WRL2_Count = col->Wheel[4].Count;
+	    %<sig>.WRL2_ObjId = col->Wheel[4].ObjId;
+	    %<sig>.WRR2_Count = col->Wheel[5].Count;
+	    %<sig>.WRR2_ObjId = col->Wheel[5].ObjId;
+	    %<sig>.WFL2_Count = col->Wheel[6].Count;
+	    %<sig>.WFL2_ObjId = col->Wheel[6].ObjId;
+	    %<sig>.WFR2_Count = col->Wheel[7].Count;
+	    %<sig>.WFR2_ObjId = col->Wheel[7].ObjId;
+	%endif
+    }
+%endfunction
